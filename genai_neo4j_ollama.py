@@ -3,22 +3,32 @@ import requests
 import textwrap
 import json
 
+import os
+from dotenv import load_dotenv
+import pathlib
+import uuid
+from datetime import datetime
+
+# Load environment variables
+load_dotenv()
+
 # ==============================
 # CONFIG
 # ==============================
 
-NEO4J_URI = "neo4j://localhost:7687"
-NEO4J_USER = "neo4j"
-NEO4J_PASSWORD = "quarter-contour-watch-signal-honey-5034"
+NEO4J_URI = os.getenv("NEO4J_URI")
+NEO4J_USER = os.getenv("NEO4J_USER")
+NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD")
 
-OLLAMA_URL = "http://localhost:11434/api/chat"
-OLLAMA_EMBED_URL = "http://localhost:11434/api/embeddings"
-LLM_MODEL = "qwen2.5:7b-instruct"
-EMBED_MODEL = "bge-m3:latest"
+OLLAMA_URL = os.getenv("OLLAMA_URL")
+OLLAMA_EMBED_URL = os.getenv("OLLAMA_EMBED_URL")
+LLM_MODEL = os.getenv("LLM_MODEL")
+EMBED_MODEL = os.getenv("EMBED_MODEL")
 
-VECTOR_INDEX_NAME = "tmt_embedding_index"
-FULLTEXT_INDEX_NAME = "tmt_fulltext_index"
-EMBEDDING_DIM = 1024
+VECTOR_INDEX_NAME = os.getenv("VECTOR_INDEX_NAME")
+FULLTEXT_INDEX_NAME = os.getenv("FULLTEXT_INDEX_NAME")
+EMBEDDING_DIM = int(os.getenv("EMBEDDING_DIM"))
+GRAPH_TRAVERSAL_DEPTH = int(os.getenv("GRAPH_TRAVERSAL_DEPTH", "2"))
 
 print("Connecting to Neo4j...")
 driver = None
@@ -181,6 +191,130 @@ def hybrid_search(question: str, k: int = 5) -> list[dict]:
     return final_results[:k]
 
 
+def expand_context(node_ids: list[str], depth: int = 2) -> dict:
+    """
+    Expand context by traversing relationships from seed nodes.
+    Returns nodes, relationships, and paths found.
+    
+    Args:
+        node_ids: List of node element IDs from hybrid_search
+        depth: How many hops to traverse (default: 2)
+    
+    Returns:
+        dict with 'nodes', 'relationships', and 'paths'
+    """
+    if not node_ids:
+        return {"nodes": [], "relationships": [], "paths": []}
+    
+    drv = init_driver()
+    expanded_nodes = {}
+    relationships = []
+    paths = []
+    
+    with drv.session() as session:
+        # Query to get related nodes and relationships
+        # Using variable-length path pattern to traverse up to 'depth' hops
+        traversal_query = """
+        MATCH path = (n)-[r*1..$depth]-(m)
+        WHERE elementId(n) IN $node_ids
+        RETURN path, 
+               [rel IN relationships(path) | {
+                   type: type(rel),
+                   start_id: elementId(startNode(rel)),
+                   end_id: elementId(endNode(rel)),
+                   start_labels: labels(startNode(rel)),
+                   end_labels: labels(endNode(rel)),
+                   start_name: coalesce(startNode(rel).name, startNode(rel).fsn, startNode(rel).trade_name, 'Unknown'),
+                   end_name: coalesce(endNode(rel).name, endNode(rel).fsn, endNode(rel).trade_name, 'Unknown')
+               }] as rels,
+               [node IN nodes(path) | node] as path_nodes
+        LIMIT 50
+        """
+        
+        try:
+            # Neo4j doesn't support parameter in path length, so we build query dynamically
+            actual_query = traversal_query.replace("$depth", str(depth))
+            records = session.run(actual_query, node_ids=node_ids)
+            
+            for rec in records:
+                # Collect unique nodes
+                for node in rec["path_nodes"]:
+                    nid = node.element_id if hasattr(node, 'element_id') else node.id
+                    if nid not in expanded_nodes:
+                        expanded_nodes[nid] = {
+                            "node": node,
+                            "labels": list(node.labels),
+                            "is_seed": nid in node_ids
+                        }
+                
+                # Collect relationships
+                for rel_info in rec["rels"]:
+                    rel_key = f"{rel_info['start_id']}-{rel_info['type']}-{rel_info['end_id']}"
+                    if rel_key not in [r.get('key') for r in relationships]:
+                        rel_info['key'] = rel_key
+                        relationships.append(rel_info)
+                
+                # Store path info
+                path = rec["path"]
+                if path:
+                    paths.append(path)
+                    
+        except Exception as e:
+            print(f"Relationship traversal error: {e}")
+    
+    return {
+        "nodes": list(expanded_nodes.values()),
+        "relationships": relationships,
+        "paths": paths
+    }
+
+
+def graphrag_search(question: str, k: int = 5, depth: int = None) -> dict:
+    """
+    GraphRAG search: Hybrid search + Relationship traversal.
+    Combines vector/fulltext search with graph structure exploration.
+    
+    Args:
+        question: User question
+        k: Number of seed nodes to retrieve
+        depth: Traversal depth (uses GRAPH_TRAVERSAL_DEPTH if None)
+    
+    Returns:
+        dict with 'seed_results', 'expanded_nodes', 'relationships'
+    """
+    if depth is None:
+        depth = GRAPH_TRAVERSAL_DEPTH
+    
+    # Step 1: Get seed nodes via hybrid search
+    seed_results = hybrid_search(question, k=k)
+    
+    if not seed_results:
+        return {
+            "seed_results": [],
+            "expanded_nodes": [],
+            "relationships": []
+        }
+    
+    # Step 2: Extract node IDs for expansion
+    seed_node_ids = []
+    for item in seed_results:
+        node = item["node"]
+        nid = node.element_id if hasattr(node, 'element_id') else node.id
+        seed_node_ids.append(nid)
+    
+    # Step 3: Expand context via relationship traversal
+    expanded = expand_context(seed_node_ids, depth=depth)
+    
+    # Step 4: Filter out seed nodes from expanded (to avoid duplication)
+    non_seed_nodes = [n for n in expanded["nodes"] if not n.get("is_seed", False)]
+    
+    return {
+        "seed_results": seed_results,
+        "expanded_nodes": non_seed_nodes,
+        "relationships": expanded["relationships"]
+    }
+
+
 # ==============================
 # Run Cypher Against Neo4j
 # ==============================
@@ -243,6 +377,88 @@ def format_hybrid_results(results: list[dict]) -> str:
     return "\n---\n".join(lines)
 
 
+def format_graphrag_results(results: dict) -> str:
+    """
+    Format GraphRAG results including nodes and relationships.
+    
+    Args:
+        results: dict from graphrag_search with seed_results, expanded_nodes, relationships
+    
+    Returns:
+        Formatted string for LLM context
+    """
+    seed_results = results.get("seed_results", [])
+    expanded_nodes = results.get("expanded_nodes", [])
+    relationships = results.get("relationships", [])
+    
+    if not seed_results and not expanded_nodes:
+        return "ไม่พบข้อมูลที่เกี่ยวข้องในกราฟ"
+    
+    sections = []
+    
+    # Section 1: Primary Results (Seed Nodes)
+    if seed_results:
+        seed_lines = ["=== PRIMARY RESULTS (ผลลัพธ์หลัก) ==="]
+        for item in seed_results:
+            node = item["node"]
+            props = dict(node)
+            
+            # Remove embedding vectors
+            for key in ["embedding_vec", "embedding"]:
+                if key in props:
+                    del props[key]
+            
+            # Truncate long text
+            if "embedding_text" in props and len(props["embedding_text"]) > 300:
+                props["embedding_text"] = props["embedding_text"][:300] + "..."
+            
+            labels = list(node.labels)
+            seed_lines.append(f"[{', '.join(labels)}] {json.dumps(props, ensure_ascii=False)}")
+        
+        sections.append("\n".join(seed_lines))
+    
+    # Section 2: Relationships
+    if relationships:
+        rel_lines = ["=== RELATIONSHIPS (ความสัมพันธ์) ==="]
+        for rel in relationships[:20]:  # Limit to 20 relationships
+            start_label = rel['start_labels'][0] if rel['start_labels'] else 'Node'
+            end_label = rel['end_labels'][0] if rel['end_labels'] else 'Node'
+            rel_lines.append(
+                f"({start_label}:{rel['start_name']}) -[:{rel['type']}]-> ({end_label}:{rel['end_name']})"
+            )
+        
+        if len(relationships) > 20:
+            rel_lines.append(f"... และอีก {len(relationships) - 20} relationships")
+        
+        sections.append("\n".join(rel_lines))
+    
+    # Section 3: Related Nodes (Expanded)
+    if expanded_nodes:
+        exp_lines = ["=== RELATED NODES (โหนดที่เกี่ยวข้อง) ==="]
+        for item in expanded_nodes[:10]:  # Limit to 10 expanded nodes
+            node = item["node"]
+            props = dict(node)
+            
+            # Remove embedding vectors
+            for key in ["embedding_vec", "embedding"]:
+                if key in props:
+                    del props[key]
+            
+            # Truncate long text
+            if "embedding_text" in props and len(props["embedding_text"]) > 200:
+                props["embedding_text"] = props["embedding_text"][:200] + "..."
+            
+            labels = item.get("labels", [])
+            exp_lines.append(f"[{', '.join(labels)}] {json.dumps(props, ensure_ascii=False)}")
+        
+        if len(expanded_nodes) > 10:
+            exp_lines.append(f"... และอีก {len(expanded_nodes) - 10} related nodes")
+        
+        sections.append("\n".join(exp_lines))
+    
+    return "\n\n".join(sections)
+
+
 # ==============================
 # LLM QA USING CONTEXT
 # ==============================
@@ -290,6 +506,7 @@ FSN (Fully Specified Name) สำหรับ TP มีโครงสร้า�
 1️⃣ GROUNDING - ยึดติดกับข้อมูลที่มี
    ✅ ใช้เฉพาะข้อมูลจาก GRAPH CONTEXT
    ✅ อ้างอิง properties: fsn, manufacturer, trade_name, tmtid, level
+   ✅ ตอนเป็นภาษาไทยเท่านั้น ยกเว้น properties
    ❌ ห้ามใช้ความรู้ทั่วไปเกี่ยวกับยา
    ❌ ห้ามสร้างชื่อบริษัท/ยาที่ไม่มีใน context
    ❌ ห้ามอธิบายสรรพคุณ/กลไกยา/ผลข้างเคียง
@@ -400,10 +617,45 @@ FSN (Fully Specified Name) สำหรับ TP มีโครงสร้า�
 # MAIN PROGRAM
 # ==============================
 
+LOG_PATH = "./logs/ragas_data.jsonl"
+pathlib.Path(LOG_PATH).parent.mkdir(parents=True, exist_ok=True)
+
+def log_interaction(question: str, results: list[dict], answer: str):
+    contexts = []
+    for item in results:
+        node = item["node"]
+        props = dict(node)
+
+        text_parts = []
+        if "fsn" in props:
+            text_parts.append(str(props["fsn"]))
+        if "embedding_text" in props:
+            text_parts.append(str(props["embedding_text"]))
+        if "trade_name" in props:
+            text_parts.append(f"trade_name: {props['trade_name']}")
+        if "manufacturer" in props:
+            text_parts.append(f"manufacturer: {props['manufacturer']}")
+
+        if text_parts:
+            contexts.append(" | ".join(text_parts))
+
+    record = {
+        "id": str(uuid.uuid4()),
+        "timestamp": datetime.now().isoformat(),
+        "question": question,
+        "contexts": contexts,
+        "answer": answer,
+    }
+
+    with open(LOG_PATH, "a", encoding="utf-8") as f:
+        f.write(json.dumps(record, ensure_ascii=False) + "\n")
+
+
 def main():
     print("Starting main...")
     init_driver()
     print("=== Neo4j + Ollama Hybrid Retriever Demo ===")
+    print(f"Running on {LLM_MODEL}")
     
     # Setup Indexes
     try:
@@ -418,21 +670,30 @@ def main():
         if q.lower() in ("exit", "quit"):
             break
 
-        print("\n→ ค้นหาแบบ Hybrid (Vector + Fulltext) ...")
-        results = hybrid_search(q, k=20)
-        ctx = format_hybrid_results(results)
+        print(f"\n→ ค้นหาแบบ GraphRAG (Hybrid + Relationship Traversal, depth={GRAPH_TRAVERSAL_DEPTH}) ...")
+        results = graphrag_search(q, k=10, depth=GRAPH_TRAVERSAL_DEPTH)
+        ctx = format_graphrag_results(results)
+        
+        # Show search stats
+        num_seeds = len(results.get("seed_results", []))
+        num_expanded = len(results.get("expanded_nodes", []))
+        num_rels = len(results.get("relationships", []))
+        print(f"   Found: {num_seeds} primary nodes, {num_expanded} related nodes, {num_rels} relationships")
         
         # Check context size
         ctx_size = len(ctx)
-        print(f"Context size: {ctx_size} characters")
+        print(f"   Context size: {ctx_size} characters")
         if ctx_size > 15000:
-            print("Warning: Context is large, may cause issues with LLM")
+            print("   Warning: Context is large, may cause issues with LLM")
         
-        print(ctx)
+        # Uncomment to debug context
+        # print(ctx)
 
         print("\n→ ส่งให้ LLM ตอบ ...")
         answer = ask_ollama(q, ctx)
         print("\nตอบ:\n", answer)
+
+        log_interaction(q, results, answer)
 
 
 if __name__ == "__main__":
