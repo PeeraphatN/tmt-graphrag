@@ -1012,7 +1012,7 @@ def main():
 
             # Debug structured data
             print("\nDebug Structured Data:")
-            print(json.dumps(structured, ensure_ascii=False, indent=2))
+            print(json.dumps(structured, ensure_ascii=False, indent=2)) 
 
             print("\n→ ส่งให้ LLM ตอบ (Structured Mode) ...")
             answer = ask_ollama_structured(q, structured)
