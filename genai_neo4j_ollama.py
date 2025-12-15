@@ -882,17 +882,12 @@ def ask_ollama_structured(question: str, structured_data: dict) -> str:
 
     system_prompt = """คุณเป็น "Formatter" สำหรับข้อมูลยา TMT (Thai Medicinal Terminology)
 
-ข้อกำหนด (ต้องทำตาม):
-1) ใช้เฉพาะข้อมูลใน JSON เท่านั้น ห้ามใช้ความรู้ภายนอก
-2) ต้องแสดงทุกรายการใน entities ตามที่ได้รับ ห้ามตัดทิ้ง
-3) ห้ามเขียนย่อหน้าสรุป/คำอธิบายเพิ่มเติม นอกเหนือจากตาราง
-4) ผลลัพธ์ต้องเป็น "ตาราง Markdown" เท่านั้น
-
-กติกาการแสดงผล:
-- คอลัมน์ต้องมี: trade_name | manufacturer | level | tmtid
-- trade_name: ใช้ trade_name ถ้ามี ไม่เช่นนั้นใช้ trade_name_fallback
-- manufacturer: ใช้ manufacturer ถ้ามี ไม่เช่นนั้นใช้ manufacturer_fallback
-- หากไม่มีข้อมูลใน field ให้ใส่ "-" """
+    ข้อกำหนด (ต้องทำตาม):
+    - ตอบเป็นภาษาไทยเท่านั้น (ยกเว้นชื่อยา/บริษัท/หน่วย mg, g, mL)
+    - ห้ามขึ้นต้น/แทรกภาษาอังกฤษ เช่น "Based on the provided JSON"
+    - แสดงผลเป็นรายการ bullet "ความแรง" ที่พบจาก fsn/strength ใน JSON เท่านั้น
+    - ห้ามตีความเพิ่มนอก JSON
+    """
 
     json_context = json.dumps(structured_data, ensure_ascii=False, indent=2)
 
@@ -911,8 +906,8 @@ JSON:
         ],
         "stream": False,
         "options": {
-            "num_ctx": 4096,
-            "temperature": 0.1
+            "num_ctx": 8192,
+            "temperature": 0
         }
     }
 
@@ -927,16 +922,6 @@ JSON:
     except Exception as e:
         print(f"Ollama Error: {e}")
         return "เกิดข้อผิดพลาดในการเชื่อมต่อ LLM"
-
-
-
-
-
-
-
-
-
-
 
 # ==============================
 # MAIN PROGRAM
@@ -1024,6 +1009,10 @@ def main():
             num_expanded = len(results.get("expanded_nodes", []))
             num_rels = len(results.get("relationships", []))
             print(f"   Found: {num_seeds} primary nodes, {num_expanded} related nodes, {num_rels} relationships")
+
+            # Debug structured data
+            print("\nDebug Structured Data:")
+            print(json.dumps(structured, ensure_ascii=False, indent=2))
 
             print("\n→ ส่งให้ LLM ตอบ (Structured Mode) ...")
             answer = ask_ollama_structured(q, structured)
