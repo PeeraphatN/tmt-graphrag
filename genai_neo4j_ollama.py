@@ -930,77 +930,10 @@ JSON:
 
 
 
-def ask_ollama_structured(question: str, structured_data: dict) -> str:
-    """
-    Ask Ollama using structured JSON data.
-    LLM acts as a "formatter" - only formats/summarizes the structured data.
-    
-    Args:
-        question: User question
-        structured_data: dict from extract_structured_data
-    
-    Returns:
-        Formatted answer in Thai
-    """
-    if not structured_data.get("entities"):
-        return "ไม่พบข้อมูลในกราฟ"
-    
-    # Simple formatter prompt
-    system_prompt = """คุณเป็น "Formatter" สำหรับข้อมูลยา TMT (Thai Medicinal Terminology)
 
-📋 หน้าที่:
-- จัดรูปแบบข้อมูลจาก JSON ให้อ่านง่ายเป็นภาษาไทย
-- ห้ามเพิ่มข้อมูลที่ไม่มีใน JSON
-- ห้ามอธิบายสรรพคุณ/ผลข้างเคียงของยา
 
-📊 โครงสร้าง TMT:
-- TP (Trade Product): ยาการค้า - มี trade_name, manufacturer
-- TPU (Trade Product Use Unit): หน่วยจ่ายการค้า
-- GP (Generic Product): ยาสามัญ
-- GPU, VTM, SUBS: ระดับอื่นๆ
 
-📝 รูปแบบคำตอบ:
-- ใช้ภาษาไทย ยกเว้นชื่อยา/บริษัท
-- จัดรายการด้วย bullet points หรือ numbering
-- แสดง tmtid สำหรับ reference
-- ถ้ามี relationships ให้อธิบายความสัมพันธ์"""
 
-    # Format structured data as JSON context
-    json_context = json.dumps(structured_data, ensure_ascii=False, indent=2)
-    
-    user_message = f"""คำถาม: {question}
-
-ข้อมูล JSON:
-```json
-{json_context}
-```
-
-กรุณาตอบโดยใช้เฉพาะข้อมูลจาก JSON ด้านบนเท่านั้น"""
-
-    payload = {
-        "model": LLM_MODEL,
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_message},
-        ],
-        "stream": False,
-        "options": {
-            "num_ctx": 8192,
-            "temperature": 0.1
-        }
-    }
-
-    try:
-        resp = requests.post(OLLAMA_URL, json=payload, timeout=120)
-        resp.raise_for_status()
-        return resp.json()["message"]["content"]
-    except requests.exceptions.HTTPError as e:
-        print(f"Ollama HTTP Error: {e}")
-        print(f"Response: {e.response.text if e.response else 'No response'}")
-        return "เกิดข้อผิดพลาดจาก LLM"
-    except Exception as e:
-        print(f"Ollama Error: {e}")
-        return "เกิดข้อผิดพลาดในการเชื่อมต่อ LLM"
 
 
 
@@ -1012,9 +945,12 @@ def ask_ollama_structured(question: str, structured_data: dict) -> str:
 LOG_PATH = "./logs/ragas_data.jsonl"
 pathlib.Path(LOG_PATH).parent.mkdir(parents=True, exist_ok=True)
 
-def log_interaction(question: str, results: list[dict], answer: str):
+def log_interaction(question: str, results: dict, answer: str):
     contexts = []
-    for item in results:
+    # Combine seed and expanded nodes for logging
+    all_nodes = results.get("seed_results", []) + results.get("expanded_nodes", [])
+    
+    for item in all_nodes:
         node = item["node"]
         props = dict(node)
 
@@ -1070,8 +1006,18 @@ def main():
                 break
 
             print(f"\n→ ค้นหาแบบ GraphRAG (Hybrid + Relationship Traversal, depth={GRAPH_TRAVERSAL_DEPTH}) ...")
+            
+            # 1. Classify
+            q_type = classify_question(q)
+            print(f"   Question Type: {q_type}")
+
             results = graphrag_search(q, k=10, depth=GRAPH_TRAVERSAL_DEPTH)
-            ctx = format_graphrag_results(results)
+            
+            # 2. Extract Structured Data
+            structured = extract_structured_data(results, q_type)
+            # Debug context size (approx)
+            json_ctx = json.dumps(structured, ensure_ascii=False)
+            print(f"   Structured Data Size: {len(json_ctx)} chars")
 
             # Show search stats
             num_seeds = len(results.get("seed_results", []))
@@ -1079,17 +1025,8 @@ def main():
             num_rels = len(results.get("relationships", []))
             print(f"   Found: {num_seeds} primary nodes, {num_expanded} related nodes, {num_rels} relationships")
 
-            # Check context size
-            ctx_size = len(ctx)
-            print(f"   Context size: {ctx_size} characters")
-            if ctx_size > 15000:
-                print("   Warning: Context is large, may cause issues with LLM")
-
-            # Uncomment to debug context
-            # print(ctx)
-
-            print("\n→ ส่งให้ LLM ตอบ ...")
-            answer = ask_ollama(q, ctx)
+            print("\n→ ส่งให้ LLM ตอบ (Structured Mode) ...")
+            answer = ask_ollama_structured(q, structured)
             print("\nตอบ:\n", answer)
 
             log_interaction(q, results, answer)
