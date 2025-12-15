@@ -4,6 +4,7 @@ import textwrap
 import json
 
 import os
+import atexit
 from dotenv import load_dotenv
 import pathlib
 import uuid
@@ -27,11 +28,43 @@ EMBED_MODEL = os.getenv("EMBED_MODEL")
 
 VECTOR_INDEX_NAME = os.getenv("VECTOR_INDEX_NAME")
 FULLTEXT_INDEX_NAME = os.getenv("FULLTEXT_INDEX_NAME")
-EMBEDDING_DIM = int(os.getenv("EMBEDDING_DIM"))
+EMBEDDING_DIM_VALUE = os.getenv("EMBEDDING_DIM")
+EMBEDDING_DIM = int(EMBEDDING_DIM_VALUE) if EMBEDDING_DIM_VALUE else None
 GRAPH_TRAVERSAL_DEPTH = int(os.getenv("GRAPH_TRAVERSAL_DEPTH", "2"))
 
 print("Connecting to Neo4j...")
 driver = None
+
+
+def validate_env():
+    required_vars = {
+        "NEO4J_URI": NEO4J_URI,
+        "NEO4J_USER": NEO4J_USER,
+        "NEO4J_PASSWORD": NEO4J_PASSWORD,
+        "OLLAMA_URL": OLLAMA_URL,
+        "OLLAMA_EMBED_URL": OLLAMA_EMBED_URL,
+        "LLM_MODEL": LLM_MODEL,
+        "EMBED_MODEL": EMBED_MODEL,
+        "VECTOR_INDEX_NAME": VECTOR_INDEX_NAME,
+        "FULLTEXT_INDEX_NAME": FULLTEXT_INDEX_NAME,
+        "EMBEDDING_DIM": EMBEDDING_DIM,
+    }
+
+    missing = [name for name, value in required_vars.items() if value in (None, "")]
+    if missing:
+        missing_list = ", ".join(missing)
+        raise RuntimeError(f"Missing required environment variables: {missing_list}")
+
+
+def close_driver():
+    global driver
+    if driver is not None:
+        driver.close()
+        driver = None
+
+
+atexit.register(close_driver)
+
 
 def init_driver():
     global driver
@@ -1012,6 +1045,12 @@ def log_interaction(question: str, results: list[dict], answer: str):
 
 def main():
     print("Starting main...")
+    try:
+        validate_env()
+    except RuntimeError as e:
+        print(e)
+        return
+
     init_driver()
     print("=== Neo4j + Ollama Hybrid Retriever Demo ===")
     print(f"Running on {LLM_MODEL}")
@@ -1024,39 +1063,38 @@ def main():
         
     print("พิมพ์คำถาม หรือ 'exit' เพื่อออก")
 
-    while True:
-        q = input("\nถาม: ").strip()
-        if q.lower() in ("exit", "quit"):
-            break
+    try:
+        while True:
+            q = input("\nถาม: ").strip()
+            if q.lower() in ("exit", "quit"):
+                break
 
-        # Step 1: Classify question
-        q_type = classify_question(q)
-        print(f"\n→ Question type: {q_type}")
-        
-        # Step 2: GraphRAG search
-        print(f"→ ค้นหาแบบ GraphRAG (depth={GRAPH_TRAVERSAL_DEPTH}) ...")
-        results = graphrag_search(q, k=5, depth=GRAPH_TRAVERSAL_DEPTH)
-        
-        # Show search stats
-        num_seeds = len(results.get("seed_results", []))
-        num_expanded = len(results.get("expanded_nodes", []))
-        num_rels = len(results.get("relationships", []))
-        print(f"   Found: {num_seeds} primary nodes, {num_expanded} related nodes, {num_rels} relationships")
-        
-        # Step 3: Extract structured data
-        structured = extract_structured_data(results, q_type)
-        json_size = len(json.dumps(structured, ensure_ascii=False))
-        print(f"   Structured JSON size: {json_size} characters")
-        
-        # Debug: show structured data
-        print(format_structured_context(structured))
+            print(f"\n→ ค้นหาแบบ GraphRAG (Hybrid + Relationship Traversal, depth={GRAPH_TRAVERSAL_DEPTH}) ...")
+            results = graphrag_search(q, k=10, depth=GRAPH_TRAVERSAL_DEPTH)
+            ctx = format_graphrag_results(results)
 
-        # Step 4: Ask LLM with structured data
-        print("\n→ ส่งให้ LLM (formatter mode) ...")
-        answer = ask_ollama_structured(q, structured)
-        print("\nตอบ:\n", answer)
+            # Show search stats
+            num_seeds = len(results.get("seed_results", []))
+            num_expanded = len(results.get("expanded_nodes", []))
+            num_rels = len(results.get("relationships", []))
+            print(f"   Found: {num_seeds} primary nodes, {num_expanded} related nodes, {num_rels} relationships")
 
-        # log_interaction(q, results, answer)
+            # Check context size
+            ctx_size = len(ctx)
+            print(f"   Context size: {ctx_size} characters")
+            if ctx_size > 15000:
+                print("   Warning: Context is large, may cause issues with LLM")
+
+            # Uncomment to debug context
+            # print(ctx)
+
+            print("\n→ ส่งให้ LLM ตอบ ...")
+            answer = ask_ollama(q, ctx)
+            print("\nตอบ:\n", answer)
+
+            log_interaction(q, results, answer)
+    except (KeyboardInterrupt, EOFError):
+        print("\nออกจากโปรแกรม")
 
 
 if __name__ == "__main__":
