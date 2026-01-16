@@ -308,25 +308,28 @@ def extract_structured_data(results: dict, question_type: str) -> dict:
     # -------------------------
     # Property filter + level scope
     # -------------------------
+    # Common NLEM fields to include if present
+    nlem_fields = ['nlem', 'nlem_category', 'nlem_section']
+
     if question_type == 'manufacturer':
-        required_fields = ['trade_name', 'manufacturer', 'fsn', 'tmtid', 'level', 'container_text']
+        required_fields = ['trade_name', 'manufacturer', 'fsn', 'tmtid', 'level', 'container_text'] + nlem_fields
         allowed_levels = {'TP', 'TPU'}
         max_entities = 20
     elif question_type == 'ingredient':
-        required_fields = ['fsn', 'active_ingredient', 'active_ingredients', 'strength', 'tmtid', 'level', 'dosageform']
+        required_fields = ['fsn', 'active_ingredient', 'active_ingredients', 'strength', 'tmtid', 'level', 'dosageform'] + nlem_fields
         allowed_levels = {'GP', 'GPU', 'TP', 'TPU', 'VTM', 'SUBS'}
         max_entities = 30
     elif question_type == 'hierarchy':
-        required_fields = ['level', 'fsn', 'tmtid']
+        required_fields = ['level', 'fsn', 'tmtid'] + nlem_fields
         allowed_levels = {'SUBS', 'VTM', 'GP', 'GPU', 'TP', 'TPU'}
         max_entities = 40
     elif question_type == 'formula':
         # formula เทียบจาก FSN วงเล็บที่ 2 เป็นหลัก (fallback)
-        required_fields = ['trade_name', 'manufacturer', 'fsn', 'tmtid', 'level']
+        required_fields = ['trade_name', 'manufacturer', 'fsn', 'tmtid', 'level'] + nlem_fields
         allowed_levels = {'TP', 'TPU', 'GP', 'GPU'}
         max_entities = 30
     else:
-        required_fields = ['trade_name', 'manufacturer', 'fsn', 'tmtid', 'level']
+        required_fields = ['trade_name', 'manufacturer', 'fsn', 'tmtid', 'level'] + nlem_fields
         allowed_levels = {'TP', 'TPU', 'GP', 'GPU'}
         max_entities = 30
 

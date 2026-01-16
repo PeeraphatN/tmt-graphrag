@@ -12,8 +12,8 @@ from src.knowledge_graph import (
     graphrag_search, 
     extract_structured_data
 )
-from src.query_processor import classify_question
-from src.llm_service import ask_ollama_structured
+from src.chains.classify_chain import classify_question_llm
+from src.chains.formatter_chain import format_answer_llm
 
 # Register cleanup
 atexit.register(close_driver)
@@ -68,7 +68,7 @@ def main():
         return
 
     init_driver()
-    print("=== Neo4j + Ollama Hybrid Retriever Demo (Modular) ===")
+    print("=== Neo4j + Ollama Hybrid Retriever Demo (Modular - LangChain Phase 2) ===")
     print(f"Running on {LLM_MODEL}")
     
     # Setup Indexes
@@ -87,9 +87,10 @@ def main():
 
             print(f"\n→ ค้นหาแบบ GraphRAG (Hybrid + Relationship Traversal, depth={GRAPH_TRAVERSAL_DEPTH}) ...")
             
-            # 1. Classify
-            q_type = classify_question(q)
-            print(f"   Question Type: {q_type}")
+            # 1. Classify (LLM-based)
+            print("   Using LangChain Classification...", end=" ", flush=True)
+            q_type = classify_question_llm(q)
+            print(f"Type: {q_type}")
 
             results = graphrag_search(q, k=10, depth=GRAPH_TRAVERSAL_DEPTH)
             
@@ -109,8 +110,8 @@ def main():
             # print("\nDebug Structured Data:")
             # print(json.dumps(structured, ensure_ascii=False, indent=2)) 
 
-            print("\n→ ส่งให้ LLM ตอบ (Structured Mode) ...")
-            answer = ask_ollama_structured(q, structured)
+            print("\n→ ส่งให้ LLM ตอบ (Structured Mode - LangChain) ...")
+            answer = format_answer_llm(q, structured)
             print("\nตอบ:\n", answer)
 
             log_interaction(q, results, answer)
