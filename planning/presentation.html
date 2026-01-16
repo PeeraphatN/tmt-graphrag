@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GenAI - System Architecture</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&family=Poppins:wght@500;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'neutral',
+            fontFamily: 'Sarabun, sans-serif'
+        });
+    </script>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #4f46e5;
+            --accent: #06b6d4;
+            --bg: #f8fafc;
+            --text: #1e293b;
+            --card-bg: #ffffff;
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg);
+            font-family: 'Sarabun', sans-serif;
+            color: var(--text);
+            display: grid;
+            place-items: center;
+            margin: 0;
+            padding: 40px 0;
+            gap: 40px;
+        }
+
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            /* Allow expansion if content is long */
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+            padding: 60px 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 40px;
+        }
+
+        /* Slide Decor */
+        .slide-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 10px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--primary), var(--accent));
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+        }
+
+        h1 {
+            font-size: 56px;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1.2;
+        }
+
+        h2 {
+            font-size: 42px;
+            font-weight: 600;
+            color: var(--secondary);
+            margin-bottom: 30px;
+            border-bottom: 3px solid #e2e8f0;
+            padding-bottom: 15px;
+        }
+
+        h3 {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 15px;
+        }
+
+        p,
+        li {
+            font-size: 20px;
+            line-height: 1.6;
+            color: #475569;
+        }
+
+        /* Comparison Table */
+        .compare-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .compare-table th {
+            background: var(--primary);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .compare-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e2e8f0;
+            background: #fff;
+        }
+
+        .compare-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Logic Box */
+        .logic-box {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-left: 5px solid var(--accent);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .logic-title {
+            font-weight: 700;
+            color: var(--secondary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Two Column Layout */
+        .two-cols {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: start;
+        }
+
+        /* Input/Output Cards */
+        .io-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .mermaid {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+    </style>
+
+    <style>
+        /* Floating Control Bar */
+        #presentation-controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(5px);
+            padding: 10px 15px;
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+            border: 1px solid #e2e8f0;
+            transition: opacity 0.3s;
+        }
+
+        #presentation-controls:hover {
+            opacity: 1;
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        .ctrl-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #475569;
+            font-size: 18px;
+            transition: all 0.2s;
+        }
+
+        .ctrl-btn:hover {
+            background: #f1f5f9;
+            color: #2563eb;
+            transform: translateY(-2px);
+        }
+
+        .ctrl-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Hide scrollbar in fullscreen for cleaner look */
+        body.fullscreen-mode::-webkit-scrollbar {
+            display: none;
+        }
+
+        body.fullscreen-mode {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+
+
+    <style>
+        /* --- Native Scroll Snap Logic --- */
+        html {
+            scroll-snap-type: y mandatory;
+            /* Enable vertical sniffing */
+            scroll-behavior: smooth;
+            /* Native smooth scrolling */
+        }
+
+        .slide-container {
+            scroll-snap-align: center;
+            /* Snap slide to center of viewport */
+            scroll-snap-stop: always;
+            /* Force stop at each slide (no skipping) */
+            /* Margin for top/bottom visual gap */
+            margin-bottom: 20vh;
+            /* Increase spacing for clear separation */
+        }
+
+        /* Adjust body to allow scrolling room */
+        body {
+            padding: 10vh 0;
+            /* Add top/bottom padding so first/last slide center well */
+            gap: 15vh;
+            /* Override existing gap for better snap feel */
+        }
+    </style>
+
+    <style>
+        /* === PDF Export / Print Styles === */
+        @media print {
+
+            /* Reset page settings */
+            @page {
+                size: A4 landscape;
+                margin: 0;
+            }
+
+            /* Hide controls when printing */
+            #presentation-controls {
+                display: none !important;
+            }
+
+            /* Reset body for print */
+            html,
+            body {
+                background: white !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                scroll-snap-type: none !important;
+            }
+
+            body {
+                display: block !important;
+                gap: 0 !important;
+            }
+
+            /* Each slide becomes a page */
+            .slide-container {
+                width: 100% !important;
+                height: 100vh !important;
+                min-height: 100vh !important;
+                max-height: 100vh !important;
+                margin: 0 !important;
+                margin-bottom: 0 !important;
+                padding: 40px 50px !important;
+                border-radius: 0 !important;
+                box-shadow: none !important;
+                page-break-after: always !important;
+                break-after: page !important;
+                scroll-snap-align: unset !important;
+                overflow: hidden !important;
+            }
+
+            .slide-container:last-child {
+                page-break-after: avoid !important;
+            }
+
+            /* Keep the gradient bar */
+            .slide-container::before {
+                width: 8px;
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+
+            /* Preserve colors */
+            * {
+                print-color-adjust: exact !important;
+                -webkit-print-color-adjust: exact !important;
+            }
+
+            /* Scale down fonts slightly for print */
+            h1 {
+                font-size: 48px !important;
+            }
+
+            h2 {
+                font-size: 36px !important;
+            }
+
+            h3 {
+                font-size: 22px !important;
+            }
+
+            p,
+            li {
+                font-size: 16px !important;
+            }
+
+            /* Ensure images fit */
+            img {
+                max-width: 100% !important;
+                max-height: 400px !important;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <!-- Slide: Title -->
+    <div class="slide-container">
+        <div style="text-align: center; width: 100%;">
+            <div style="font-size: 80px; color: var(--primary); margin-bottom: 20px;">
+                <i class="fa-solid fa-network-wired"></i>
+            </div>
+            <h1>GenAI - TMT Chatbot</h1>
+            <p style="font-size: 24px; margin-top: 20px; color: #64748b;">
+                System Architecture Deep Dive & Agentic Evolution
+            </p>
+        </div>
+    </div>
+
+    <!-- Slide: High Level Overview -->
+    <div class="slide-container">
+        <h2>🛠️ System Overview</h2>
+        <div style="text-align: center; margin: 20px 0;">
+            <img src="assets/system_overview.png" alt="System Overview"
+                style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        </div>
+    </div>
+
+    <!-- Slide: Detailed Components -->
+    <div class="slide-container">
+        <h2>🧩 Core Components</h2>
+        <div class="two-cols">
+            <div>
+                <h3>1. Data Pipeline</h3>
+                <div class="io-card">
+                    <p>Automated ingestion from TMT source.</p>
+                    <ul style="font-size: 16px;">
+                        <li><strong>Download:</strong> Fetch TMT Excel/JSON</li>
+                        <li><strong>Parasing:</strong> Clean & Normalize data</li>
+                        <li><strong>Embedding:</strong> Generate vectors (bge-m3)</li>
+                        <li><strong>Graph Insert:</strong> Nodes (VTM, GP) & Rels</li>
+                    </ul>
+                </div>
+                <div class="mermaid" style="margin-top: 20px;">
+                    graph LR
+                    A[Raw Data] --> B[Clean] --> C[Vectorize] --> D[(Neo4j)]
+                    style D fill:#dcfce7,stroke:#166534
+                </div>
+            </div>
+            <div>
+                <h3>2. RAG System</h3>
+                <div class="io-card">
+                    <p>Hybrid Search Architecture.</p>
+                    <ul style="font-size: 16px;">
+                        <li><strong>Query:</strong> Classify & Extract Keywords</li>
+                        <li><strong>Retrieval:</strong> Vector + Fulltext + RRF</li>
+                        <li><strong>Expand:</strong> Graph Traversal (2-hop)</li>
+                        <li><strong>Gen:</strong> Ollama (Thai Structured Output)</li>
+                    </ul>
+                </div>
+                <div class="mermaid" style="margin-top: 20px;">
+                    graph TB
+                    Q[User] --> RET[Hybrid Search]
+                    RET --> EXP[Graph Traverse]
+                    EXP --> LLM[Ollama]
+                    style LLM fill:#dbeafe,stroke:#2563eb
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide: Knowledge Domain Scope -->
+    <div class="slide-container">
+        <h2>🏗️ Knowledge Domain Scope</h2>
+        <p>Defining what our current GraphRAG system can and cannot answer.</p>
+
+        <div class="two-cols">
+            <div class="logic-box" style="border-left-color: var(--success); background: #f0fdf4;">
+                <h3 style="color: #166534;"><i class="fa-solid fa-circle-check"></i> In-Scope (Data Available)</h3>
+                <ul style="margin-top: 10px; font-size: 18px;">
+                    <li style="margin-bottom: 12px;"><strong>Drug Mapping:</strong> "Which brand matches this generic?"
+                    </li>
+                    <li style="margin-bottom: 12px;"><strong>Ingredients:</strong> "What is the composition of Drug X?"
+                    </li>
+                    <li style="margin-bottom: 12px;"><strong>Manufacturers:</strong> "Which company produces Y?"</li>
+                    <li style="margin-bottom: 12px;"><strong>Hierarchy:</strong> "What are the parent/child nodes of TMT
+                        ID Z?"</li>
+                    <li style="margin-bottom: 12px;"><strong>Dose Forms:</strong> "Does X come in Syrup or Tablets?"
+                    </li>
+                </ul>
+            </div>
+
+            <div class="logic-box" style="border-left-color: var(--danger); background: #fef2f2;">
+                <h3 style="color: #991b1b;"><i class="fa-solid fa-circle-xmark"></i> Out-of-Scope (Missing Data)</h3>
+                <ul style="margin-top: 10px; font-size: 14px;">
+                    <li style="margin-bottom: 12px;"><strong>Clinical Advice:</strong> "How to treat disease A?"</li>
+                    <li style="margin-bottom: 12px;"><strong>Side Effects:</strong> "Will X make me dizzy?"</li>
+                    <li style="margin-bottom: 12px;"><strong>Dosage Rules:</strong> "How many pills per day?"</li>
+                    <li style="margin-bottom: 12px;"><strong>Interactions:</strong> "Can I take X with Alcohol?"</li>
+                    <li style="margin-bottom: 12px;"><strong>Logistics:</strong> "What is the price or stock status?"
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide-container">
+        <div style="text-align: center; width: 100%;">
+            <h1>🔍 The current issue</h1>
+            <p style="font-size: 24px; margin-top: 20px; color: #64748b;">
+                The current architecture suffers from significant latency in real-world usage and data inconsistencies.
+            </p>
+        </div>
+    </div>
+
+    <!-- Slide: Real-World Failure Case -->
+    <div class="slide-container">
+        <h2>🐛 Real-World Failure: "The Regex Trap"</h2>
+        <p>Current limitations that lead to <strong>High Technical Debt</strong> and <strong>Brittle Logic</strong>.</p>
+
+        <div class="two-cols">
+            <div>
+                <h3>1. User Query</h3>
+                <div class="io-card" style="background: #f1f5f9; font-size: 24px;">
+                    "ยานี้กินเวลาไหน มีผลข้างเคียงอย่างไร?"
+                </div>
+                <p style="margin-top: 20px; color: var(--danger);">
+                    <i class="fa-solid fa-xmark"></i> <strong>Problem:</strong> User asks for "Usage" or "Side Effects",
+                    but our hardcoded logic only knows 4 specific categories.
+                </p>
+            </div>
+
+            <div>
+                <h3>2. Actual System Logic</h3>
+                <div
+                    style="background: #1e293b; color: #f8fafc; font-family: 'Courier New', monospace; padding: 20px; border-radius: 8px; font-size: 14px; overflow-x: auto;">
+                    <span style="color: #60a5fa;">def</span> <span
+                        style="color: #facc15;">classify_question</span>(q):<br>
+                    &nbsp;&nbsp;<span style="color: #94a3b8;"># Only 4 Hardcoded Paths:</span><br>
+                    &nbsp;&nbsp;patterns = {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #f472b6;">'manufacturer'</span>: [<span
+                        style="color: #f472b6;">r'บริษัท', r'ผู้ผลิต'</span>],<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #f472b6;">'ingredient'</span>: [<span
+                        style="color: #f472b6;">r'ส่วนผสม', r'ประกอบด้วย'</span>],<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #f472b6;">'formula'</span>: [<span
+                        style="color: #f472b6;">r'สูตรเดียวกัน'</span>],<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #f472b6;">'hierarchy'</span>: [<span
+                        style="color: #f472b6;">r'ลำดับ', r'vtm', r'gp'</span>]<br>
+                    &nbsp;&nbsp;}<br>
+                    &nbsp;&nbsp;<span style="color: #94a3b8;"># ... (Loop through patterns) ...</span><br>
+                    &nbsp;&nbsp;<span style="color: #c084fc;">return</span> <span
+                        style="color: #f472b6;">'general'</span> <span style="color: #ef4444;"># <--- Fails
+                            here!</span><br>
+                </div>
+            </div>
+        </div>
+
+        <div class="logic-box" style="margin-top: 30px; border-left-color: var(--warning);">
+            <h3><i class="fa-solid fa-triangle-exclamation"></i> The "Hardcoding" Wall</h3>
+            <p>Our current growth is limited by how fast we can write specialized Python rules. It's not just about
+                <strong>Answer Quality</strong>, it's about <strong>Developer Velocity</strong>.
+            </p>
+        </div>
+    </div>
+
+    <!-- Slide: Performance Reality Check -->
+    <div class="slide-container">
+        <h2>⏱️ Performance Reality Check</h2>
+        <p>Current architecture suffers from significant latency in real-world usage.</p>
+
+        <div class="two-cols">
+            <div class="io-card">
+                <h3>Terminal Output (Real Test)</h3>
+                <div
+                    style="background: #0f172a; color: #38bdf8; font-family: monospace; padding: 15px; border-radius: 6px; font-size: 14px;">
+                    > python genai_neo4j_ollama.py<br>
+                    Running on qwen2.5:7b-instruct...<br>
+                    <span style="color: #94a3b8;"># ... (Wait 10s) ...</span><br>
+                    → ค้นหาแบบ GraphRAG (Hybrid + Traversal)<br>
+                    Found: 10 primary, 50 related...<br>
+                    <span style="color: #eab308;"># ... (Wait 20s for LLM) ...</span><br>
+                    ตอบ: จากข้อมูลที่มี...
+                </div>
+                <div class="logic-box" style="margin-top: 20px; border-left-color: var(--danger);">
+                    <strong style="color: var(--danger);">Total Time: > 30 Seconds</strong><br>
+                    Too slow for interactive Chatbot UX.
+                </div>
+            </div>
+
+            <div class="io-card">
+                <h3>Bottleneck Analysis</h3>
+                <ul style="margin-top: 10px; font-size: 18px;">
+                    <li style="margin-bottom: 15px;">
+                        <strong>Serial Execution:</strong><br>
+                        <span style="color: #64748b;">Search -> Traversal -> Generation happen one by one. LangChain
+                            Async can parallelize this.</span>
+                    </li>
+                    <li style="margin-bottom: 15px;">
+                        <strong>Over-fetching:</strong><br>
+                        <span style="color: #64748b;">We fetch 13,060 chars of context for a simple question. Agents
+                            can
+                            "Self-Select" cleaner context.</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide: Why LangChain -->
+    <div class="slide-container">
+        <h2>🛡️ Why Move to LangChain?</h2>
+        <p>LangChain is the <strong>Foundation</strong> for Scale and the <strong>Advance Design</strong>.</p>
+
+        <div class="logic-box" style="border-left-color: var(--primary);">
+            <div class="logic-title" style="color: var(--primary);"><i class="fa-solid fa-building-column"></i>
+                Structural Standards</div>
+            <ul style="margin: 0; padding-left: 20px;">
+                <li style="margin-bottom: 15px;">
+                    <strong>Standardized Code:</strong> Switch from "Home-grown" scripts to industry-standard
+                    <code>Chains</code>.
+                </li>
+                <li style="margin-bottom: 15px;">
+                    <strong>Async Ready:</strong> Ready to handle multiple queries in parallel for better speed.
+                </li>
+                <li style="margin-bottom: 15px;">
+                    <strong>Interchangeability:</strong> Swap LLMs or Databases with minimal code changes.
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Slide: Code Reality (Manual vs LangChain) -->
+    <div class="slide-container">
+        <h2>💻 Code Reality: Manual vs LangChain</h2>
+        <p>Why shifting to LangChain isn't just about features, it's about <strong>Standardization</strong>.</p>
+
+        <div class="two-cols">
+            <!-- Left: The Hard Way -->
+            <div class="io-card" style="border-left: 5px solid var(--danger);">
+                <div
+                    style="color: var(--danger); font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
+                    <i class="fa-solid fa-code"></i> The "Hard" Way (Current)
+                </div>
+                <div
+                    style="background: #1e293b; color: #cbd5e1; padding: 15px; border-radius: 6px; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.4;">
+                    <span style="color: #60a5fa;"># 1. Manual Flow Control</span><br>
+                    vals = get_neo4j_data(q)<br>
+                    clean_vals = parse_json(vals) <span style="color: #475569;"># Bug prone</span><br><br>
+
+                    <span style="color: #60a5fa;"># 2. String Concatenation Hell</span><br>
+                    prompt = <span style="color: #facc15;">f"Ctx: {clean_vals} Q: {q}"</span><br><br>
+
+                    <span style="color: #60a5fa;"># 3. Raw API Call</span><br>
+                    res = requests.post(<br>
+                    &nbsp;&nbsp;<span style="color: #f472b6;">"http://localhost:11434"</span>,<br>
+                    &nbsp;&nbsp;json={...}<br>
+                    )<br>
+                    <span style="color: #c084fc;">return</span> res.json()[<span
+                        style="color: #f472b6;">"response"</span>]
+                </div>
+                <p style="margin-top: 15px; font-size: 14px; color: #dc2626;">
+                    ❌ <strong>Pain Points:</strong> No standard interface, manual error handling, hard to swap
+                    components.
+                </p>
+            </div>
+
+            <!-- Right: The LangChain Way -->
+            <div class="io-card" style="border-left: 5px solid var(--success);">
+                <div
+                    style="color: var(--success); font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
+                    <i class="fa-solid fa-link"></i> The "Standard" Way (LangChain)
+                </div>
+                <div
+                    style="background: #1e293b; color: #cbd5e1; padding: 15px; border-radius: 6px; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.4;">
+                    <span style="color: #60a5fa;"># 1. Standard Components</span><br>
+                    prompt = ChatPromptTemplate(...)<br>
+                    model = ChatOllama(model=<span style="color: #f472b6;">"qwen2.5"</span>)<br><br>
+
+                    <span style="color: #60a5fa;"># 2. Chain Syntax (LCEL)</span><br>
+                    chain = prompt | model | StrOutputParser()<br><br>
+
+                    <span style="color: #60a5fa;"># 3. Validated Execution</span><br>
+                    <span style="color: #c084fc;">return</span> chain.invoke({<span
+                        style="color: #f472b6;">"context"</span>: vals})
+                </div>
+                <p style="margin-top: 15px; font-size: 14px; color: #166534;">
+                    ✅ <strong>Benefits:</strong> Type safety, interchangeable models (Ollama/OpenAI), built-in
+                    streaming.
+                </p>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Slide: The Solution (Agentic) -->
+    <div class="slide-container">
+        <h2>🚀 The future design we can use: Agentic RAG</h2>
+        <p>Introducing <strong>LangChain</strong> to orchestrate reasoning and dynamic decision making.</p>
+
+        <div style="text-align: center; margin: 20px 0;">
+            <img src="assets/agentic_rag_diagram.png" alt="Agentic RAG Architecture"
+                style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        </div>
+    </div>
+
+    <!-- Slide: Comparison -->
+    <!-- Slide: Comparison (Privacy & Precision) -->
+    <div class="slide-container">
+        <h2>🔄 Before vs After: Real-World Scenario</h2>
+        <div style="margin-top: 1px; padding-top: 10px;">
+            <h3><i class="fa-solid fa-flask"></i> Privacy & Precision Test</h3>
+            <div class="io-card" style="background: #f1f5f9; margin-bottom: 20px;">
+                <strong>Query:</strong> "ช่วยสรุปความเสี่ยงของยา Paracetamol สำหรับคนไข้ <u>นายสมชาย</u> ที่มีประวัติ
+                <u>โรคตับ</u>"
+            </div>
+
+            <div class="two-cols">
+                <!-- Old Way -->
+                <div class="io-card" style="border-left: 5px solid var(--danger);">
+                    <div style="color: var(--danger); font-weight: bold; margin-bottom: 10px;">
+                        <i class="fa-solid fa-xmark"></i> Current System (Rule-based)
+                    </div>
+                    <div
+                        style="font-family: monospace; background: #fee2e2; padding: 10px; border-radius: 4px; font-size: 14px; color: #991b1b;">
+                        ⚠️ <strong>Privacy Gap:</strong> Sent "นายสมชาย" to LLM.<br>
+                        ⚠️ <strong>Context Flood:</strong> Fetched 13,000 chars (Company, Logistics, Formula).<br>
+                        ⚠️ <strong>Latency:</strong> 35 seconds (due to large context).
+                    </div>
+                    <p style="font-size: 16px; margin-top: 10px;">
+                        <strong>Result:</strong> Response is slow and contains irrelevant manufacturer data.
+                    </p>
+                </div>
+
+                <!-- New Way -->
+                <div class="io-card" style="border-left: 5px solid var(--success);">
+                    <div style="color: var(--success); font-weight: bold; margin-bottom: 10px;">
+                        <i class="fa-solid fa-check"></i> Agentic System (Local Guard)
+                    </div>
+                    <div
+                        style="font-family: monospace; background: #dcfce7; padding: 10px; border-radius: 4px; font-size: 14px; color: #166534;">
+                        ✅ <strong>PII Scrubbing:</strong> Masked as "[คนไข้]" locally.<br>
+                        ✅ <strong>Context Precision:</strong> Fetched 800 chars (Only Side Effects/Risks).<br>
+                        ✅ <strong>Latency:</strong> 4 seconds (Optimized context).
+                    </div>
+                    <p style="font-size: 16px; margin-top: 10px;">
+                        <strong>Result:</strong> Fast, accurate, and 100% compliant with Data Privacy.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Slide: The Hybrid Strategy (Privacy & Scalability) -->
+    <div class="slide-container">
+        <h2>🛡️ The Hybrid Strategy: Privacy & Scalability</h2>
+        <p>Combining the <strong>Security</strong> of Local AI with the <strong>Reasoning Power</strong> of Cloud AI.
+        </p>
+
+        <div
+            style="background: white; border-radius: 12px; padding: 30px; border: 2px dashed #cbd5e1; margin-top: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 20px;">
+
+                <!-- Local Part -->
+                <div
+                    style="flex: 1; text-align: center; padding: 20px; background: #f0fdf4; border-radius: 12px; border: 2px solid var(--success);">
+                    <i class="fa-solid fa-shield-halved"
+                        style="font-size: 40px; color: var(--success); margin-bottom: 10px;"></i>
+                    <h4 style="color: #166534; margin-bottom: 10px;">Local LLM (Secure Guard)</h4>
+                    <p style="font-size: 14px; color: #374151;">Runs on RTX 4060 (Local)</p>
+                    <ul style="text-align: left; font-size: 13px; margin-top: 10px; padding-left: 20px;">
+                        <li><strong>Intent Classification:</strong> Routes query efficiently.</li>
+                        <li><strong>PII Scrubbing:</strong> Removes Patient Names/IDs.</li>
+                        <li><strong>Context Compression:</strong> Summarizes context for cost.</li>
+                    </ul>
+                </div>
+
+                <div style="font-size: 30px; color: #94a3b8;"><i class="fa-solid fa-arrow-right-long"></i></div>
+
+                <!-- Cloud Part -->
+                <div
+                    style="flex: 1; text-align: center; padding: 20px; background: #eff6ff; border-radius: 12px; border: 2px solid var(--primary);">
+                    <i class="fa-solid fa-cloud"
+                        style="font-size: 40px; color: var(--primary); margin-bottom: 10px;"></i>
+                    <h4 style="color: #1e3a8a; margin-bottom: 10px;">Cloud LLM (The Brain)</h4>
+                    <p style="font-size: 14px; color: #374151;">Gemini 1.5 Pro / GPT-4o</p>
+                    <ul style="text-align: left; font-size: 13px; margin-top: 10px; padding-left: 20px;">
+                        <li><strong>Complex Reasoning:</strong> Deep medical clinical logic.</li>
+                        <li><strong>Natural Conversation:</strong> High-quality response.</li>
+                        <li><strong>Zero Leakage:</strong> Receives only scrubbed data.</li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 20px; margin-top: 30px;">
+            <div class="logic-box" style="flex: 1; border-left-color: var(--success);">
+                <strong style="color: var(--success);">Data Privacy First:</strong> Patient identifiers never leave your
+                local infrastructure.
+            </div>
+            <div class="logic-box" style="flex: 1; border-left-color: var(--primary);">
+                <strong style="color: var(--primary);">Cost Efficient:</strong> Up to 70% reduction in Cloud API costs
+                via local summarization.
+            </div>
+        </div>
+    </div>
+
+
+    <div id="presentation-controls">
+        <button class="ctrl-btn" onclick="prevSlide()" title="Previous (Left Arrow / PageUp)">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <span style="display: flex; align-items: center; font-size: 14px; color: #94a3b8; margin: 0 5px;">
+            <i class="fa-regular fa-keyboard"></i>
+        </span>
+        <button class="ctrl-btn" onclick="nextSlide()" title="Next (Right Arrow / Space / PageDown)">
+            <i class="fa-solid fa-chevron-right"></i>
+        </button>
+        <div style="width: 1px; height: 25px; background: #e2e8f0; margin: 0 5px; align-self: center;"></div>
+        <button class="ctrl-btn" onclick="toggleFullscreen()" title="Fullscreen (F)">
+            <i class="fa-solid fa-expand" id="fs-icon"></i>
+        </button>
+        <div style="width: 1px; height: 25px; background: #e2e8f0; margin: 0 5px; align-self: center;"></div>
+        <button class="ctrl-btn" onclick="exportPDF()" title="Export PDF (Ctrl+P)">
+            <i class="fa-solid fa-file-pdf"></i>
+        </button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide-container');
+
+        function updateCurrentSlideIndex() {
+            // Find which slide is currently most visible
+            let maxVisiblePx = 0;
+            let bestIndex = 0;
+
+            slides.forEach((slide, index) => {
+                const rect = slide.getBoundingClientRect();
+                if (rect.top >= -window.innerHeight / 2 && rect.top < window.innerHeight / 2) {
+                    bestIndex = index;
+                }
+            });
+            currentSlide = bestIndex;
+        }
+
+        function scrollToSlide(index) {
+            if (index < 0) index = 0;
+            if (index >= slides.length) index = slides.length - 1;
+
+            const target = slides[index];
+            const headerOffset = 40; // Padding top
+            const elementPosition = target.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: "smooth"
+            });
+
+            currentSlide = index;
+        }
+
+        function nextSlide() {
+            updateCurrentSlideIndex();
+            // If we are at the bottom of a long slide, this might just scroll to the next one
+            scrollToSlide(currentSlide + 1);
+        }
+
+        function prevSlide() {
+            updateCurrentSlideIndex();
+            scrollToSlide(currentSlide - 1);
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(e => {
+                    console.log(`Error attempting to enable fullscreen: ${e.message}`);
+                });
+                document.body.classList.add('fullscreen-mode');
+                document.getElementById('fs-icon').classList.replace('fa-expand', 'fa-compress');
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                    document.body.classList.remove('fullscreen-mode');
+                    document.getElementById('fs-icon').classList.replace('fa-compress', 'fa-expand');
+                }
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') {
+                e.preventDefault();
+                nextSlide();
+            }
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'PageUp') {
+                e.preventDefault();
+                prevSlide();
+            }
+            if (e.key === 'f' || e.key === 'F') {
+                e.preventDefault();
+                toggleFullscreen();
+            }
+            if (e.key === 'p' || e.key === 'P') {
+                e.preventDefault();
+                exportPDF();
+            }
+        });
+
+        // Export to PDF (using browser print)
+        function exportPDF() {
+            // Scroll to top before printing for consistent output
+            window.scrollTo(0, 0);
+
+            // Small delay to ensure scroll completes
+            setTimeout(() => {
+                window.print();
+            }, 100);
+        }
+
+        // Initialize scroll position tracker
+        window.addEventListener('scroll', () => {
+            // Optional: Debounce this if performance is an issue
+        });
+    </script>
+
+</body>
+
+</html>
