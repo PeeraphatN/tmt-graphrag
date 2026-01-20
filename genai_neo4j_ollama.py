@@ -16,10 +16,11 @@ from src.knowledge_graph import (
 from src.chains.query_transform_chain import transform_query
 from src.chains.formatter_chain import format_answer_llm
 from src.cache.result_cache import (
-    get_cached_answer, set_cached_answer,
+    get_cached_answer_semantic, set_cached_answer_semantic,
     get_cached_query, set_cached_query,
     get_cache_stats
 )
+from src.models.embeddings import embed_text
 from src.schemas.query import GraphRAGQuery
 
 # Register cleanup
@@ -91,10 +92,17 @@ def main():
             if q.lower() in ("exit", "quit"):
                 break
             
-            # ===== CACHE CHECK: Layer 3 (Answer) =====
-            cached_answer = get_cached_answer(q)
+            # Generate embedding for the question (needed for semantic cache)
+            print("\n→ Generating question embedding...")
+            q_embedding = embed_text(q)
+            
+            # ===== CACHE CHECK: Layer 3 (Answer) - Semantic =====
+            cached_answer, is_semantic = get_cached_answer_semantic(q, q_embedding)
             if cached_answer:
-                print("\n⚡ [CACHE HIT] คำตอบถูกดึงจาก Cache")
+                if is_semantic:
+                    print("⚡ [CACHE HIT - SEMANTIC] คำถามคล้ายกันถูกดึงจาก Cache")
+                else:
+                    print("⚡ [CACHE HIT - EXACT] คำตอบถูกดึงจาก Cache")
                 print("\nตอบ:\n", cached_answer)
                 continue
 
@@ -142,15 +150,15 @@ def main():
             answer = format_answer_llm(q, structured)
             print("\nตอบ:\n", answer)
             
-            # ===== CACHE SAVE: Layer 3 (Answer) =====
-            set_cached_answer(q, answer)
+            # ===== CACHE SAVE: Layer 3 (Answer) - Semantic =====
+            set_cached_answer_semantic(q, q_embedding, answer)
 
             log_interaction(q, results, answer)
     except (KeyboardInterrupt, EOFError):
         # Show cache stats on exit
         stats = get_cache_stats()
         print("\n\n📊 Cache Statistics:")
-        print(f"   Answer Cache: {stats['answer_cache']['hits']} hits / {stats['answer_cache']['misses']} misses")
+        print(f"   Answer Cache: {stats['answer_cache']['hits_exact']} exact + {stats['answer_cache']['hits_semantic']} semantic / {stats['answer_cache']['misses']} misses")
         print(f"   Query Cache:  {stats['query_cache']['hits']} hits / {stats['query_cache']['misses']} misses")
         print("\nออกจากโปรแกรม")
 
