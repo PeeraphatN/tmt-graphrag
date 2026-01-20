@@ -260,6 +260,60 @@ def graphrag_search(question: str, k: int = 5, depth: int = None) -> dict:
         "relationships": expanded["relationships"]
     }
 
+def advanced_graphrag_search(query_obj, k: int = 10, depth: int = 2) -> dict:
+    """
+    Advanced GraphRAG search that supports structured filters.
+    query_obj: GraphRAGQuery (pydantic model or dict)
+    """
+    if query_obj.target_type == 'nlem' and (query_obj.nlem_filter or query_obj.nlem_category):
+        # Use direct Cypher for NLEM filtering
+        print(f"   Searching NLEM with filter: category={query_obj.nlem_category or 'ALL'}")
+        
+        where_clause = "n.nlem = true"
+        if query_obj.nlem_category:
+            where_clause += f" AND n.nlem_category = '{query_obj.nlem_category}'"
+            
+        cypher = f"""
+        MATCH (n:GP)
+        WHERE {where_clause}
+        RETURN n
+        LIMIT {k}
+        """
+        
+        drv = init_driver()
+        seed_results = []
+        with drv.session() as session:
+            records = session.run(cypher)
+            for rec in records:
+                node = rec["n"]
+                nid = node.element_id if hasattr(node, 'element_id') else node.id
+                seed_results.append({
+                    "node": node,
+                    "score": 1.0, # Exact match
+                    "rrf_score": 1.0
+                })
+        
+        # Expand context from these seeds
+        seed_node_ids = [ (n["node"].element_id if hasattr(n["node"], 'element_id') else n["node"].id) for n in seed_results ]
+        expanded = expand_context(seed_node_ids, depth=depth)
+        non_seed_nodes = [n for n in expanded["nodes"] if not n.get("is_seed", False)]
+        
+        return {
+            "seed_results": seed_results,
+            "expanded_nodes": non_seed_nodes,
+            "relationships": expanded["relationships"]
+        }
+        
+    elif query_obj.manufacturer_filter:
+        # Use Fulltext search specialized for manufacturer
+        # This is a simplified version; ideally we use index search
+        pass
+
+    # Fallback to standard hybrid search if no special filters applied
+    # But clean the query first to remove "filter keywords" if needed
+    clean_query = query_obj.query if query_obj.query else "ยา"
+    return graphrag_search(clean_query, k=k, depth=depth)
+
 def fetch_nodes_by_element_ids(element_ids: list[str]) -> list:
     """
     Fetch Neo4j nodes by elementId().

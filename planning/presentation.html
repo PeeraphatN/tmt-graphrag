@@ -707,6 +707,159 @@
     </div>
 
 
+    </div>
+
+    <!-- Slide 8: Model Benchmark: Qwen 2.5 vs Qwen 3 -->
+    <div class="slide-container">
+        <h2>🆚 Model Benchmark: Qwen 2.5 vs Qwen 3</h2>
+        <p>Testing accuracy on NLEM counting task. <strong>Ground Truth: 22 Nodes</strong></p>
+
+        <!-- Question Banner -->
+        <div
+            style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; padding: 12px 20px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
+            <span style="font-size: 12px; opacity: 0.8;">QUESTION</span><br>
+            <span style="font-size: 16px; font-weight: bold;">"ยาในหมวด nlem มีทั้งหมดกี่ตัว"</span>
+        </div>
+
+        <div class="two-cols" style="gap: 30px;">
+
+            <!-- Left: Qwen 2.5 -->
+            <div
+                style="flex: 1; background: #fef2f2; border-radius: 12px; padding: 20px; border-left: 4px solid #dc2626;">
+                <h3 style="color: #991b1b; font-size: 16px; margin: 0 0 15px 0;">
+                    🤖 Qwen 2.5-7b-instruct
+                </h3>
+
+                <!-- Data Found Badge -->
+                <div
+                    style="display: inline-block; background: #fee2e2; color: #7f1d1d; padding: 4px 10px; border-radius: 20px; font-size: 11px; margin-bottom: 15px;">
+                    📊 Found: 22 primary nodes
+                </div>
+
+                <!-- Answer Box -->
+                <div style="background: white; border: 1px solid #fecaca; border-radius: 8px; padding: 15px;">
+                    <div style="font-size: 11px; color: #9ca3af; margin-bottom: 5px;">ANSWER</div>
+                    <div style="font-size: 15px; color: #1f2937; line-height: 1.6;">
+                        หมวด NLEM มียาทั้งหมด <strong style="color: #dc2626; font-size: 20px;">27</strong> ตัว.
+                    </div>
+                </div>
+
+                <div style="margin-top: 15px; text-align: center; font-size: 13px; color: #dc2626; font-weight: bold;">
+                    ❌ Hallucinated (+5 items)
+                </div>
+            </div>
+
+            <!-- Right: Qwen 3 -->
+            <div
+                style="flex: 1; background: #f0fdf4; border-radius: 12px; padding: 20px; border-left: 4px solid #16a34a;">
+                <h3 style="color: #166534; font-size: 16px; margin: 0 0 15px 0;">
+                    🚀 Qwen 3 (Latest)
+                </h3>
+
+                <!-- Data Found Badge -->
+                <div
+                    style="display: inline-block; background: #dcfce7; color: #166534; padding: 4px 10px; border-radius: 20px; font-size: 11px; margin-bottom: 15px;">
+                    📊 Found: 22 primary nodes
+                </div>
+
+                <!-- Answer Box -->
+                <div style="background: white; border: 1px solid #bbf7d0; border-radius: 8px; padding: 15px;">
+                    <div style="font-size: 11px; color: #9ca3af; margin-bottom: 5px;">ANSWER</div>
+                    <div style="font-size: 15px; color: #1f2937; line-height: 1.6;">
+                        มียาทั้งหมด <strong style="color: #16a34a; font-size: 20px;">22</strong>
+                        ชนิดในรายการยาหลักแห่งชาติ (NLEM)<br>
+                        <span style="font-size: 12px; color: #64748b;">นับจากข้อมูลที่มี "nlem": true ทั้งหมด 22
+                            รายการ</span>
+                    </div>
+                </div>
+
+                <div style="margin-top: 15px; text-align: center; font-size: 13px; color: #16a34a; font-weight: bold;">
+                    ✅ 100% Accurate
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Slide 9: Reasoning Comparison - Alendronate Case -->
+    <div class="slide-container">
+        <h2>🆚 Reasoning Benchmark: Detail & Logic</h2>
+        <p>Testing semantic understanding (Brand vs Generic Name)</p>
+
+        <!-- Question Banner -->
+        <div
+            style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; padding: 12px 20px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
+            <span style="font-size: 12px; opacity: 0.8;">QUESTION</span><br>
+            <span style="font-size: 16px; font-weight: bold;">"Alendronate sodium อยู่ในบัญชียาหลักไหม"</span>
+        </div>
+
+        <div class="two-cols" style="gap: 30px;">
+
+            <!-- Left: Qwen 2.5 -->
+            <div
+                style="flex: 1; background: #fefce8; border-radius: 12px; padding: 20px; border-left: 4px solid #ca8a04;">
+                <h3 style="color: #854d0e; font-size: 16px; margin: 0 0 15px 0;">
+                    🤖 Qwen 2.5-7b-instruct
+                </h3>
+
+                <!-- Data Found Badge -->
+                <div
+                    style="display: inline-block; background: #fef9c3; color: #854d0e; padding: 4px 10px; border-radius: 20px; font-size: 11px; margin-bottom: 15px;">
+                    📊 Found: 22 primary nodes
+                </div>
+
+                <!-- Answer Box -->
+                <div style="background: white; border: 1px solid #fde68a; border-radius: 8px; padding: 15px;">
+                    <div style="font-size: 11px; color: #9ca3af; margin-bottom: 5px;">ANSWER</div>
+                    <div style="font-size: 14px; color: #1f2937; line-height: 1.6;">
+                        Alendronate sodium (TMTID: 210235) อยู่ในบัญชียาหลัก Category/Section 6.6
+                    </div>
+                </div>
+
+                <div style="margin-top: 15px; text-align: center; font-size: 13px; color: #ca8a04; font-weight: bold;">
+                    ⚠️ Basic (1 item only)
+                </div>
+            </div>
+
+            <!-- Right: Qwen 3 -->
+            <div
+                style="flex: 1; background: #f0fdf4; border-radius: 12px; padding: 20px; border-left: 4px solid #16a34a;">
+                <h3 style="color: #166534; font-size: 16px; margin: 0 0 15px 0;">
+                    🚀 Qwen 3 (Latest)
+                </h3>
+
+                <!-- Data Found Badge -->
+                <div
+                    style="display: inline-block; background: #dcfce7; color: #166534; padding: 4px 10px; border-radius: 20px; font-size: 11px; margin-bottom: 15px;">
+                    📊 Found: 22 primary nodes
+                </div>
+
+                <!-- Answer Box -->
+                <div style="background: white; border: 1px solid #bbf7d0; border-radius: 8px; padding: 15px;">
+                    <div style="font-size: 11px; color: #9ca3af; margin-bottom: 5px;">ANSWER</div>
+                    <div style="font-size: 13px; color: #1f2937; line-height: 1.6;">
+                        Alendronate sodium อยู่ในบัญชียาหลัก (NLEM) ดังนี้:
+                        <ul style="margin: 8px 0 0 0; padding-left: 20px; font-size: 12px;">
+                            <li>alendronic acid 10 mg tablet</li>
+                            <li>alendronic acid 150 mg film-coated tablet</li>
+                            <li>alendronic acid 5 mg tablet</li>
+                            <li style="color: #64748b;">... และอีก 2 รายการ</li>
+                            <li style="color: #64748b;"><strong>หมายเหตุ:</strong> ระบบใช้ชื่อ "alendronic acid"
+                                แทน "Alendronate sodium" ซึ่งเป็นสารเดียวกัน</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div style="margin-top: 15px; text-align: center; font-size: 13px; color: #16a34a; font-weight: bold;">
+                    ✅ Complete + Reasoning
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
     <!-- Slide: The Hybrid Strategy (Privacy & Scalability) -->
     <div class="slide-container">
         <h2>🛡️ The Hybrid Strategy: Privacy & Scalability</h2>

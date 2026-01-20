@@ -1,0 +1,52 @@
+from typing import Optional, List, Literal
+from pydantic import BaseModel, Field
+
+class GraphRAGQuery(BaseModel):
+    """
+    Represents a structured search query for the GraphRAG system.
+    Extracts the user's intent into explicit filters and search terms.
+    """
+    
+    query: str = Field(
+        ..., 
+        description="The core search terms for vector/fulltext search (e.g., drug name, symptom). Remove filter keywords like 'nlem', 'บัญชียาหลัก', company names if mapped to filters."
+    )
+    
+    target_type: Literal['general', 'ingredient', 'manufacturer', 'nlem'] = Field(
+        'general',
+        description="The primary target type of the question."
+    )
+    
+    # Metadata Filters
+    nlem_filter: Optional[bool] = Field(
+        None, 
+        description="Set to True if the user specifically asks for NLEM/National List of Essential Medicines/บัญชียาหลัก."
+    )
+    
+    nlem_category: Optional[str] = Field(
+        None,
+        description="Specific NLEM category if mentioned (e.g. 'ง', 'ก', 'ข')."
+    )
+
+    manufacturer_filter: Optional[str] = Field(
+        None,
+        description="Specific manufacturer name to filter by, if mentioned."
+    )
+    
+    limit: int = Field(
+        10,
+        description="Number of results to return."
+    )
+
+    def to_cypher_filter(self) -> str:
+        """Generates a Cypher WHERE clause fragment."""
+        clauses = []
+        if self.nlem_filter:
+            clauses.append("n.nlem = true")
+        if self.nlem_category:
+            clauses.append(f"n.nlem_category = '{self.nlem_category}'")
+        if self.manufacturer_filter:
+            # Note: This might need fuzzy match in real implementation
+            clauses.append(f"n.manufacturer CONTAINS '{self.manufacturer_filter}'")
+            
+        return " AND ".join(clauses) if clauses else "1=1"

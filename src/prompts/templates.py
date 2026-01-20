@@ -29,7 +29,33 @@ CLASSIFICATION_PROMPT = ChatPromptTemplate.from_messages([
 
 
 # ==============================================================================
-# 2. FORMATTER PROMPT (RAG Answer Generator)
+# 2. QUERY EXTRACTION PROMPT (Self-Querying)
+# ==============================================================================
+QUERY_EXTRACTION_SYSTEM_PROMPT = """คุณเป็น "Query Transformer" หน้าที่คือแปลงคำถามภาษาธรรมชาติให้เป็น "Structured Query Object"
+เพื่อใช้ในการค้นหาข้อมูลยาในระบบ GraphRAG
+
+โครงสร้างที่ต้องการ (JSON):
+- query: คำค้นหลัก (ตัดคำขยายที่ไม่จำเป็นออก เช่น "หาให้หน่อย", "บัญชียาหลัก")
+- target_type: ประเภทคำถาม ('general', 'ingredient', 'manufacturer', 'nlem')
+- nlem_filter: true ถ้าถามเกี่ยวกับบัญชียาหลักแห่งชาติ
+- nlem_category: ระบุหมวดบัญชียาถ้ามี (เช่น "ง", "ก")
+- manufacturer_filter: ระบุชื่อบริษัทผู้ผลิตถ้ามี
+
+ตัวอย่าง:
+1. "ยาพาราเซตามอลมีสรรพคุณอะไร" -> {{ "query": "paracetamol", "target_type": "general" }}
+2. "ยาแก้ปวดในบัญชียาหลักมีตัวไหนบ้าง" -> {{ "query": "ยาแก้ปวด", "target_type": "nlem", "nlem_filter": true }}
+3. "ยาขององค์การเภสัชมีอะไรบ้าง" -> {{ "query": "", "target_type": "manufacturer", "manufacturer_filter": "องค์การเภสัชกรรม" }}
+4. "ยา Calcitonin บัญชี ง" -> {{ "query": "Calcitonin", "target_type": "nlem", "nlem_filter": true, "nlem_category": "ง" }}
+"""
+
+QUERY_EXTRACTION_PROMPT = ChatPromptTemplate.from_messages([
+    ("system", QUERY_EXTRACTION_SYSTEM_PROMPT),
+    ("human", "คำถาม: {question}"),
+])
+
+
+# ==============================================================================
+# 3. FORMATTER PROMPT (RAG Answer Generator)
 # ==============================================================================
 FORMATTER_SYSTEM_PROMPT = """คุณเป็น "Formatter" สำหรับข้อมูลยา TMT (Thai Medicinal Terminology)
 หน้าที่: ตอบคำถามโดยใช้ข้อมูลจาก JSON Context ที่ให้มาเท่านั้น
