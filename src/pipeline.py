@@ -12,6 +12,7 @@ from src.knowledge_graph import (
 )
 from src.chains.query_transform_chain import transform_query
 from src.chains.formatter_chain import format_answer_llm
+from src.chains.verify_cache_chain import verify_semantic_match
 from src.cache.result_cache import (
     get_cached_answer_semantic, set_cached_answer_semantic,
     get_cached_query, set_cached_query,
@@ -36,11 +37,35 @@ class GraphRAGPipeline:
         init_driver()
         print("=== Neo4j + Ollama Hybrid Retriever Demo (Modular - LangChain Phase 3) ===")
         
-        # Setup Indexes (Silent fail if already exists)
         try:
             setup_indexes()
         except Exception as e:
             print(f"Warning: Could not setup indexes: {e}")
+
+    def warmup(self):
+        """Warmup models (Embedding & LLM) to reduce first-inference latency."""
+        print("🔥 Warming up models (this may take a few seconds)...")
+        
+        # 1. Warmup Embedding
+        try:
+            embed_text("warmup")
+            print("   ✅ Embedding Model Ready")
+        except Exception as e:
+            print(f"   ⚠️ Embedding Warmup Failed: {e}")
+
+        # 2. Warmup Classification LLM (Small model)
+        try:
+            # Import locally to avoid circular deps if any
+            from src.models.llm import get_llm
+            from src.config import CLASSIFICATION_MODEL
+            
+            llm = get_llm(model=CLASSIFICATION_MODEL)
+            llm.invoke("Hi")
+            print("   ✅ Classification Model Ready")
+        except Exception as e:
+            print(f"   ⚠️ LLM Warmup Failed: {e}")
+        
+        print("🔥 System Ready!\n")
 
     def run(self, question: str) -> str:
         """
@@ -56,7 +81,11 @@ class GraphRAGPipeline:
         q_embedding = embed_text(question)
 
         # 2. Check Answer Cache (Layer 3)
-        cached_answer, is_semantic = get_cached_answer_semantic(question, q_embedding)
+        cached_answer, is_semantic = get_cached_answer_semantic(
+            question, 
+            q_embedding,
+            verification_fn=verify_semantic_match
+        )
         if cached_answer:
             if is_semantic:
                 print("⚡ [CACHE HIT - SEMANTIC] คำถามคล้ายกันถูกดึงจาก Cache")

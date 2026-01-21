@@ -9,6 +9,7 @@ def main():
     try:
         # Initialize Pipeline (Validator + Connect DB)
         pipeline = GraphRAGPipeline()
+        pipeline.warmup()
     except Exception as e:
         print(f"Startup Error: {e}")
         return

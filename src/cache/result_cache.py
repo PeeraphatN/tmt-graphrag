@@ -88,15 +88,22 @@ def set_cached_query(question: str, query_obj: Any):
 # ANSWER CACHE (Layer 3) - Semantic Match
 # ==============================
 
-def get_cached_answer_semantic(question: str, question_embedding: list[float]) -> Tuple[Optional[str], bool]:
+from typing import Optional, Any, Tuple, Callable
+
+# ... (omitted)
+
+def get_cached_answer_semantic(
+    question: str, 
+    question_embedding: list[float],
+    verification_fn: Optional[Callable[[str, str, str], bool]] = None
+) -> Tuple[Optional[str], bool]:
     """
     ดึงคำตอบจาก cache โดยใช้ Semantic Similarity.
     
     Args:
         question: คำถาม User
         question_embedding: Embedding ของคำถาม
-    
-    Returns:
+        verification_fn: ฟังก์ชันสำหรับรีเช็ค (NewQ, CachedQ, CachedA) -> bool
         Tuple of (answer or None, is_semantic_hit)
     """
     # 1. Try exact match first (fastest)
@@ -121,11 +128,21 @@ def get_cached_answer_semantic(question: str, question_embedding: list[float]) -
             best_question = cached_q
     
     if best_similarity >= SIMILARITY_THRESHOLD:
+        print(f"   🔍 Semantic match candidate: '{best_question[:30]}...' (similarity: {best_similarity:.2%})")
+        
+        # 3. Verification Step (Proposed Rerank)
+        if verification_fn:
+             is_valid = verification_fn(question, best_question, best_answer)
+             if not is_valid:
+                 print(f"   ❌ Verification Failed: Context mismatch. Cache Miss.")
+                 _cache_stats["answer_misses"] += 1
+                 return None, False
+             print(f"   ✅ Verification Passed.")
+
         _cache_stats["answer_hits_semantic"] += 1
-        print(f"   🔍 Semantic match: '{best_question[:30]}...' (similarity: {best_similarity:.2%})")
         return best_answer, True  # True = semantic match
     
-    print(f"   Debug: Best semantic match was {best_similarity:.2%} (Threshold: {SIMILARITY_THRESHOLD})")
+    # print(f"   Debug: Best semantic match was {best_similarity:.2%} (Threshold: {SIMILARITY_THRESHOLD})")
     _cache_stats["answer_misses"] += 1
     return None, False
 
