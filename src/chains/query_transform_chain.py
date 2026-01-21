@@ -6,13 +6,14 @@ from langchain_core.runnables import Runnable
 from src.models.llm import get_llm
 from src.prompts.templates import QUERY_EXTRACTION_PROMPT
 from src.schemas.query import GraphRAGQuery
+from src.config import CLASSIFICATION_MODEL
 
 def get_query_transform_chain() -> Runnable:
     """
     Creates a chain that takes {"question": str} and returns a GraphRAGQuery object.
     """
-    # Use LLM with structured output capability
-    llm = get_llm(temperature=0)
+    # Use CLASSIFICATION_MODEL for query transformation
+    llm = get_llm(model=CLASSIFICATION_MODEL, temperature=0)
     
     # Check if the model supports .with_structured_output (depends on langchain-ollama version)
     # For robust fallback, we might use a PydanticOutputParser or similar.

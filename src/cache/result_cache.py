@@ -28,7 +28,7 @@ _cache_stats = {
 }
 
 # Semantic similarity threshold
-SIMILARITY_THRESHOLD = 0.85
+SIMILARITY_THRESHOLD = 0.80
 
 
 # ==============================
@@ -125,6 +125,7 @@ def get_cached_answer_semantic(question: str, question_embedding: list[float]) -
         print(f"   🔍 Semantic match: '{best_question[:30]}...' (similarity: {best_similarity:.2%})")
         return best_answer, True  # True = semantic match
     
+    print(f"   Debug: Best semantic match was {best_similarity:.2%} (Threshold: {SIMILARITY_THRESHOLD})")
     _cache_stats["answer_misses"] += 1
     return None, False
 

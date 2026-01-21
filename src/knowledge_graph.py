@@ -373,6 +373,10 @@ def extract_structured_data(results: dict, question_type: str) -> dict:
         required_fields = ['fsn', 'active_ingredient', 'active_ingredients', 'strength', 'tmtid', 'level', 'dosageform'] + nlem_fields
         allowed_levels = {'GP', 'GPU', 'TP', 'TPU', 'VTM', 'SUBS'}
         max_entities = 30
+    elif question_type == 'nlem':
+        required_fields = ['fsn', 'tmtid', 'level'] + nlem_fields
+        allowed_levels = {'GP', 'GPU', 'TP', 'TPU'}
+        max_entities = 50 # Increase limit for counting/listing
     elif question_type == 'hierarchy':
         required_fields = ['level', 'fsn', 'tmtid'] + nlem_fields
         allowed_levels = {'SUBS', 'VTM', 'GP', 'GPU', 'TP', 'TPU'}
@@ -423,6 +427,10 @@ def extract_structured_data(results: dict, question_type: str) -> dict:
         if not level or level not in allowed_levels:
             continue
         if not tmtid:
+            continue
+            
+        # Strict filter for NLEM query type
+        if question_type == 'nlem' and not props.get('nlem'):
             continue
 
         key = (level, str(tmtid))
