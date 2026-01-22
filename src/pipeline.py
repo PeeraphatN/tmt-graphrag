@@ -2,6 +2,9 @@ import json
 import uuid
 import pathlib
 from datetime import datetime
+from operator import itemgetter
+
+from langchain_core.runnables import Runnable, RunnablePassthrough, RunnableLambda
 
 from src.config import validate_env, GRAPH_TRAVERSAL_DEPTH
 from src.knowledge_graph import (
@@ -11,7 +14,7 @@ from src.knowledge_graph import (
     advanced_graphrag_search
 )
 from src.chains.query_transform_chain import transform_query
-from src.chains.formatter_chain import format_answer_llm
+from src.chains.formatter_chain import get_formatter_chain
 from src.chains.verify_cache_chain import verify_semantic_match
 from src.cache.result_cache import (
     get_cached_answer_semantic, set_cached_answer_semantic,
@@ -20,6 +23,7 @@ from src.cache.result_cache import (
 )
 from src.models.embeddings import embed_text
 from src.schemas.query import GraphRAGQuery
+from src.services.ranking_service import Reranker
 
 # Log path configuration
 LOG_PATH = "./logs/ragas_data.jsonl"
@@ -41,6 +45,148 @@ class GraphRAGPipeline:
             setup_indexes()
         except Exception as e:
             print(f"Warning: Could not setup indexes: {e}")
+
+        # Initialize Reranker
+        self.reranker = Reranker()
+        # self.reranker = None  # Configurable: Set to Reranker() if needed
+
+        # build the LCEL chain
+        self.chain = self._build_chain()
+
+    def _build_chain(self) -> Runnable:
+        """
+        Constructs the LCEL chain for the RAG pipeline.
+        Flow: Input -> Transform -> Search (+Rerank) -> Extract -> Format -> Output
+        """
+        formatter_chain = get_formatter_chain()
+
+        return (
+            RunnablePassthrough.assign(query_obj=self._step_transform)
+            | RunnablePassthrough.assign(results=self._step_search)
+            | RunnablePassthrough.assign(context=self._step_extract)
+            | RunnablePassthrough.assign(answer=formatter_chain) 
+        )
+
+    # ==========================
+    # Chain Steps (Runnables)
+    # ==========================
+
+    def _step_transform(self, inputs: dict) -> GraphRAGQuery:
+        """Step 1: Transform Query (with Caching)"""
+        question = inputs["question"]
+        print(f"\n→ Process: Query Transformation (Self-Querying) ...")
+        
+        cached_query = get_cached_query(question)
+        if cached_query:
+            print("   ⚡ [CACHE HIT] Query Transform")
+            query_obj = GraphRAGQuery(
+                query=cached_query["query"],
+                target_type=cached_query["target_type"],
+                nlem_filter=cached_query.get("nlem_filter"),
+                nlem_category=cached_query.get("nlem_category"),
+                manufacturer_filter=cached_query.get("manufacturer_filter"),
+            )
+        else:
+            query_obj = transform_query(question)
+            set_cached_query(question, query_obj)
+
+        print(f"   Intent: {query_obj.target_type.upper()}")
+        print(f"   Filters: NLEM={query_obj.nlem_filter}, Cat={query_obj.nlem_category}")
+        print(f"   Search Term: '{query_obj.query}'")
+        
+        return query_obj
+
+    def _step_search(self, inputs: dict) -> dict:
+        """Step 2: Search (Vector + Fulltext + Rerank)"""
+        query_obj = inputs["query_obj"]
+        question = inputs["question"]
+        
+        print(f"\n→ Process: Advanced GraphRAG Search ...")
+        results = advanced_graphrag_search(query_obj, k=50, depth=GRAPH_TRAVERSAL_DEPTH)
+
+        # Reranking logic
+        if self.reranker and results.get("seed_results"):
+            print(f"\n→ Process: Re-ranking ({len(results['seed_results'])} candidates) ...")
+            reranked = self.reranker.rerank(question, results["seed_results"], top_k=50)
+            results["seed_results"] = reranked
+            if reranked:
+                print(f"   Top candidate: {reranked[0].get('score')} -> {reranked[0].get('rerank_score')}")
+
+        return results
+
+    def _step_extract(self, inputs: dict) -> dict:
+        """Step 3: Extract Structured Data"""
+        results = inputs["results"]
+        query_obj = inputs["query_obj"]
+        
+        print(f"\n→ Process: Data Extraction ...")
+        structured = extract_structured_data(results, query_obj.target_type)
+
+        # Debug info
+        num_seeds = len(results.get("seed_results", []))
+        num_expanded = len(results.get("expanded_nodes", []))
+        num_rels = len(results.get("relationships", []))
+        num_entities = len(structured.get("entities", []))
+        
+        print(f"   Found: {num_seeds} primary nodes, {num_expanded} related nodes, {num_rels} relationships")
+        print(f"   Context: {num_entities} entities will be sent to LLM")
+        
+        return structured
+
+    # ==========================
+    # Main Execution
+    # ==========================
+
+    def run(self, question: str) -> str:
+        """
+        Execute the full RAG pipeline for a given question.
+        Returns the final answer.
+        """
+        question = question.strip()
+        if not question:
+            return ""
+
+        # 1. Generate Embedding (for semantic cache)
+        print("\n→ Generating question embedding...")
+        q_embedding = embed_text(question)
+
+        # 2. Check Answer Cache (Layer 3)
+        # cached_answer, is_semantic = get_cached_answer_semantic(
+        #     question, 
+        #     q_embedding,
+        #     verification_fn=verify_semantic_match
+        # )
+        # if cached_answer:
+        #     if is_semantic:
+        #         print("⚡ [CACHE HIT - SEMANTIC] คำถามคล้ายกันถูกดึงจาก Cache")
+        #     else:
+        #         print("⚡ [CACHE HIT - EXACT] คำตอบถูกดึงจาก Cache")
+        #     print("\nตอบ:\n", cached_answer)
+        #     return cached_answer
+
+        # 3. Invoke Chain
+        print("\n🚀 Invoking Pipeline Chain...")
+        try:
+            # The chain returns a dict with all steps' outputs: {question, query_obj, results, context, answer}
+            output = self.chain.invoke({"question": question})
+            answer = output["answer"]
+            results = output["results"]
+            
+            print("\nตอบ:\n", answer)
+
+            # 4. Update Answer Cache
+            set_cached_answer_semantic(question, q_embedding, answer)
+
+            # 5. Log Interaction
+            self._log_interaction(question, results, answer)
+
+            return answer
+
+        except Exception as e:
+            print(f"❌ Pipeline Execution Failed: {e}")
+            import traceback
+            traceback.print_exc()
+            return "ขออภัย เกิดข้อผิดพลาดในระบบประมวลผล"
 
     def warmup(self):
         """Warmup models (Embedding & LLM) to reduce first-inference latency."""
@@ -65,85 +211,15 @@ class GraphRAGPipeline:
         except Exception as e:
             print(f"   ⚠️ LLM Warmup Failed: {e}")
         
+        # 3. Warmup Reranker
+        try:
+            if self.reranker:
+                 self.reranker.rerank("warmup", [{"node": {"fsn": "test"}}], top_k=1)
+                 print("   ✅ Reranker Ready")
+        except Exception as e:
+             print(f"   ⚠️ Reranker Warmup Failed: {e}")
+
         print("🔥 System Ready!\n")
-
-    def run(self, question: str) -> str:
-        """
-        Execute the full RAG pipeline for a given question.
-        Returns the final answer.
-        """
-        question = question.strip()
-        if not question:
-            return ""
-
-        # 1. Generate Embedding (for semantic cache)
-        print("\n→ Generating question embedding...")
-        q_embedding = embed_text(question)
-
-        # 2. Check Answer Cache (Layer 3)
-        cached_answer, is_semantic = get_cached_answer_semantic(
-            question, 
-            q_embedding,
-            verification_fn=verify_semantic_match
-        )
-        if cached_answer:
-            if is_semantic:
-                print("⚡ [CACHE HIT - SEMANTIC] คำถามคล้ายกันถูกดึงจาก Cache")
-            else:
-                print("⚡ [CACHE HIT - EXACT] คำตอบถูกดึงจาก Cache")
-            print("\nตอบ:\n", cached_answer)
-            return cached_answer
-
-        # 3. Query Transformation (Layer 1 Cache)
-        print(f"\n→ Process: Query Transformation (Self-Querying) ...")
-        cached_query = get_cached_query(question)
-        
-        if cached_query:
-            print("   ⚡ [CACHE HIT] Query Transform")
-            query_obj = GraphRAGQuery(
-                query=cached_query["query"],
-                target_type=cached_query["target_type"],
-                nlem_filter=cached_query.get("nlem_filter"),
-                nlem_category=cached_query.get("nlem_category"),
-                manufacturer_filter=cached_query.get("manufacturer_filter"),
-            )
-        else:
-            query_obj = transform_query(question)
-            set_cached_query(question, query_obj)
-
-        print(f"   Intent: {query_obj.target_type.upper()}")
-        print(f"   Filters: NLEM={query_obj.nlem_filter}, Cat={query_obj.nlem_category}")
-        print(f"   Search Term: '{query_obj.query}'")
-
-        # 4. Advanced Graph Search & Routing
-        print(f"\n→ Process: Advanced GraphRAG Search ...")
-        results = advanced_graphrag_search(query_obj, k=30, depth=GRAPH_TRAVERSAL_DEPTH)
-
-        # 5. Extract Structured Data
-        print(f"\n→ Process: Data Extraction ...")
-        structured = extract_structured_data(results, query_obj.target_type)
-        
-        # Debug info
-        num_seeds = len(results.get("seed_results", []))
-        num_expanded = len(results.get("expanded_nodes", []))
-        num_rels = len(results.get("relationships", []))
-        num_entities = len(structured.get("entities", []))
-        
-        print(f"   Found: {num_seeds} primary nodes, {num_expanded} related nodes, {num_rels} relationships")
-        print(f"   Context: {num_entities} entities will be sent to LLM")
-
-        # 6. Generate Answer (LLM)
-        print("\n→ ส่งให้ LLM ตอบ (Structured Mode - LangChain) ...")
-        answer = format_answer_llm(question, structured)
-        print("\nตอบ:\n", answer)
-
-        # 7. Update Answer Cache
-        set_cached_answer_semantic(question, q_embedding, answer)
-
-        # 8. Log Interaction
-        self._log_interaction(question, results, answer)
-
-        return answer
 
     def _log_interaction(self, question: str, results: dict, answer: str):
         """Append interaction log to JSONL file."""

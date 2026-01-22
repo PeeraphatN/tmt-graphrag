@@ -265,9 +265,14 @@ def advanced_graphrag_search(query_obj, k: int = 10, depth: int = 2) -> dict:
     Advanced GraphRAG search that supports structured filters.
     query_obj: GraphRAGQuery (pydantic model or dict)
     """
-    if query_obj.target_type == 'nlem' and (query_obj.nlem_filter or query_obj.nlem_category):
-        # Use direct Cypher for NLEM filtering
-        print(f"   Searching NLEM with filter: category={query_obj.nlem_category or 'ALL'}")
+    # Logic to detect if it's a "Generic Listing" (Filter) or "Specific Check" (Search)
+    # If the query contains specific terms (not just 'nlem' or 'ยาหลัก'), we should NOT enforce strict filtering
+    # because the user might be asking "Is X in NLEM?" (and if X is not, we still want to find X)
+    is_generic_query = not query_obj.query or query_obj.query.lower().strip() in ["nlem", "ยาในบัญชี", "บัญชียาหลัก", "ยาหลัก", "drugs", "list", "รายการยา"]
+    
+    if query_obj.target_type == 'nlem' and (query_obj.nlem_filter or query_obj.nlem_category) and is_generic_query:
+        # Use direct Cypher for NLEM "Listing"
+        print(f"   Searching NLEM with filter (Generic List): category={query_obj.nlem_category or 'ALL'}")
         
         where_clause = "n.nlem = true"
         if query_obj.nlem_category:
@@ -312,7 +317,60 @@ def advanced_graphrag_search(query_obj, k: int = 10, depth: int = 2) -> dict:
     # Fallback to standard hybrid search if no special filters applied
     # But clean the query first to remove "filter keywords" if needed
     clean_query = query_obj.query if query_obj.query else "ยา"
-    return graphrag_search(clean_query, k=k, depth=depth)
+    
+    # ----------------------------------------------------
+    # Query Expansion Loop
+    # ----------------------------------------------------
+    search_queries = [clean_query]
+    if hasattr(query_obj, 'expanded_queries') and query_obj.expanded_queries:
+        search_queries.extend(query_obj.expanded_queries)
+    
+    # Dedupe queries
+    search_queries = list(dict.fromkeys([q for q in search_queries if q]))
+    
+    print(f"   Searching with {len(search_queries)} queries: {search_queries}")
+    
+    all_seed_results = []
+    seen_seed_ids = set()
+    
+    for q_str in search_queries:
+        # Perform hybrid search for each query
+        # We limit k per query to avoid exploding validation space, but we'll pool them
+        results = hybrid_search(q_str, k=k)
+        for item in results:
+            node = item["node"]
+            nid = node.element_id if hasattr(node, 'element_id') else node.id
+            if nid not in seen_seed_ids:
+                seen_seed_ids.add(nid)
+                # Mark which query found this node (optional, for debugging)
+                item["found_by_query"] = q_str
+                all_seed_results.append(item)
+    
+    # Step 2: Extract node IDs for expansion
+    seed_node_ids = []
+    for item in all_seed_results:
+        node = item["node"]
+        nid = node.element_id if hasattr(node, 'element_id') else node.id
+        seed_node_ids.append(nid)
+    
+    # Step 3: Expand context via relationship traversal (ONCE for all seeds)
+    if not seed_node_ids:
+         return {
+            "seed_results": [],
+            "expanded_nodes": [],
+            "relationships": []
+        }
+
+    expanded = expand_context(seed_node_ids, depth=depth)
+    
+    # Step 4: Filter out seed nodes from expanded
+    non_seed_nodes = [n for n in expanded["nodes"] if not n.get("is_seed", False)]
+    
+    return {
+        "seed_results": all_seed_results,
+        "expanded_nodes": non_seed_nodes,
+        "relationships": expanded["relationships"]
+    }
 
 def fetch_nodes_by_element_ids(element_ids: list[str]) -> list:
     """
@@ -368,28 +426,28 @@ def extract_structured_data(results: dict, question_type: str) -> dict:
     if question_type == 'manufacturer':
         required_fields = ['trade_name', 'manufacturer', 'fsn', 'tmtid', 'level', 'container_text'] + nlem_fields
         allowed_levels = {'TP', 'TPU'}
-        max_entities = 20
+        max_entities = 40  # Increased from 20
     elif question_type == 'ingredient':
         required_fields = ['fsn', 'active_ingredient', 'active_ingredients', 'strength', 'tmtid', 'level', 'dosageform'] + nlem_fields
         allowed_levels = {'GP', 'GPU', 'TP', 'TPU', 'VTM', 'SUBS'}
-        max_entities = 30
+        max_entities = 60  # Increased from 30
     elif question_type == 'nlem':
         required_fields = ['fsn', 'tmtid', 'level'] + nlem_fields
-        allowed_levels = {'GP', 'GPU', 'TP', 'TPU'}
-        max_entities = 50 # Increase limit for counting/listing
+        allowed_levels = {'GP'}
+        max_entities = 80 # Increased from 50
     elif question_type == 'hierarchy':
         required_fields = ['level', 'fsn', 'tmtid'] + nlem_fields
         allowed_levels = {'SUBS', 'VTM', 'GP', 'GPU', 'TP', 'TPU'}
-        max_entities = 40
+        max_entities = 60  # Increased from 40
     elif question_type == 'formula':
         # formula เทียบจาก FSN วงเล็บที่ 2 เป็นหลัก (fallback)
         required_fields = ['trade_name', 'manufacturer', 'fsn', 'tmtid', 'level'] + nlem_fields
         allowed_levels = {'TP', 'TPU', 'GP', 'GPU'}
-        max_entities = 30
+        max_entities = 50  # Increased from 30
     else:
         required_fields = ['trade_name', 'manufacturer', 'fsn', 'tmtid', 'level'] + nlem_fields
         allowed_levels = {'TP', 'TPU', 'GP', 'GPU'}
-        max_entities = 30
+        max_entities = 50  # Increased from 30
 
     # -------------------------
     # Collect candidate nodes (seed + expanded)
@@ -429,9 +487,9 @@ def extract_structured_data(results: dict, question_type: str) -> dict:
         if not tmtid:
             continue
             
-        # Strict filter for NLEM query type
-        if question_type == 'nlem' and not props.get('nlem'):
-            continue
+        # Strict filter for NLEM query type -> REMOVED to allow "Is X in NLEM?" (Negative answer)
+        # if question_type == 'nlem' and not props.get('nlem'):
+        #    continue
 
         key = (level, str(tmtid))
         if key in seen:

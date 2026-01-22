@@ -7,3 +7,5 @@ cachetools
 datasets
 pandas
 ragas
+sentence-transformers
+gradio
