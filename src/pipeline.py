@@ -76,19 +76,23 @@ class GraphRAGPipeline:
         question = inputs["question"]
         print(f"\n→ Process: Query Transformation (Self-Querying) ...")
         
-        cached_query = get_cached_query(question)
-        if cached_query:
-            print("   ⚡ [CACHE HIT] Query Transform")
-            query_obj = GraphRAGQuery(
-                query=cached_query["query"],
-                target_type=cached_query["target_type"],
-                nlem_filter=cached_query.get("nlem_filter"),
-                nlem_category=cached_query.get("nlem_category"),
-                manufacturer_filter=cached_query.get("manufacturer_filter"),
-            )
-        else:
-            query_obj = transform_query(question)
-            set_cached_query(question, query_obj)
+        # cached_query = get_cached_query(question)
+        # if cached_query:
+        #     print("   ⚡ [CACHE HIT] Query Transform")
+        #     query_obj = GraphRAGQuery(
+        #         query=cached_query["query"],
+        #         target_type=cached_query["target_type"],
+        #         nlem_filter=cached_query.get("nlem_filter"),
+        #         nlem_category=cached_query.get("nlem_category"),
+        #         manufacturer_filter=cached_query.get("manufacturer_filter"),
+        #     )
+        # else:
+        #     query_obj = transform_query(question)
+        #     set_cached_query(question, query_obj)
+
+        query_obj = transform_query(question)
+        
+        
 
         print(f"   Intent: {query_obj.target_type.upper()}")
         print(f"   Filters: NLEM={query_obj.nlem_filter}, Cat={query_obj.nlem_category}")

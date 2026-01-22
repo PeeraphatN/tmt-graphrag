@@ -260,117 +260,209 @@ def graphrag_search(question: str, k: int = 5, depth: int = None) -> dict:
         "relationships": expanded["relationships"]
     }
 
-def advanced_graphrag_search(query_obj, k: int = 10, depth: int = 2) -> dict:
+def execute_count_query(query_obj) -> dict:
     """
-    Advanced GraphRAG search that supports structured filters.
-    query_obj: GraphRAGQuery (pydantic model or dict)
+    Strategy: COUNT
+    Executes a Cypher COUNT query based on filters.
     """
-    # Logic to detect if it's a "Generic Listing" (Filter) or "Specific Check" (Search)
-    # If the query contains specific terms (not just 'nlem' or 'ยาหลัก'), we should NOT enforce strict filtering
-    # because the user might be asking "Is X in NLEM?" (and if X is not, we still want to find X)
-    is_generic_query = not query_obj.query or query_obj.query.lower().strip() in ["nlem", "ยาในบัญชี", "บัญชียาหลัก", "ยาหลัก", "drugs", "list", "รายการยา"]
+    # Build filter clause - Base label is TMT, usually looking for GP level for counts
+    where_parts = ["n:TMT"]
+    params = {}
     
-    if query_obj.target_type == 'nlem' and (query_obj.nlem_filter or query_obj.nlem_category) and is_generic_query:
-        # Use direct Cypher for NLEM "Listing"
-        print(f"   Searching NLEM with filter (Generic List): category={query_obj.nlem_category or 'ALL'}")
-        
-        where_clause = "n.nlem = true"
+    if query_obj.target_type == 'nlem' or query_obj.nlem_filter:
+        where_parts.append("n.nlem = true")
         if query_obj.nlem_category:
-            where_clause += f" AND n.nlem_category = '{query_obj.nlem_category}'"
+            where_parts.append("n.nlem_category = $cat")
+            params['cat'] = query_obj.nlem_category
             
-        cypher = f"""
-        MATCH (n:GP)
-        WHERE {where_clause}
-        RETURN n
-        LIMIT {k}
-        """
+    if query_obj.manufacturer_filter:
+        where_parts.append("n.manufacturer CONTAINS $manu")
+        params['manu'] = query_obj.manufacturer_filter
         
-        drv = init_driver()
-        seed_results = []
-        with drv.session() as session:
-            records = session.run(cypher)
-            for rec in records:
-                node = rec["n"]
-                nid = node.element_id if hasattr(node, 'element_id') else node.id
-                seed_results.append({
-                    "node": node,
-                    "score": 1.0, # Exact match
-                    "rrf_score": 1.0
-                })
-        
-        # Expand context from these seeds
-        seed_node_ids = [ (n["node"].element_id if hasattr(n["node"], 'element_id') else n["node"].id) for n in seed_results ]
-        expanded = expand_context(seed_node_ids, depth=depth)
-        non_seed_nodes = [n for n in expanded["nodes"] if not n.get("is_seed", False)]
-        
-        return {
-            "seed_results": seed_results,
-            "expanded_nodes": non_seed_nodes,
-            "relationships": expanded["relationships"]
-        }
-        
-    elif query_obj.manufacturer_filter:
-        # Use Fulltext search specialized for manufacturer
-        # This is a simplified version; ideally we use index search
-        pass
+    where_clause = " WHERE " + " AND ".join(where_parts)
+    
+    cypher = f"""
+    MATCH (n)
+    {where_clause}
+    RETURN count(n) as total
+    """
+    
+    print(f"   [Strategy: COUNT] Executing: {where_clause}")
+    print(f"   Params: {params}")
+    
+    drv = init_driver()
+    count = 0
+    with drv.session() as session:
+        res = session.run(cypher, **params)
+        record = res.single()
+        if record:
+            count = record["total"]
+            
+    return {
+        "strategy": "count",
+        "result": count,
+        "seed_results": [],
+        "expanded_nodes": [],
+        "relationships": []
+    }
 
-    # Fallback to standard hybrid search if no special filters applied
-    # But clean the query first to remove "filter keywords" if needed
+def execute_listing_query(query_obj, k: int = 100) -> dict:
+    """
+    Strategy: LIST
+    Executes a Cypher MATCH query to get a raw list of items.
+    """
+    where_parts = ["n:TMT"]
+    params = {}
+    
+    if query_obj.target_type == 'nlem' or query_obj.nlem_filter:
+        where_parts.append("n.nlem = true")
+        if query_obj.nlem_category:
+            where_parts.append("n.nlem_category = $cat")
+            params['cat'] = query_obj.nlem_category
+            
+    if query_obj.manufacturer_filter:
+        # Note: Manufacturers are often at TP (Trade Product) level
+        # If filtering by manufacturer, allow TP level as well
+        where_parts = ["n:TMT"]
+        where_parts.append("n.manufacturer CONTAINS $manu")
+        params['manu'] = query_obj.manufacturer_filter
+        
+    where_clause = " WHERE " + " AND ".join(where_parts)
+    
+    cypher = f"""
+    MATCH (n)
+    {where_clause}
+    RETURN n
+    LIMIT $k
+    """
+    
+    print(f"   [Strategy: LIST] Executing: {where_clause} LIMIT {k}")
+    print(f"   Params: {params}")
+    
+    drv = init_driver()
+    nodes = []
+    with drv.session() as session:
+        res = session.run(cypher, k=k, **params)
+        nodes = [rec["n"] for rec in res]
+        
+    # Return as 'seed_results' styled dict so extract step can process it
+    seed_results = [{"node": n, "score": 1.0, "rrf_score": 1.0} for n in nodes]
+    
+    return {
+        "strategy": "list",
+        "seed_results": seed_results,
+        "expanded_nodes": [],
+        "relationships": []
+    }
+
+def execute_verification_query(query_obj) -> dict:
+    """
+    Strategy: VERIFY
+    Checks for existence of a specific entity with filters.
+    """
+    # Ensure there is a query term
+    if not query_obj.query:
+        return search_general(query_obj, k=5)
+        
+    params = {'q': query_obj.query}
+    # For verification, search typically on TMT nodes
+    where_parts = ["n:TMT", "(toLower(n.fsn) CONTAINS toLower($q) OR toLower(n.generic_name) CONTAINS toLower($q))"]
+    
+    if query_obj.nlem_filter:
+        where_parts.append("n.nlem = true")
+    
+    where_clause = " WHERE " + " AND ".join(where_parts)
+    
+    cypher = f"""
+    MATCH (n)
+    {where_clause}
+    RETURN n
+    LIMIT 10
+    """
+    
+    print(f"   [Strategy: VERIFY] Checking: {query_obj.query}")
+    print(f"   Params: {params}")
+    
+    drv = init_driver()
+    nodes = []
+    with drv.session() as session:
+        res = session.run(cypher, **params)
+        nodes = [rec["n"] for rec in res]
+        
+    seed_results = [{"node": n, "score": 1.0, "rrf_score": 1.0} for n in nodes]
+    
+    return {
+        "strategy": "verify",
+        "seed_results": seed_results,
+        "expanded_nodes": [],
+        "relationships": []
+    }
+
+def search_general(query_obj, k: int = 10, depth: int = 2) -> dict:
+    """
+    Strategy: RETRIEVE (Default)
+    Standard Hybrid Search + Graph Traversal
+    """
+    print(f"   [Strategy: RETRIEVE] Hybrid search for: {query_obj.query}")
+    
     clean_query = query_obj.query if query_obj.query else "ยา"
     
     # ----------------------------------------------------
-    # Query Expansion Loop
+    # Hybrid Search Logic (Same as before)
     # ----------------------------------------------------
     search_queries = [clean_query]
     if hasattr(query_obj, 'expanded_queries') and query_obj.expanded_queries:
         search_queries.extend(query_obj.expanded_queries)
-    
-    # Dedupe queries
     search_queries = list(dict.fromkeys([q for q in search_queries if q]))
-    
-    print(f"   Searching with {len(search_queries)} queries: {search_queries}")
     
     all_seed_results = []
     seen_seed_ids = set()
     
     for q_str in search_queries:
-        # Perform hybrid search for each query
-        # We limit k per query to avoid exploding validation space, but we'll pool them
         results = hybrid_search(q_str, k=k)
         for item in results:
             node = item["node"]
             nid = node.element_id if hasattr(node, 'element_id') else node.id
             if nid not in seen_seed_ids:
                 seen_seed_ids.add(nid)
-                # Mark which query found this node (optional, for debugging)
                 item["found_by_query"] = q_str
                 all_seed_results.append(item)
     
-    # Step 2: Extract node IDs for expansion
-    seed_node_ids = []
-    for item in all_seed_results:
-        node = item["node"]
-        nid = node.element_id if hasattr(node, 'element_id') else node.id
-        seed_node_ids.append(nid)
-    
-    # Step 3: Expand context via relationship traversal (ONCE for all seeds)
+    # Expand context
+    seed_node_ids = [ (n["node"].element_id if hasattr(n["node"], 'element_id') else n["node"].id) for n in all_seed_results ]
     if not seed_node_ids:
-         return {
-            "seed_results": [],
-            "expanded_nodes": [],
-            "relationships": []
-        }
+        return {"seed_results": [], "expanded_nodes": [], "relationships": []}
 
     expanded = expand_context(seed_node_ids, depth=depth)
-    
-    # Step 4: Filter out seed nodes from expanded
     non_seed_nodes = [n for n in expanded["nodes"] if not n.get("is_seed", False)]
     
     return {
+        "strategy": "retrieve",
         "seed_results": all_seed_results,
         "expanded_nodes": non_seed_nodes,
         "relationships": expanded["relationships"]
     }
+
+def advanced_graphrag_search(query_obj, k: int = 10, depth: int = 2) -> dict:
+    """
+    Intent Router: Dispatches the search to specific functions based on query_obj.strategy.
+    """
+    strategy = getattr(query_obj, 'strategy', 'retrieve')
+    
+    # 1. Router Logic
+    if strategy == 'count':
+        return execute_count_query(query_obj)
+        
+    elif strategy == 'list':
+        # Increase K for listing
+        return execute_listing_query(query_obj, k=50)
+        
+    elif strategy == 'verify':
+        return execute_verification_query(query_obj)
+        
+    else:
+        # Default: RETRIEVE
+        return search_general(query_obj, k=k, depth=depth)
 
 def fetch_nodes_by_element_ids(element_ids: list[str]) -> list:
     """
@@ -416,6 +508,19 @@ def extract_structured_data(results: dict, question_type: str) -> dict:
     seed_results = results.get("seed_results", [])
     expanded_nodes = results.get("expanded_nodes", [])
     relationships = results.get("relationships", [])
+    strategy = results.get("strategy", "retrieve")
+
+    # -------------------------
+    # Handling Special Strategies
+    # -------------------------
+    if strategy == 'count':
+        # Direct return of count result
+        return {
+            "strategy": "count",
+            "count": results.get("result", 0),
+            "entities": [] # No entities for count op
+        }
+
 
     # -------------------------
     # Property filter + level scope
