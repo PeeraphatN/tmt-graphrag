@@ -1,5 +1,5 @@
 """
-Formatter Chain (RAG)
+Formatting Service.
 Uses LLM to generate the final answer based on retrieved context.
 """
 from langchain_core.output_parsers import StrOutputParser

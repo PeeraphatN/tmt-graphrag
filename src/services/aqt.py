@@ -1,5 +1,5 @@
 """
-Query Transformation Chain.
+AQT Service (Advance Query Transformation).
 Extracts structured query and filters from natural language input.
 """
 from langchain_core.runnables import Runnable
@@ -15,13 +15,8 @@ def get_query_transform_chain() -> Runnable:
     # Use CLASSIFICATION_MODEL for query transformation
     llm = get_llm(model=CLASSIFICATION_MODEL, temperature=0)
     
-    # Check if the model supports .with_structured_output (depends on langchain-ollama version)
-    # For robust fallback, we might use a PydanticOutputParser or similar.
-    # Here we assume ChatOllama supports structured output or we prompt for JSON.
-    
     # Since Ollama structured output can be tricky, we'll use the prompt to force JSON 
     # and default Pydantic parsing.
-    
     structured_llm = llm.with_structured_output(GraphRAGQuery)
     
     chain = QUERY_EXTRACTION_PROMPT | structured_llm

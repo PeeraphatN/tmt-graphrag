@@ -7,15 +7,14 @@ from operator import itemgetter
 from langchain_core.runnables import Runnable, RunnablePassthrough, RunnableLambda
 
 from src.config import validate_env, GRAPH_TRAVERSAL_DEPTH
-from src.knowledge_graph import (
-    init_driver, 
-    setup_indexes, 
-    extract_structured_data,
-    advanced_graphrag_search
-)
-from src.chains.query_transform_chain import transform_query
-from src.chains.formatter_chain import get_formatter_chain
-from src.chains.verify_cache_chain import verify_semantic_match
+
+# Service Imports (Refactored)
+from src.services.database import init_driver, setup_indexes
+from src.services.search import advanced_graphrag_search
+from src.services.extraction import extract_structured_data
+from src.services.aqt import transform_query
+from src.services.formatting import get_formatter_chain
+from src.services.verification import verify_semantic_match
 from src.cache.result_cache import (
     get_cached_answer_semantic, set_cached_answer_semantic,
     get_cached_query, set_cached_query,
@@ -74,7 +73,7 @@ class GraphRAGPipeline:
     def _step_transform(self, inputs: dict) -> GraphRAGQuery:
         """Step 1: Transform Query (with Caching)"""
         question = inputs["question"]
-        print(f"\n→ Process: Query Transformation (Self-Querying) ...")
+        print(f"\\n→ Process: Query Transformation (Self-Querying) ...")
         
         # cached_query = get_cached_query(question)
         # if cached_query:
@@ -105,12 +104,12 @@ class GraphRAGPipeline:
         query_obj = inputs["query_obj"]
         question = inputs["question"]
         
-        print(f"\n→ Process: Advanced GraphRAG Search ...")
+        print(f"\\n→ Process: Advanced GraphRAG Search ...")
         results = advanced_graphrag_search(query_obj, k=50, depth=GRAPH_TRAVERSAL_DEPTH)
 
         # Reranking logic
         if self.reranker and results.get("seed_results"):
-            print(f"\n→ Process: Re-ranking ({len(results['seed_results'])} candidates) ...")
+            print(f"\\n→ Process: Re-ranking ({len(results['seed_results'])} candidates) ...")
             reranked = self.reranker.rerank(question, results["seed_results"], top_k=50)
             results["seed_results"] = reranked
             if reranked:
@@ -123,7 +122,7 @@ class GraphRAGPipeline:
         results = inputs["results"]
         query_obj = inputs["query_obj"]
         
-        print(f"\n→ Process: Data Extraction ...")
+        print(f"\\n→ Process: Data Extraction ...")
         structured = extract_structured_data(results, query_obj.target_type)
 
         # Debug info
@@ -142,6 +141,7 @@ class GraphRAGPipeline:
     # ==========================
 
     def run(self, question: str) -> str:
+
         """
         Execute the full RAG pipeline for a given question.
         Returns the final answer.
