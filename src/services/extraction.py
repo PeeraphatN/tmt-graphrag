@@ -1,42 +1,7 @@
 import re
 from src.services.database import init_driver, fetch_nodes_by_element_ids
 
-def get_search_config(target_type: str) -> dict:
-    """
-    Returns search configuration based on target_type (intent).
-    Centralizes logic for allowed_levels, required_fields, and max_entities.
-    """
-    nlem_fields = ['nlem', 'nlem_category', 'nlem_section']
-    base_fields = ['trade_name', 'manufacturer', 'fsn', 'tmtid', 'level']
-    
-    config = {
-        "allowed_levels": {'TP', 'TPU', 'GP', 'GPU'},
-        "required_fields": base_fields + nlem_fields,
-        "max_entities": 50
-    }
-
-    if target_type == 'manufacturer':
-        config["required_fields"] = ['trade_name', 'manufacturer', 'fsn', 'tmtid', 'level', 'container_text'] + nlem_fields
-        config["allowed_levels"] = {'TP', 'TPU'}
-        config["max_entities"] = 40
-    elif target_type == 'ingredient':
-        config["required_fields"] = ['fsn', 'active_ingredient', 'active_ingredients', 'strength', 'tmtid', 'level', 'dosageform'] + nlem_fields
-        config["allowed_levels"] = {'GP', 'GPU', 'TP', 'TPU', 'VTM', 'SUBS'}
-        config["max_entities"] = 60
-    elif target_type == 'nlem':
-        config["required_fields"] = ['fsn', 'tmtid', 'level'] + nlem_fields
-        config["allowed_levels"] = {'GP'}
-        config["max_entities"] = 80
-    elif target_type == 'hierarchy':
-        config["required_fields"] = ['level', 'fsn', 'tmtid'] + nlem_fields
-        config["allowed_levels"] = {'SUBS', 'VTM', 'GP', 'GPU', 'TP', 'TPU'}
-        config["max_entities"] = 60
-    elif target_type == 'formula':
-         config["required_fields"] = ['trade_name', 'manufacturer', 'fsn', 'tmtid', 'level'] + nlem_fields
-         config["allowed_levels"] = {'TP', 'TPU', 'GP', 'GPU'}
-         config["max_entities"] = 50
-
-    return config
+from src.services.search import get_search_config
 
 # Helper functions for extraction
 def _fallback_trade_and_mfr_from_fsn(fsn: str) -> tuple[str | None, str | None]:

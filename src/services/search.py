@@ -3,10 +3,47 @@ Search Service.
 Handles Advanced Search strategies (Intent Routing), Vector/Fulltext access, and Graph Traversal.
 """
 from src.services.database import init_driver, check_index_exists
-from src.services.extraction import get_search_config
+
 from src.config import VECTOR_INDEX_NAME, FULLTEXT_INDEX_NAME, GRAPH_TRAVERSAL_DEPTH
 from src.query_processor import sanitize_fulltext_query
 from src.llm_service import get_embedding
+
+def get_search_config(target_type: str) -> dict:
+    """
+    Returns search configuration based on target_type (intent).
+    Centralizes logic for allowed_levels, required_fields, and max_entities.
+    """
+    nlem_fields = ['nlem', 'nlem_category', 'nlem_section']
+    base_fields = ['trade_name', 'manufacturer', 'fsn', 'tmtid', 'level']
+    
+    config = {
+        "allowed_levels": {'TP', 'TPU', 'GP', 'GPU'},
+        "required_fields": base_fields + nlem_fields,
+        "max_entities": 50
+    }
+
+    if target_type == 'manufacturer':
+        config["required_fields"] = ['trade_name', 'manufacturer', 'fsn', 'tmtid', 'level', 'container_text'] + nlem_fields
+        config["allowed_levels"] = {'TP', 'TPU'}
+        config["max_entities"] = 40
+    elif target_type == 'ingredient':
+        config["required_fields"] = ['fsn', 'active_ingredient', 'active_ingredients', 'strength', 'tmtid', 'level', 'dosageform'] + nlem_fields
+        config["allowed_levels"] = {'GP', 'GPU', 'TP', 'TPU', 'VTM', 'SUBS'}
+        config["max_entities"] = 60
+    elif target_type == 'nlem':
+        config["required_fields"] = ['fsn', 'tmtid', 'level'] + nlem_fields
+        config["allowed_levels"] = {'GP'}
+        config["max_entities"] = 80
+    elif target_type == 'hierarchy':
+        config["required_fields"] = ['level', 'fsn', 'tmtid'] + nlem_fields
+        config["allowed_levels"] = {'SUBS', 'VTM', 'GP', 'GPU', 'TP', 'TPU'}
+        config["max_entities"] = 60
+    elif target_type == 'formula':
+         config["required_fields"] = ['trade_name', 'manufacturer', 'fsn', 'tmtid', 'level'] + nlem_fields
+         config["allowed_levels"] = {'TP', 'TPU', 'GP', 'GPU'}
+         config["max_entities"] = 50
+
+    return config
 
 def hybrid_search(question: str, k: int = 5, allowed_levels: list[str] = None, filters: dict = None) -> list[dict]:
     """
