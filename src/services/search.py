@@ -8,7 +8,7 @@ from src.config import VECTOR_INDEX_NAME, FULLTEXT_INDEX_NAME, GRAPH_TRAVERSAL_D
 from src.query_processor import sanitize_fulltext_query
 from src.llm_service import get_embedding
 
-def hybrid_search(question: str, k: int = 5, allowed_levels: list[str] = None) -> list[dict]:
+def hybrid_search(question: str, k: int = 5, allowed_levels: list[str] = None, filters: dict = None) -> list[dict]:
     """
     Perform hybrid search (Vector + Fulltext) with RRF fusion.
     """
@@ -20,12 +20,28 @@ def hybrid_search(question: str, k: int = 5, allowed_levels: list[str] = None) -
     results = {}
 
     # Build WHERE clause for pre-filtering
-    where_clause = ""
+    where_parts = []
     params = {"index_name": VECTOR_INDEX_NAME, "k": k, "embedding": embedding}
     
     if allowed_levels:
-        where_clause = "WHERE node.level IN $allowed_levels"
+        where_parts.append("node.level IN $allowed_levels")
         params["allowed_levels"] = list(allowed_levels)
+
+    # 1. Apply AQT Filters (New)
+    if filters:
+        if filters.get("nlem") is not None:
+             where_parts.append("node.nlem = $nlem_val")
+             params["nlem_val"] = filters["nlem"]
+        
+        if filters.get("nlem_category"):
+             where_parts.append("node.nlem_category = $nlem_cat")
+             params["nlem_cat"] = filters["nlem_category"]
+             
+        if filters.get("manufacturer"):
+             where_parts.append("node.manufacturer CONTAINS $manu")
+             params["manu"] = filters["manufacturer"]
+
+    where_clause = ("WHERE " + " AND ".join(where_parts)) if where_parts else ""
 
     with drv.session() as session:
         # 1. Vector Search
@@ -198,7 +214,13 @@ def search_general(query_obj, k: int = 10, depth: int = 2) -> dict:
         # Get allowed levels from config to pre-filter search
         config = get_search_config(query_obj.target_type if hasattr(query_obj, 'target_type') else 'general')
         
-        results = hybrid_search(q_str, k=k, allowed_levels=config["allowed_levels"])
+        # Extract filters from query_obj (New)
+        filters = {}
+        if getattr(query_obj, 'nlem_filter', None): filters['nlem'] = True
+        if getattr(query_obj, 'nlem_category', None): filters['nlem_category'] = query_obj.nlem_category
+        if getattr(query_obj, 'manufacturer_filter', None): filters['manufacturer'] = query_obj.manufacturer_filter
+        
+        results = hybrid_search(q_str, k=k, allowed_levels=config["allowed_levels"], filters=filters)
         for item in results:
             node = item["node"]
             nid = node.element_id if hasattr(node, 'element_id') else node.id

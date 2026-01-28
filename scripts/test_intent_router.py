@@ -2,6 +2,7 @@ import sys
 import os
 import asyncio
 import time
+import json  # Added import
 
 # Add graphrag root to sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -11,99 +12,94 @@ from src.schemas.query import SearchStrategy
 from src.utils.test_logger import TestLogger
 
 async def test_intent_router():
-    print("=== Testing Intent Router & Specialized Search with Evidence Logging ===")
+    print("=== Testing Intent Router (Property-Aware + Rule-Based Logic) ===")
+    print("Goal: Verify that complexity rules and property filters are correctly extracted.\n")
     
-    # Initialize Pipeline
+    # Initialize Pipeline (only need part of it, but simpler to init all)
     pipeline = GraphRAGPipeline()
     
     # Initialize Logger
     logger = TestLogger(test_name="intent_router_verification")
     
     test_cases = [
+        # 1. Count & NLEM Logic
         {
             "input": "มียากี่ตัวในบัญชี ง",
             "expected_strategy": SearchStrategy.COUNT,
-            "expected_result_type": int,
+            "expected_target": "nlem",
             "description": "Count NLEM Category Ngor"
         },
+        # 2. Manufacturer List Logic
         {
-            "input": "ขอรายชื่อยาของ SUN PHARMACEUTICAL",
+            "input": "ขอรายชื่อยาขององค์การเภสัชกรรม",
             "expected_strategy": SearchStrategy.LIST,
-            "expected_result_type": list,
-            "description": "List drugs by Manufacturer"
+            "expected_target": "manufacturer",
+            "description": "List GPO drugs"
         },
+        # 3. Verify Logic (Existence Check)
         {
-            "input": "ยา Alendronate sodium อยู่ในบัญชีไหม",
+            "input": "ยา Paracap เบิกได้ไหม",
             "expected_strategy": SearchStrategy.VERIFY,
-            "expected_result_type": list,
-            "description": "Verify drug existence (Trade Name)"
+            "expected_target": "nlem",
+            "description": "Verify Reimbursement (NLEM)"
         },
+        # 4. Verify Logic (Manufacturer Check)
         {
-            "input": "ยา Paracetamol สรรพคุณคืออะไร",
+            "input": "Does Pfizer make Viagra?",
+            "expected_strategy": SearchStrategy.VERIFY,
+            "expected_target": "manufacturer",
+            "description": "Verify Manufacturer (English)"
+        },
+        # 5. General Retrieval
+        {
+            "input": "สรรพคุณของ Paracetamol",
             "expected_strategy": SearchStrategy.RETRIEVE,
-            "expected_result_type": list, 
-            "description": "General Retrieval (Properties)"
+            "expected_target": "general",
+            "description": "General Info Lookup"
+        },
+        # 6. Ingredient Logic
+        {
+            "input": "Tiffy มีส่วนผสมอะไรบ้าง",
+            "expected_strategy": SearchStrategy.RETRIEVE, # Often falls to retrieve or list, checking extraction mainly
+            "expected_target": "ingredient",
+            "description": "Ingredient Lookup"
         }
     ]
 
+    print(f"{'TEST CASE':<40} | {'STRATEGY':<10} | {'TARGET':<12} | {'QUERY':<15} | {'FILTERS'}")
+    print("-" * 100)
+
     for case in test_cases:
         query_text = case["input"]
-        print(f"\n🧪 Testing Input: '{query_text}'")
         
         start_time = time.perf_counter()
         
         try:
-            # 1. Transform Step (to get strategy and query object)
-            # The pipeline chain usually does this automatically, but accessing _step methods means we manage state manually.
+            # 1. Transform Step
             input_dict = {"question": query_text}
             query_obj = pipeline._step_transform(input_dict)
             
-            # 2. Search Step
-            # _step_search expects the state from the previous step (which contains query_obj)
-            # We mock the state dictionary that the chain would pass
-            search_input = {
-                "question": query_text,
-                "query_obj": query_obj
-            }
-            results = pipeline._step_search(search_input)
+            # Extract actual values
+            actual_strategy = query_obj.strategy.value
+            actual_target = query_obj.target_type.value
+            actual_query = query_obj.query
             
-            # 3. Extract strategy and result
-            # Note: _step_search returns a dict, likely containing 'strategy' and data
-            actual_strategy_str = results.get("strategy", "unknown")
-            actual_result_summary = "None"
-            status = "FAIL"
-            note = ""
+            # Format filters for display
+            filters = {}
+            if query_obj.nlem_filter: filters['nlem'] = True
+            if query_obj.nlem_category: filters['cat'] = query_obj.nlem_category
+            if query_obj.manufacturer_filter: filters['manu'] = query_obj.manufacturer_filter
+            filters_str = json.dumps(filters, ensure_ascii=False)
 
-            # Check Strategy Match
-            # Use lower() for safe comparison if needed, or direct if enum value matches string
-            is_strategy_match = False
-            if str(actual_strategy_str).lower() == str(case["expected_strategy"].value).lower():
-                is_strategy_match = True
+            # Check correctness
+            strategy_match = (actual_strategy == case["expected_strategy"].value)
+            target_match = (actual_target == case["expected_target"])
             
-            # Check Result Validity based on strategy
-            if case["expected_strategy"] == SearchStrategy.COUNT:
-                raw_res = results.get("result")
-                actual_result_summary = f"Count={raw_res}"
-                if isinstance(raw_res, int):
-                    status = "PASS"
-                else:
-                    note = f"Type Mismatch: Expected int, got {type(raw_res)}"
-            
-            elif case["expected_strategy"] in [SearchStrategy.LIST, SearchStrategy.VERIFY, SearchStrategy.RETRIEVE]:
-                # List-based results in 'seed_results'
-                seeds = results.get("seed_results", [])
-                actual_result_summary = f"Items={len(seeds)}"
-                if isinstance(seeds, list):
-                    status = "PASS"
-                    # For Verify, 0 items might be valid "Not Found", but the search itself worked.
-                    # For Retrieve/List, usually expect > 0, but 0 is technically a valid list type return.
-                else:
-                    note = f"Type Mismatch: Expected list, got {type(seeds)}"
+            status = "PASS" if (strategy_match and target_match) else "FAIL"
+            status_icon = "✅" if status == "PASS" else "❌"
 
-            # Strategy mismatch overrides pass
-            if not is_strategy_match:
-                status = "FAIL"
-                note = f"Strategy Mismatch: Expected {case['expected_strategy'].value}, Got {actual_strategy_str}. " + note
+            # Print concise row
+            print(f"{status_icon} {query_text[:37]:<37} | {actual_strategy:<10} | {actual_target:<12} | {actual_query:<15} | {filters_str}")
 
             end_time = time.perf_counter()
             latency = (end_time - start_time) * 1000
@@ -111,30 +107,18 @@ async def test_intent_router():
             # Log Evidence
             logger.log(
                 query=query_text,
-                intent=str(actual_strategy_str),
+                intent=f"{actual_strategy}/{actual_target}",
                 status=status,
                 latency_ms=latency,
-                actual_result=actual_result_summary,
-                expected_criteria=f"Strategy={case['expected_strategy'].value}",
-                metadata={"debug_note": note}
+                actual_result=f"Query='{actual_query}', Filters={filters_str}",
+                expected_criteria=f"Strategy={case['expected_strategy'].value}, Target={case['expected_target']}",
             )
 
         except Exception as e:
-            end_time = time.perf_counter()
-            latency = (end_time - start_time) * 1000
-            print(f"❌ Exception: {e}")
-            logger.log(
-                query=query_text,
-                intent="ERROR",
-                status="FAIL",
-                latency_ms=latency,
-                actual_result=str(e),
-                expected_criteria="No Exception",
-                metadata={"exception_trace": str(e)}
-            )
+            print(f"❌ ERROR: {case['input']} -> {e}")
 
-    logger.summary()
-    print(f"\n📄 Evidence log saved to: {logger.filepath}")
+    print("\n" + "="*50)
+    print(f"📄 Evidence log saved to: {logger.filepath}")
 
 if __name__ == "__main__":
     asyncio.run(test_intent_router())

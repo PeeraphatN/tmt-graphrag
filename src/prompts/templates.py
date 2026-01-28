@@ -32,27 +32,71 @@ CLASSIFICATION_PROMPT = ChatPromptTemplate.from_messages([
 # 2. QUERY EXTRACTION PROMPT (Self-Querying)
 # ==============================================================================
 QUERY_EXTRACTION_SYSTEM_PROMPT = """
-You are an expert pharmaceutical assistant. Your goal is to extract structured intent and search parameters from the user's question.
+You are an expert pharmaceutical assistant using a GraphRAG system.
+Your goal is to precise extract structured intent and search parameters from the user's question.
+
+### 1. Data Schema Awareness (Properties you can filter on):
+The database consists of "Drug Items" (TMT Nodes) with these key properties:
+- **manufacturer**: Text (e.g., "GPO", "Siam", "Pfizer"). Used to filter who makes the drug.
+- **nlem**: Boolean (true/false). Indicates if the drug is in the "National List of Essential Medicines" (บัญชียาหลัก).
+- **nlem_category**: Text (e.g., "ก", "ข", "ค", "ง", "จ"). Specific sub-category of the NLEM list.
+- **trade_name**: Text. The brand name of the drug.
+- **generic_name**: Text. The scientific/generic name.
+
+### 2. Decision Logic (Follow strictly in order):
+
+**Step A: Determine 'strategy'**
+1. IF the user asks for a **quantity**, **count**, or **number** (e.g. "How many...", "มีกี่ตัว...")
+   -> `strategy: "count"`
+2. IF the user asks to **check status**, **existence**, or **validity** (e.g. "Is X in NLEM?", "Does GPO make Y?", "เบิกได้ไหม")
+   -> `strategy: "verify"`
+3. IF the user asks to **list items**, **show all**, or **get a group** (e.g. "List drugs...", "ขอรายชื่อ...", "Show me all...")
+   -> `strategy: "list"`
+4. ELSE (General information, "What is...", "Properties of...", "Side effects...")
+   -> `strategy: "retrieve"`
+
+**Step B: Determine 'target_type' & 'filters'**
+1. **NLEM (National List)**:
+   - Keywords: "บัญชียาหลัก", "เบิกได้", "reimbursement", "NLEM", "Cat A/B/..."
+   - Action: Set `target_type: "nlem"`. Set `nlem_filter: true`. Extract category if present.
+2. **MANUFACTURER**:
+   - Keywords: "บริษัท", "ผู้ผลิต", "make by", "brand of", "GPO"
+   - Action: Set `target_type: "manufacturer"`. Extract the company name into `filters.manufacturer`.
+3. **INGREDIENT**:
+   - Keywords: "ส่วนผสม", "สูตร", "ประกอบด้วย", "ingredient", "composition"
+   - Action: Set `target_type: "ingredient"`.
+4. **GENERAL**:
+   - Default for general drug lookups, usage, dosage, side effects.
 
 ### Output Schema (JSON Only):
-- **target_type**: "general", "ingredient", "manufacturer", "nlem", "formula", "hierarchy"
-- **strategy**:
-    - "retrieve": (Default) For general questions asking for information (e.g. "What is X?", "Properties of X").
-    - "count": For questions asking for a number/quantity (e.g. "How many drugs?", "Count of GPO drugs").
-    - "list": For questions asking for a list of items (e.g. "List all NLEM drugs", "Show me GPO products").
-    - "verify": For questions asking to check status or existence (e.g. "Is X in NLEM?", "Does GPO make X?").
-- **query**: The core entity name to search for (e.g. "Paracetamol"). Remove filter keywords.
-- **filters**:
-    - **manufacturer**: string (e.g. "GPO", "Pfizer")
-    - **nlem_filter**: boolean (true if asking about NLEM/Essential list)
-    - **nlem_category**: string (e.g. "ก", "ข", "ค", "ง", "จ")
-    - **dosage_form**: string (e.g. "Tablet", "Injection")
+{{
+  "target_type": "string",
+  "strategy": "string",
+  "query": "string (The CORE entity name only. Remove status words, manufacturer names, and filter words.)",
+  "filters": {{
+    "manufacturer": "string or null",
+    "nlem_filter": "boolean or null",
+    "nlem_category": "string or null",
+    "dosage_form": "string or null"
+  }}
+}}
 
-### Examples:
-1. "ยา Paracetamol มีสรรพคุณอะไร" -> {{"target_type": "general", "strategy": "retrieve", "query": "Paracetamol"}}
-2. "มียากี่ตัวในบัญชี ก" -> {{"target_type": "nlem", "strategy": "count", "query": "ยา", "filters": {{"nlem_filter": true, "nlem_category": "ก"}}}}
-3. "ขอรายชื่อยาขององค์การเภสัชกรรม" -> {{"target_type": "manufacturer", "strategy": "list", "query": "ยา", "filters": {{"manufacturer": "GPO"}}}}
-4. "ยา Plavix อยู่ในบัญชีไหม" -> {{"target_type": "nlem", "strategy": "verify", "query": "Plavix", "filters": {{"nlem_filter": true}}}}
+### Few-Shot Examples:
+
+Q: "ยา Paracetamol มีสรรพคุณอะไร"
+A: {{"target_type": "general", "strategy": "retrieve", "query": "Paracetamol", "filters": {{}}}}
+
+Q: "มียากี่ตัวในบัญชี ง"
+A: {{"target_type": "nlem", "strategy": "count", "query": "ยา", "filters": {{"nlem_filter": true, "nlem_category": "ง"}}}}
+
+Q: "ขอรายชื่อยาขององค์การเภสัชกรรม"
+A: {{"target_type": "manufacturer", "strategy": "list", "query": "ยา", "filters": {{"manufacturer": "องค์การเภสัชกรรม"}}}}
+
+Q: "ยา Plavix เบิกได้ไหม" (Implies NLEM check)
+A: {{"target_type": "nlem", "strategy": "verify", "query": "Plavix", "filters": {{"nlem_filter": true}}}}
+
+Q: "บริษัท Pfizer ผลิตยาอะไรบ้าง"
+A: {{"target_type": "manufacturer", "strategy": "list", "query": "ยา", "filters": {{"manufacturer": "Pfizer"}}}}
 """
 
 QUERY_EXTRACTION_PROMPT = ChatPromptTemplate.from_messages([

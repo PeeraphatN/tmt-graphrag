@@ -1,141 +1,124 @@
-# GenAI Neo4j Ollama - Thai Medicinal Terminology (TMT) Hybrid Retriever
+# TMT GraphRAG: Thai Medicinal Terminology & Intelligent Search
 
-A hybrid retrieval system for Thai Medicinal Terminology using Neo4j graph database and Ollama LLMs.
+**TMT GraphRAG** is an advanced **Retrieval-Augmented Generation (RAG)** system designed for Thai pharmaceutical data. It leverages a **Neo4j Knowledge Graph** to understand complex drug relationships (TMT Hierarchy) and provide precise answers about drug properties, reimbursement status (NLEM), and manufacturers.
 
-## 🏗️ Architecture
+## 🌟 Key Features
 
-- **Neo4j**: Graph database for storing TMT hierarchical data (SUBS → VTM → GP → GPU → TP → TPU)
-- **Ollama**: Local LLM and embedding service
-- **Hybrid Search**: Combines vector similarity search with full-text search using Reciprocal Rank Fusion (RRF)
+### 1. Hybrid Search (Vector + Graph + Fulltext)
+Combines three search methodologies for maximum recall and precision:
+-   **Vector Search**: Semantic similarity using `bge-m3` embeddings.
+-   **Fulltext Search**: Exact keyword matching for Thai drug names.
+-   **Graph Traversal**: Expands context by traversing relationships (e.g., finding all brands of a generic drug).
 
-## 🚀 Quick Start
+### 2. Intelligent Intent Router (AQT)
+The system doesn't just "search" blindly. It classifies User Intent into strategies:
+-   **RETRIEVE**: General information lookup (e.g., "Properties of Paracetamol").
+-   **COUNT**: Quantitative analysis (e.g., "How many drugs in NLEM Category A?").
+-   **LIST**: Listing items based on criteria (e.g., "List all GPO products").
+-   **VERIFY**: Fact-checking validity (e.g., "Is Paracap reimbursable?").
+
+### 3. Deep Filtering
+Successfully handles complex constraints:
+-   **NLEM Status**: Checks if a drug is in the *National List of Essential Medicines*.
+-   **Manufacturer**: Filters results by specific companies (e.g., "GPO", "Siam Bheasach").
+
+---
+
+## 🏗️ System Architecture
+
+The pipeline consists of modular services located in `src/`:
+
+```mermaid
+graph LR
+    User[User Question] --> API[FastAPI /chat]
+    API --> Pipeline[GraphRAGPipeline]
+    
+    subgraph Core Pipeline
+        Pipeline --> AQT[AQT Service / Intent Router]
+        AQT --> Search[Search Service]
+        Search --> Extract[Extraction Service]
+        Extract --> Format[Formatting Service]
+    end
+    
+    Search --> Neo4j[(Neo4j Graph DB)]
+    Format --> LLM[Ollama LLM]
+    
+    AQT -.->|Filters (NLEM/Mfr)| Search
+```
+
+### Module Breakdown (`src/`)
+
+-   **`pipeline.py`**: Orchestrates the data flow (Transform -> Search -> Extract -> Format).
+-   **`services/aqt.py`**: **(Brain)** Uses LLM to extract `TargetType` (Intent) and `Filters` from natural language.
+-   **`services/search.py`**: **(Retriever)** Executes `hybrid_search` and `expand_context` (Graph Traversal). Applies filters dynamically.
+-   **`services/extraction.py`**: **(Parser)** Deterministically cleans and structures the graph data into JSON entities for the LLM.
+-   **`services/formatting.py`**: **(Generator)** Generates the final Thai response based *only* on the extracted JSON context.
+-   **`prompts/templates.py`**: Centralized Prompt Engineering (System Prompts for Classification & Formatting).
+
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
+-   **Docker & Docker Compose**
+-   **Python 3.10+**
+-   **Ollama** (running locally or in container)
 
-- Docker and Docker Compose installed
-- At least 8GB RAM available
-- (Optional) NVIDIA GPU for faster inference
-
-### 1. Start Services
-
+### 1. Setup Services
+Start Neo4j and Ollama containers:
 ```bash
-# Start Neo4j and Ollama
 docker-compose up -d
-
-# Check service status
-docker-compose ps
 ```
 
-### 2. Pull Ollama Models
+### 2. Configuration (`.env`)
+Ensure your `.env` file has the correct Neo4j and Ollama settings:
+```env
+NEO4J_URI=bolt://localhost:7687
+NEO4J_USER=neo4j
+NEO4J_PASSWORD=your_password
+OLLAMA_URL=http://localhost:11434
+LLM_MODEL=qwen2.5:7b-instruct
+EMBED_MODEL=bge-m3:latest
+```
 
+### 3. Run the API
+Start the FastAPI server:
 ```bash
-# Pull the embedding model
-docker exec -it ollama-service ollama pull bge-m3:latest
-
-# Pull the LLM model
-docker exec -it ollama-service ollama pull qwen2.5:7b-instruct
+python src/api/main.py
 ```
+*API will run at `http://localhost:8000`*
 
-### 3. Configure Environment
-
-Copy `.env.example` to `.env` and update credentials if needed:
-
+### 4. Interactive Testing
+Use the test script to verify the Intent Router:
 ```bash
-cp .env.example .env
+python scripts/test_intent_router.py
 ```
 
-### 4. Run the Application
+---
 
-```bash
-python genai_neo4j_ollama.py
+## 📂 Project Structure
+
+```text
+.
+├── src/
+│   ├── api/                # FastAPI Endpoints
+│   ├── services/           # Core Business Logic (AQT, Search, Extract)
+│   ├── schemas/            # Pydantic Models (Query, Response)
+│   ├── models/             # LLM & Embedding Wrappers
+│   ├── prompts/            # LLM Prompt Templates
+│   ├── cache/              # Semantic Caching Layer
+│   ├── config.py           # Environment Config
+│   └── pipeline.py         # Main Pipeline Class
+├── scripts/                # Utility & Verification Scripts
+├── tests/                  # Unit Tests
+├── docker-compose.yml      # Service Orchestration
+└── README.md               # Project Documentation
 ```
 
-## 📊 Services
+## 🧠 Knowledge Graph Schema (Simplified)
 
-| Service | Port | URL |
-|---------|------|-----|
-| Neo4j Browser | 7474 | http://localhost:7474 |
-| Neo4j Bolt | 7687 | bolt://localhost:7687 |
-| Ollama API | 11434 | http://localhost:11434 |
-
-## 🔧 Configuration
-
-### Neo4j Settings
-
-- Default user: `neo4j`
-- Default password: Set in `.env` file
-- Memory settings optimized for moderate workloads
-
-### Ollama Models
-
-- **Embedding**: `bge-m3:latest` (1024 dimensions)
-- **LLM**: `qwen2.5:7b-instruct`
-
-You can change models in the `.env` file.
-
-## 📁 Data Volumes
-
-- `neo4j_data`: Graph database storage
-- `neo4j_logs`: Neo4j logs
-- `neo4j_import`: Import files directory
-- `ollama_data`: Model storage
-
-## 🛠️ Maintenance
-
-### Stop Services
-
-```bash
-docker-compose down
-```
-
-### View Logs
-
-```bash
-# All services
-docker-compose logs -f
-
-# Specific service
-docker-compose logs -f neo4j
-docker-compose logs -f ollama
-```
-
-### Backup Neo4j Data
-
-```bash
-docker exec neo4j-tmt neo4j-admin database dump neo4j --to-path=/backup
-```
-
-### Reset Everything
-
-```bash
-docker-compose down -v  # WARNING: Deletes all data
-```
-
-## 🎯 Features
-
-- **Hybrid Search**: Vector + Full-text search with RRF fusion
-- **Thai Language Support**: Optimized for Thai pharmaceutical data
-- **Graph Traversal**: Navigate TMT hierarchy relationships
-- **Context-Aware LLM**: Grounded responses using graph context
-
-## 🐛 Troubleshooting
-
-### Neo4j won't start
-
-Check memory limits and ensure port 7687 is not already in use.
-
-### Ollama models not found
-
-Make sure to pull the models after starting Ollama:
-
-```bash
-docker exec -it ollama-service ollama list
-```
-
-### GPU Support
-
-Uncomment the GPU configuration in `docker-compose.yml` if you have NVIDIA GPU with Docker GPU support.
-
-## 📝 License
-
-(Add your license here)
+The system is built on **TMT (Thai Medicinal Terminology)** structure:
+-   **SUB / VTM**: Generic Substances
+-   **GP / GPU**: Generic Products (Dosage Forms)
+-   **TP / TPU**: Trade Products (Brand Names)
+-   **Properties**: `fsn` (FullName), `manufacturer`, `nlem` (True/False), `active_ingredient`
