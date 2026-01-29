@@ -1,4 +1,3 @@
-from sentence_transformers import CrossEncoder
 import torch
 
 class Reranker:
@@ -10,10 +9,11 @@ class Reranker:
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         print(f"Loading Reranker model: {model_name} on {self.device}...")
         try:
+            from sentence_transformers import CrossEncoder
             self.model = CrossEncoder(model_name, device=self.device)
             print("Reranker model loaded successfully.")
         except Exception as e:
-            print(f"Failed to load Reranker model: {e}")
+            print(f"Failed to load Reranker model (Import Error or other): {e}")
             self.model = None
 
     def rerank(self, query: str, candidates: list[dict], top_k: int = 10) -> list[dict]:

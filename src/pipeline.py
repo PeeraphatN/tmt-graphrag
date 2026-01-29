@@ -140,8 +140,7 @@ class GraphRAGPipeline:
     # Main Execution
     # ==========================
 
-    def run(self, question: str) -> str:
-
+    def run(self, question: str, ground_truth: str = None) -> str:
         """
         Execute the full RAG pipeline for a given question.
         Returns the final answer.
@@ -182,7 +181,7 @@ class GraphRAGPipeline:
             set_cached_answer_semantic(question, q_embedding, answer)
 
             # 5. Log Interaction
-            self._log_interaction(question, results, answer)
+            self._log_interaction(question, results, answer, ground_truth)
 
             return answer
 
@@ -225,7 +224,7 @@ class GraphRAGPipeline:
 
         print("🔥 System Ready!\n")
 
-    def _log_interaction(self, question: str, results: dict, answer: str):
+    def _log_interaction(self, question: str, results: dict, answer: str, ground_truth: str = None):
         """Append interaction log to JSONL file."""
         contexts = []
         all_nodes = results.get("seed_results", []) + results.get("expanded_nodes", [])
@@ -235,9 +234,12 @@ class GraphRAGPipeline:
             props = dict(node)
             text_parts = []
             
+            # Prioritize semantic fields
             if "fsn" in props: text_parts.append(str(props["fsn"]))
-            if "embedding_text" in props: text_parts.append(str(props["embedding_text"]))
             if "trade_name" in props: text_parts.append(f"trade_name: {props['trade_name']}")
+            if "generic_name" in props: text_parts.append(f"generic_name: {props['generic_name']}")
+            if "manufacturer" in props: text_parts.append(f"manufacturer: {props['manufacturer']}")
+            if "nlem" in props: text_parts.append(f"nlem: {props['nlem']}")
             
             if text_parts:
                 contexts.append(" | ".join(text_parts))
@@ -248,6 +250,7 @@ class GraphRAGPipeline:
             "question": question,
             "contexts": contexts,
             "answer": answer,
+            "ground_truth": ground_truth
         }
 
         with open(LOG_PATH, "a", encoding="utf-8") as f:

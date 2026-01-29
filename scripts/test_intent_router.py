@@ -9,7 +9,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from src.pipeline import GraphRAGPipeline
 from src.schemas.query import SearchStrategy
-from src.utils.test_logger import TestLogger
+from test_logger import TestLogger
 
 async def test_intent_router():
     print("=== Testing Intent Router (Property-Aware + Rule-Based Logic) ===")

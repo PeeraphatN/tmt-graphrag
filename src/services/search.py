@@ -7,6 +7,10 @@ from src.services.database import init_driver, check_index_exists
 from src.config import VECTOR_INDEX_NAME, FULLTEXT_INDEX_NAME, GRAPH_TRAVERSAL_DEPTH
 from src.query_processor import sanitize_fulltext_query
 from src.llm_service import get_embedding
+from src.services.ranking_service import Reranker
+
+# Initialize Reranker globally (loaded once)
+reranker = Reranker()
 
 def get_search_config(target_type: str) -> dict:
     """
@@ -274,6 +278,15 @@ def search_general(query_obj, k: int = 10, depth: int = 2) -> dict:
     expanded = expand_context(seed_node_ids, depth=depth)
     non_seed_nodes = [n for n in expanded["nodes"] if not n.get("is_seed", False)]
     
+    # Context Pruning (Reranking)
+    if non_seed_nodes:
+        print(f"   [Pruning] Reranking {len(non_seed_nodes)} expanded nodes...")
+        try:
+            # Use the clean_query for reranking relevance
+            non_seed_nodes = reranker.rerank(clean_query, non_seed_nodes, top_k=20)
+        except Exception as e:
+            print(f"   [Warning] Reranking failed, using original list: {e}")
+
     return {
         "strategy": "retrieve",
         "seed_results": all_seed_results,
