@@ -1,0 +1,51 @@
+
+================================================================================
+ LLM PROMPTING BENCHMARK - FINAL DETAILED RESULTS
+================================================================================
+Experiment Date : 2026-02-02
+Dataset         : Test Set (48 samples - "Hard Mode")
+Metrics         : Accuracy, Latency (ms), Avg Prompt Tokens, Context Window
+
+================================================================================
+ 📊 COMPARISON TABLE (Ranked by Best Accuracy)
+================================================================================
+Model                Size   | Mode      | Acc      Lat(ms)  Tokens  CtxWin
+--------------------------------------------------------------------------------
+1. qwen3:latest      ?      | few-shot  | 100.00%  6006.66  564     4096    🏆 (Perfect Score, but Slow)
+2. qwen3:latest      ?      | zero-shot | 95.83%   5281.22  208     4096
+3. qwen2.5:7b-istr   7B     | few-shot  | 93.75%   282.63   583     4096    🥈 (Best Balance)
+4. qwen2.5:7b-istr   7B     | zero-shot | 87.50%   383.05   227     4096
+5. gemma3:4b         4B     | few-shot  | 87.50%   391.36   507     4096
+6. llama3            8B     | few-shot  | 87.50%   294.33   547     4096
+7. gemma3:4b         4B     | zero-shot | 85.42%   520.21   203     4096
+8. qwen2.5:3b        3B     | few-shot  | 85.42%   204.32   583     4096
+9. qwen2.5:3b        3B     | zero-shot | 81.25%   257.14   227     4096
+10. phi4-mini        3B     | few-shot  | 75.00%   460.58   562     4096
+11. llama3           8B     | zero-shot | 66.67%   398.69   205     4096
+12. phi4-mini        3B     | zero-shot | 62.50%   338.00   200     4096
+13. deepseek-r1:1.5b 1.5B   | zero/few  | ~41.67%  ~1800.00 200/550 4096    ❌ Failed
+14. llama3.2:1b      1B     | zero/few  | ~41.67%  ~250.00  220/560 4096    ❌ Failed
+
+================================================================================
+ 💡 TOKEN USAGE & CONTEXT ANALYSIS
+================================================================================
+1. **Context/Token Cost**:
+   - Zero-shot Avg Tokens: ~200-220 tokens
+   - Few-shot Avg Tokens:  ~550-580 tokens (+150% increase)
+   - Impact: Few-shot uses 2.5x more tokens for a 5-20% accuracy gain.
+
+2. **Qwen 3 Supremacy**:
+   - Achieved 100% Accuracy in Few-shot.
+   - Zero-shot (95.83%) already beats all other models (Vector & LLM).
+   - *Trade-off*: Latency is ~6 seconds vs ~0.3 seconds for Qwen 2.5 7B.
+
+3. **Efficiency Winner**:
+   - **Qwen 2.5 7B** remains the practical LLM winner (93.75% Acc @ 282ms).
+   - **Vector (bge-m3)** remains the overall system winner (91.67% Acc @ 0.04ms).
+
+================================================================================
+ 🏁 RECOMMENDATION
+================================================================================
+- **Primary Router**: Vector Search (`bge-m3`) -> 91.67% Acc, 0.04ms latency.
+- **Complex Fallback**: If Vector Confidence < 0.8, call `qwen2.5:7b-instruct` (Few-shot) -> 93.75% Acc.
+- **Research Only**: `qwen3` is too slow for real-time intent routing despite 100% accuracy.
