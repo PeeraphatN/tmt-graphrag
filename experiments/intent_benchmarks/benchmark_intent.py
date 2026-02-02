@@ -71,31 +71,56 @@ def predict_centroid(X_test, centroids):
     pred_indices = np.argmax(similarities, axis=1)
     return np.array([labels[i] for i in pred_indices])
 
-def run_model_benchmark(model_name, X_train_text, y_train, X_test_text, y_test):
-    print(f"\n{'='*40}")
-    print(f" 🧠 Benchmarking Model: {model_name}")
-    print(f"{'='*40}")
+class Logger:
+    def __init__(self):
+        self.logs = []
+    
+    def log(self, message=""):
+        print(message)
+        self.logs.append(message)
+        
+    def get_content(self):
+        return "\n".join(self.logs)
+
+def save_results_to_file(content):
+    """Save benchmark results to a timestamped file."""
+    results_dir = "experiments/intent_benchmarks/results"
+    os.makedirs(results_dir, exist_ok=True)
+    
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
+    filename = f"benchmark_intent_{timestamp}.txt"
+    filepath = os.path.join(results_dir, filename)
+    
+    with open(filepath, "w", encoding="utf-8") as f:
+        f.write(content)
+    
+    print(f"\n✅ Results saved to: {filepath}")
+
+def run_model_benchmark(model_name, X_train_text, y_train, X_test_text, y_test, logger):
+    logger.log(f"\n{'='*40}")
+    logger.log(f" 🧠 Benchmarking Model: {model_name}")
+    logger.log(f"{'='*40}")
     
     # 1. Generate Embeddings
-    print(f"   Connecting to Ollama: {model_name}")
+    logger.log(f"   Connecting to Ollama: {model_name}")
     start_time = time.perf_counter()
     
     try:
-        print("      Embedding Train Set...")
+        logger.log("      Embedding Train Set...")
         X_train_vectors = get_ollama_embeddings(X_train_text, model_name)
         
-        print("      Embedding Test Set...")
+        logger.log("      Embedding Test Set...")
         X_test_vectors = get_ollama_embeddings(X_test_text, model_name)
 
     except Exception as e:
-        print(f"\n❌ Failed to connect to Ollama. Ensure 'ollama serve' is running and '{model_name}' is pulled.")
-        print(f"Error: {e}")
+        logger.log(f"\n❌ Failed to connect to Ollama. Ensure 'ollama serve' is running and '{model_name}' is pulled.")
+        logger.log(f"Error: {e}")
         return None
     
     embed_time = time.perf_counter() - start_time
     dims = X_train_vectors.shape[1]
-    print(f"   Dimensions: {dims}")
-    print(f"   Embedding Time: {embed_time:.2f}s")
+    logger.log(f"   Dimensions: {dims}")
+    logger.log(f"   Embedding Time: {embed_time:.2f}s")
     
     model_results = {}
 
@@ -104,7 +129,7 @@ def run_model_benchmark(model_name, X_train_text, y_train, X_test_text, y_test):
     best_k = -1
     best_knn_results = {}
     
-    print(f"   > Sweeping k-NN (k=3..15)...")
+    logger.log(f"   > Sweeping k-NN (k=3..15)...")
     
     for k in range(3, 16):
         # Use 'distance' weights and 'cosine' metric for best standard results
@@ -148,9 +173,13 @@ def run_model_benchmark(model_name, X_train_text, y_train, X_test_text, y_test):
         'cm': confusion_matrix(y_test, y_pred_centroid)
     }
     
-    print(f"   > Best k-NN (K={best_knn_results['k']}) Acc: {best_knn_results['accuracy']:.4f} | Prec: {best_knn_results['precision']:.4f} | Rec: {best_knn_results['recall']:.4f}")
-    print(f"     Confusion Matrix:\n{best_knn_results['cm']}")
-    print(f"   > Centroid Acc: {model_results['centroid']['accuracy']:.4f}")
+    # Print Detailed Stats for BOTH k-NN and Centroid
+    logger.log(f"   > Best k-NN (K={best_knn_results['k']}) Acc: {best_knn_results['accuracy']:.4f} | Prec: {best_knn_results['precision']:.4f} | Rec: {best_knn_results['recall']:.4f}")
+    logger.log(f"     Confusion Matrix:\n{best_knn_results['cm']}")
+    
+    c_res = model_results['centroid']
+    logger.log(f"   > Centroid Acc: {c_res['accuracy']:.4f} | Prec: {c_res['precision']:.4f} | Rec: {c_res['recall']:.4f}")
+    logger.log(f"     Confusion Matrix:\n{c_res['cm']}")
 
     return {
         'model': model_name,
@@ -159,27 +188,28 @@ def run_model_benchmark(model_name, X_train_text, y_train, X_test_text, y_test):
     }
 
 def run_benchmark():
-    print("=== Multi-Model Vector Similarity Benchmark (K-Sweep 3..15) ===")
+    logger = Logger()
+    logger.log("=== Multi-Model Vector Similarity Benchmark (K-Sweep 3..15) ===")
     
     # Load Data
-    print(f"📂 Loading Data...")
+    logger.log(f"📂 Loading Data...")
     X_train_text, y_train = load_data(TRAIN_PATH)
     X_test_text, y_test = load_data(TEST_PATH)
-    print(f"   Train: {len(X_train_text)} | Test: {len(X_test_text)}")
+    logger.log(f"   Train: {len(X_train_text)} | Test: {len(X_test_text)}")
 
     all_benchmarks = []
     
     for model in MODELS:
-        res = run_model_benchmark(model, X_train_text, y_train, X_test_text, y_test)
+        res = run_model_benchmark(model, X_train_text, y_train, X_test_text, y_test, logger)
         if res:
             all_benchmarks.append(res)
             
     # Final Summary Table
-    print(f"\n{'='*100}")
-    print(f" 📊 FINAL COMPARISON SUMMARY")
-    print(f"{'='*100}")
-    print(f"{'Model':<25} {'Dims':<6} | {'Best K':<6} {'k-NN Acc':<10} {'k-NN F1':<10} | {'Centroid Acc':<12}")
-    print("-" * 100)
+    logger.log(f"\n{'='*100}")
+    logger.log(f" 📊 FINAL COMPARISON SUMMARY")
+    logger.log(f"{'='*100}")
+    logger.log(f"{'Model':<25} {'Dims':<6} | {'Best K':<6} {'k-NN Acc':<10} {'k-NN F1':<10} | {'Centroid Acc':<12}")
+    logger.log("-" * 100)
     
     for b in all_benchmarks:
         m = b['model']
@@ -187,7 +217,9 @@ def run_benchmark():
         k_res = b['results']['knn']
         c_res = b['results']['centroid']
         
-        print(f"{m:<25} {d:<6} | {k_res['k']:<6} {k_res['accuracy']:<10.4f} {k_res['f1']:<10.4f} | {c_res['accuracy']:<12.4f}")
+        logger.log(f"{m:<25} {d:<6} | {k_res['k']:<6} {k_res['accuracy']:<10.4f} {k_res['f1']:<10.4f} | {c_res['accuracy']:<12.4f}")
+        
+    save_results_to_file(logger.get_content())
 
 if __name__ == "__main__":
     run_benchmark()

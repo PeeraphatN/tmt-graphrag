@@ -2,7 +2,8 @@ import json
 import time
 import ollama
 import numpy as np
-from sklearn.metrics import accuracy_score, classification_report, f1_score, matthews_corrcoef
+import os
+from sklearn.metrics import accuracy_score, classification_report, f1_score, matthews_corrcoef, confusion_matrix, precision_score, recall_score
 import re
 import random
 
@@ -31,6 +32,32 @@ INTENTS = {
     "formula": "Questions about dosage form (tablet, syrup, cream) or packaging.",
     "general": "General questions about TMT code, trade name search, or unspecified drug info."
 }
+
+class Logger:
+    def __init__(self):
+        self.logs = []
+    
+    def log(self, message=""):
+        print(message)
+        self.logs.append(message)
+        
+    def get_content(self):
+        return "\n".join(self.logs)
+
+def save_results_to_file(content):
+    """Save benchmark results to a timestamped file."""
+    results_dir = "experiments/intent_benchmarks/results"
+    os.makedirs(results_dir, exist_ok=True)
+    
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
+    filename = f"benchmark_llm_{timestamp}.txt"
+    filepath = os.path.join(results_dir, filename)
+    
+    with open(filepath, "w", encoding="utf-8") as f:
+        f.write(content)
+    
+    print(f"\n✅ Results saved to: {filepath}")
+
 
 def load_data(filepath):
     """Load dataset from JSON."""
@@ -140,12 +167,13 @@ def get_model_info(model_name):
         return {"context_window": "Unknown"}
 
 def run_benchmark():
-    print("=== LLM PROMPTING BENCHMARK (Zero-shot vs Few-shot) ===")
+    logger = Logger()
+    logger.log("=== LLM PROMPTING BENCHMARK (Zero-shot vs Few-shot) ===")
     
     # 1. Load Data
     train_data = load_data(TRAIN_PATH)
     test_data = load_data(TEST_PATH)
-    print(f"Train: {len(train_data)} | Test: {len(test_data)}")
+    logger.log(f"Train: {len(train_data)} | Test: {len(test_data)}")
     
     # Prepare Few-shot examples
     few_shot_ex = get_few_shot_examples(train_data, n_shots=2)
@@ -153,17 +181,17 @@ def run_benchmark():
     results_log = []
 
     for model in MODELS:
-        print(f"\n{'='*50}")
-        print(f" 🤖 Evaluation: {model}")
-        print(f"{'='*50}")
+        logger.log(f"\n{'='*50}")
+        logger.log(f" 🤖 Evaluation: {model}")
+        logger.log(f"{'='*50}")
 
         # Fetch Model Info
         model_info = get_model_info(model)
         ctx_window = model_info['context_window']
-        print(f"   ℹ️ Context Window: {ctx_window}")
+        logger.log(f"   ℹ️ Context Window: {ctx_window}")
 
         for mode in ["zero-shot", "few-shot"]:
-            print(f"\n   📍 Mode: {mode.upper()}")
+            logger.log(f"\n   📍 Mode: {mode.upper()}")
             
             y_true = []
             y_pred = []
@@ -172,7 +200,9 @@ def run_benchmark():
             parse_errors = 0
 
             for i, sample in enumerate(test_data):
-                if i % 10 == 0: print(f"      Processing {i}/{len(test_data)}...", end="\r")
+                if i % 10 == 0: 
+                    # We still print progress to console directly for better UX (don't log this)
+                    print(f"      Processing {i}/{len(test_data)}...", end="\r")
                 
                 query = sample['text']
                 label = sample['label']
@@ -194,15 +224,21 @@ def run_benchmark():
                 latencies.append(lat)
                 prompt_token_counts.append(p_tok)
             
-            print(f"      Processing {len(test_data)}/{len(test_data)}... Done.")
+            logger.log(f"      Processing {len(test_data)}/{len(test_data)}... Done.")
 
             # Calculate Metrics
             acc = accuracy_score(y_true, y_pred)
             f1 = f1_score(y_true, y_pred, average='macro', zero_division=0)
+            precision = precision_score(y_true, y_pred, average='macro', zero_division=0)
+            recall = recall_score(y_true, y_pred, average='macro', zero_division=0)
+            cm = confusion_matrix(y_true, y_pred)
+            
             avg_lat = np.mean(latencies)
             avg_prompt_tokens = np.mean(prompt_token_counts)
             
-            print(f"      [RESULT] Acc: {acc:.4f} | F1: {f1:.4f} | Latency: {avg_lat:.2f}ms | Avg Prompt Tok: {avg_prompt_tokens:.1f} | ParseErr: {parse_errors}")
+            logger.log(f"      [RESULT] Acc: {acc:.4f} | F1: {f1:.4f} | Prec: {precision:.4f} | Rec: {recall:.4f}")
+            logger.log(f"      Latency: {avg_lat:.2f}ms | Avg Prompt Tok: {avg_prompt_tokens:.1f} | ParseErr: {parse_errors}")
+            logger.log(f"      Confusion Matrix:\n{cm}")
             
             results_log.append({
                 "model": model,
@@ -210,20 +246,25 @@ def run_benchmark():
                 "context_window": ctx_window,
                 "accuracy": acc,
                 "f1": f1,
+                "precision": precision,
+                "recall": recall,
+                "cm": cm,
                 "latency": avg_lat,
                 "avg_prompt_tokens": avg_prompt_tokens,
                 "parse_error": parse_errors
             })
 
     # Summary Table
-    print(f"\n{'='*100}")
-    print(f" 📊 FINAL LLM BENCHMARK SUMMARY")
-    print(f"{'='*100}")
-    print(f"{'Model':<20} {'Mode':<10} {'CtxWin':<10} | {'Acc':<8} {'F1':<8} {'Lat(ms)':<8} {'PrToks':<6} {'ParseErr':<8}")
-    print("-" * 100)
+    logger.log(f"\n{'='*100}")
+    logger.log(f" 📊 FINAL LLM BENCHMARK SUMMARY")
+    logger.log(f"{'='*100}")
+    logger.log(f"{'Model':<20} {'Mode':<10} {'CtxWin':<10} | {'Acc':<8} {'F1':<8} {'Prec':<8} {'Rec':<8} {'Lat(ms)':<8}")
+    logger.log("-" * 100)
     
     for r in results_log:
-        print(f"{r['model']:<20} {r['mode']:<10} {str(r['context_window']):<10} | {r['accuracy']:<8.4f} {r['f1']:<8.4f} {r['latency']:<8.2f} {r['avg_prompt_tokens']:<6.1f} {r['parse_error']:<8}")
+        logger.log(f"{r['model']:<20} {r['mode']:<10} {str(r['context_window']):<10} | {r['accuracy']:<8.4f} {r['f1']:<8.4f} {r['precision']:<8.4f} {r['recall']:<8.4f} {r['latency']:<8.2f}")
+
+    save_results_to_file(logger.get_content())
 
 if __name__ == "__main__":
     run_benchmark()

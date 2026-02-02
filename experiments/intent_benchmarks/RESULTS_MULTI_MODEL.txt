@@ -1,41 +1,26 @@
 
-================================================================================
- VECTOR SIMILARITY BENCHMARK - MULTI-MODEL COMPARISON (FINAL COMPREHENSIVE)
-================================================================================
-Experiment Date : 2026-02-02
-Dataset         : Train (90) / Test (48 - Hard Mode)
-Models          : 7 Models (Small/Medium/Large/LLM)
-Methodology     : Centroid Matching vs k-NN Sweep (K=3..15)
+====================================================================================================
+ 📊 GRANULAR INTENT BENCHMARK RESULTS (Find vs Check vs Count)
+====================================================================================================
+Date: 2026-02-02
+Context: 
+- Granular Intents: `_find` (Lookup), `_check` (Boolean), `_count` (Counting)
+- Classes: 17 Classes (5 Topics * 3 Actions + 2 General)
+- Balanced Data: Train 15 samples/class, Test 8 samples/class
 
-================================================================================
- 📊 COMPARISON TABLE (Ranked by Best Accuracy)
-================================================================================
-Model                           Dims   | Best K   Acc      Lat(ms)  | Centroid Acc | Lang Support
----------------------------------------------------------------------------------------------------
-1. bge-m3                       1024   | K=5      93.75%   0.04     | 91.67%       | Multilingual 🏆
-2. paraphrase-multilingual      768    | K=9      87.50%   0.04     | 89.58%       | Multilingual
-3. llama3                       4096   | K=8      43.75%   0.08     | 47.92%       | English (LLM)
-4. all-minilm                   384    | K=5      41.67%   0.01     | 33.33%       | English
-5. mxbai-embed-large            1024   | K=3      41.67%   0.04     | 37.50%       | English
-6. qllama/bge-small-en-v1.5     384    | K=12     41.67%   0.03     | 35.42%       | English
-7. nomic-embed-text             768    | K=3      27.08%   0.04     | 27.08%       | English
+----------------------------------------------------------------------------------------------------
+Model                     Dims   | Best K k-NN Acc   k-NN F1    | Centroid Acc
+----------------------------------------------------------------------------------------------------
+all-minilm                384    | 3      0.2353     0.2335     | 0.1471
+nomic-embed-text:latest   768    | 15     0.1471     0.1003     | 0.1029
+bge-m3                    1024   | 3      0.7941     0.7866     | 0.8603  <-- WINNER 🏆
+mxbai-embed-large:latest  1024   | 11     0.2721     0.2659     | 0.1176
+qllama/bge-small-en-v1.5:latest 384    | 7      0.2426     0.2424     | 0.1544
+paraphrase-multilingual   768    | 4      0.7941     0.7907     | 0.7647  <-- RUNNER UP 🥈
+llama3                    4096   | 3      0.4191     0.4165     | 0.3382
 
-================================================================================
- 💡 KEY INSIGHTS (Post K-Sweep)
-================================================================================
-1. **Optimal K varies by model**:
-   - `bge-m3` prefers **K=5** (93.75%), indicating tightly clustered intent groups.
-   - `paraphrase` prefers **K=9** (87.50%), suggesting slightly noisier clusters requiring more voting votes.
-   - `llama3` failed to improve significantly even with sweeping (max 43.75%).
-
-2. **Multilingual Supremacy Confirmed**:
-   - Even with optimal parameters, English-only models (minilm, nomic) cannot cross the 42% accuracy barrier on Thai medical queries.
-
-3. **Vector vs LLM Convergence**:
-   - With K=5, `bge-m3` (93.75%) now **ties** the accuracy of `qwen2.5:7b-instruct` (Few-shot), but remains ~6,000x faster.
-
-================================================================================
- 🏁 FINAL CONCLUSION
-================================================================================
-Production: **bge-m3** with **k-NN (K=5)**.
-Performance: Matches 7B LLM accuracy with 0.04ms latency.
+----------------------------------------------------------------------------------------------------
+Key Findings:
+1. bge-m3 dominates with ~86% Accuracy, proving it can distinguish subtle intent nuances (Count vs Check).
+2. The dataset balancing (15 train / 8 test) provided a very stable evaluation.
+3. Separation of 'Count', 'Find', and 'Check' is viable using a single Flat Classification step.
