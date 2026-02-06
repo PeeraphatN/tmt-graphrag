@@ -151,8 +151,8 @@ def run_prediction(model, prompt):
         
         # Capture usage stats directly from response object (if available)
         # Ollama python client returns dict with 'eval_count', 'prompt_eval_count' etc.
-        prompt_tokens = response.get('prompt_eval_count', 0)
-        eval_tokens = response.get('eval_count', 0)
+        prompt_tokens = response.get('prompt_eval_count') or 0
+        eval_tokens = response.get('eval_count') or 0
         
         return response['response'], latency, prompt_tokens, eval_tokens
     except Exception as e:
