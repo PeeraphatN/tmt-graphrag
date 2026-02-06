@@ -205,19 +205,33 @@ def run_benchmark():
             all_benchmarks.append(res)
             
     # Final Summary Table
-    logger.log(f"\n{'='*100}")
+    logger.log(f"\n{'='*180}")
     logger.log(f" 📊 FINAL COMPARISON SUMMARY")
-    logger.log(f"{'='*100}")
-    logger.log(f"{'Model':<25} {'Dims':<6} | {'Best K':<6} {'k-NN Acc':<10} {'k-NN F1':<10} | {'Centroid Acc':<12}")
-    logger.log("-" * 100)
+    logger.log(f"{'='*180}")
+    
+    # Header
+    header = (
+        f"{'Model':<25} | {'Dims':<6} | "
+        f"{'Best K':<6} {'KNN Acc':<8} {'KNN F1':<8} {'KNN P':<8} {'KNN R':<8} {'KNN ms':<8} | "
+        f"{'Cen Acc':<8} {'Cen F1':<8} {'Cen P':<8} {'Cen R':<8} {'Cen ms':<8}"
+    )
+    logger.log(header)
+    logger.log("-" * 180)
     
     for b in all_benchmarks:
-        m = b['model']
+        m = b['model'].split(':')[0] # Shorten name for table if needed, or keep full
+        if len(m) > 24: m = m[:22] + ".."
+        
         d = b['dims']
         k_res = b['results']['knn']
         c_res = b['results']['centroid']
         
-        logger.log(f"{m:<25} {d:<6} | {k_res['k']:<6} {k_res['accuracy']:<10.4f} {k_res['f1']:<10.4f} | {c_res['accuracy']:<12.4f}")
+        row = (
+            f"{m:<25} | {d:<6} | "
+            f"{k_res['k']:<6} {k_res['accuracy']:.4f}   {k_res['f1']:.4f}   {k_res['precision']:.4f}   {k_res['recall']:.4f}   {k_res['latency']:<8.2f} | "
+            f"{c_res['accuracy']:.4f}   {c_res['f1']:.4f}   {c_res['precision']:.4f}   {c_res['recall']:.4f}   {c_res['latency']:<8.2f}"
+        )
+        logger.log(row)
         
     save_results_to_file(logger.get_content())
 

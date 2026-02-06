@@ -25,12 +25,24 @@ MODELS = [
 
 # Intent Definitions for Zero-shot
 INTENTS = {
-    "manufacturer": "Questions about the drug company, brand owner, or producer.",
-    "ingredient": "Questions about active substances, chemical composition, or drug components.",
-    "nlem": "Questions about National List of Essential Medicines, reimbursement, or rights (Gold Card, Civil Servant).",
-    "hierarchy": "Questions about drug levels (Generic vs Trade), or relationships between drugs.",
-    "formula": "Questions about dosage form (tablet, syrup, cream) or packaging.",
-    "general": "General questions about TMT code, trade name search, or unspecified drug info."
+    "manufacturer_find": "Find specific manufacturer, distributor, or copyright holder of a drug.",
+    "manufacturer_check": "Check verification of manufacturer, country of origin, or production standards.",
+    "manufacturer_count": "Count products, brands, or factories related to a manufacturer.",
+    "ingredient_find": "Find active ingredients, components, formula details, or chemical names.",
+    "ingredient_check": "Check if a drug contains specific substances (e.g. alcohol, steroids, peanut).",
+    "ingredient_count": "Count number of ingredients, substances, or active components.",
+    "nlem_find": "Find National List of Essential Medicines (NLEM) category, reimbursement type, or rights.",
+    "nlem_check": "Check reimbursement eligibility (Gold Card, Civil Servant) or NLEM status.",
+    "nlem_count": "Count drugs in specific NLEM categories or reimbursement lists.",
+    "hierarchy_find": "Find generic name, drug relationships (parent/child), or TMT hierarchy levels.",
+    "hierarchy_check": "Check if drug is Generic/Original, or verification of TMT level (GP/TP/VTM).",
+    "hierarchy_count": "Count trade names, generic substitutions, or hierarchy nodes.",
+    "formula_find": "Find dosage form, strength, concentration, or packaging details.",
+    "formula_check": "Check specific characteristics (tablet/syrup, sugar-free, extended release).",
+    "formula_count": "Count available strengths, dosage forms, or package sizes.",
+    "general_find": "Find general info, TMT ID, update date, or official name.",
+    "general_check": "Check TMT ID existence, data validity, or status in system.",
+    "general_count": "Count total records, updates, or items in the database."
 }
 
 class Logger:
