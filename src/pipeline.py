@@ -15,6 +15,7 @@ from src.services.extraction import extract_structured_data
 from src.services.aqt import transform_query
 from src.services.formatting import get_formatter_chain
 from src.services.verification import verify_semantic_match
+from src.services.intent_classifier import get_intent_classifier
 from src.cache.result_cache import (
     get_cached_answer_semantic, set_cached_answer_semantic,
     get_cached_query, set_cached_query,
@@ -27,6 +28,10 @@ from src.services.ranking_service import Reranker
 # Log path configuration
 LOG_PATH = "./logs/ragas_data.jsonl"
 pathlib.Path(LOG_PATH).parent.mkdir(parents=True, exist_ok=True)
+
+# Intent Classification dataset
+INTENT_DATASET = "./api/intent_dataset.json"
+
 
 class GraphRAGPipeline:
     def __init__(self):
@@ -48,6 +53,11 @@ class GraphRAGPipeline:
         # Initialize Reranker
         self.reranker = Reranker()
         # self.reranker = None  # Configurable: Set to Reranker() if needed
+
+        # Initialize Intent Classifier (compute centroids at startup)
+        print("\n🧠 Initializing Intent Classifier...")
+        self.intent_classifier = get_intent_classifier()
+        self.intent_classifier.initialize()
 
         # build the LCEL chain
         self.chain = self._build_chain()
@@ -71,30 +81,22 @@ class GraphRAGPipeline:
     # ==========================
 
     def _step_transform(self, inputs: dict) -> GraphRAGQuery:
-        """Step 1: Transform Query (with Caching)"""
+        """Step 1: AQT - Intent Classification + Filter Extraction (no LLM)"""
         question = inputs["question"]
-        print(f"\\n→ Process: Query Transformation (Self-Querying) ...")
+        q_embedding = inputs.get("q_embedding")  # From run() for cache optimization
         
-        # cached_query = get_cached_query(question)
-        # if cached_query:
-        #     print("   ⚡ [CACHE HIT] Query Transform")
-        #     query_obj = GraphRAGQuery(
-        #         query=cached_query["query"],
-        #         target_type=cached_query["target_type"],
-        #         nlem_filter=cached_query.get("nlem_filter"),
-        #         nlem_category=cached_query.get("nlem_category"),
-        #         manufacturer_filter=cached_query.get("manufacturer_filter"),
-        #     )
-        # else:
-        #     query_obj = transform_query(question)
-        #     set_cached_query(question, query_obj)
-
-        query_obj = transform_query(question)
+        print(f"\n→ Process: AQT (Intent + Filters) ...")
         
+        # transform_query now handles both intent classification and filter extraction
+        query_obj = transform_query(question, q_embedding)
         
-
-        print(f"   Intent: {query_obj.target_type.upper()}")
-        print(f"   Filters: NLEM={query_obj.nlem_filter}, Cat={query_obj.nlem_category}")
+        # Print debug info
+        raw_intent = getattr(query_obj, '_raw_intent', 'unknown')
+        confidence = getattr(query_obj, '_intent_confidence', 0.0)
+        
+        print(f"   Intent: {raw_intent} (confidence: {confidence:.4f})")
+        print(f"   Target Type: {query_obj.target_type.upper()} | Strategy: {query_obj.strategy}")
+        print(f"   Filters: NLEM={query_obj.nlem_filter}, Cat={query_obj.nlem_category}, Manu={query_obj.manufacturer_filter}")
         print(f"   Search Term: '{query_obj.query}'")
         
         return query_obj
@@ -149,25 +151,11 @@ class GraphRAGPipeline:
         if not question:
             return ""
 
-        # 1. Generate Embedding (for semantic cache)
+        # 1. Generate Embedding (for Intent Classification)
         print("\n→ Generating question embedding...")
         q_embedding = embed_text(question)
 
-        # 2. Check Answer Cache (Layer 3)
-        # cached_answer, is_semantic = get_cached_answer_semantic(
-        #     question, 
-        #     q_embedding,
-        #     verification_fn=verify_semantic_match
-        # )
-        # if cached_answer:
-        #     if is_semantic:
-        #         print("⚡ [CACHE HIT - SEMANTIC] คำถามคล้ายกันถูกดึงจาก Cache")
-        #     else:
-        #         print("⚡ [CACHE HIT - EXACT] คำตอบถูกดึงจาก Cache")
-        #     print("\nตอบ:\n", cached_answer)
-        #     return cached_answer
-
-        # 3. Invoke Chain
+        # 2. Invoke Chain
         print("\n🚀 Invoking Pipeline Chain...")
         try:
             # The chain returns a dict with all steps' outputs: {question, query_obj, results, context, answer}
@@ -177,10 +165,10 @@ class GraphRAGPipeline:
             
             print("\nตอบ:\n", answer)
 
-            # 4. Update Answer Cache
+            # 3. Update Answer Cache
             set_cached_answer_semantic(question, q_embedding, answer)
 
-            # 5. Log Interaction
+            # 4. Log Interaction
             self._log_interaction(question, results, answer, ground_truth)
 
             return answer

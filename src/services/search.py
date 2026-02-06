@@ -124,6 +124,15 @@ def hybrid_search(question: str, k: int = 5, allowed_levels: list[str] = None, f
             }
             if allowed_levels:
                 fulltext_params["allowed_levels"] = list(allowed_levels)
+            
+            # Copy filter params for WHERE clause (Bug fix: nlem_val, nlem_cat, manu)
+            if filters:
+                if "nlem_val" in params:
+                    fulltext_params["nlem_val"] = params["nlem_val"]
+                if "nlem_cat" in params:
+                    fulltext_params["nlem_cat"] = params["nlem_cat"]
+                if "manu" in params:
+                    fulltext_params["manu"] = params["manu"]
 
             fulltext_query = f"""
             CALL db.index.fulltext.queryNodes($index_name, $search_text, {{limit: $k}})
