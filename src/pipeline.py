@@ -1,4 +1,5 @@
 import json
+import time
 import uuid
 import pathlib
 from datetime import datetime
@@ -82,6 +83,7 @@ class GraphRAGPipeline:
 
     def _step_transform(self, inputs: dict) -> GraphRAGQuery:
         """Step 1: AQT - Intent Classification + Filter Extraction (no LLM)"""
+        start_time = time.perf_counter()
         question = inputs["question"]
         q_embedding = inputs.get("q_embedding")  # From run() for cache optimization
         
@@ -99,10 +101,15 @@ class GraphRAGPipeline:
         print(f"   Filters: NLEM={query_obj.nlem_filter}, Cat={query_obj.nlem_category}, Manu={query_obj.manufacturer_filter}")
         print(f"   Search Term: '{query_obj.query}'")
         
+        elapsed = time.perf_counter() - start_time
+        print(f"   ⏱️ Transform Time: {elapsed:.3f}s")
+        self._timing['transform'] = elapsed
+        
         return query_obj
 
     def _step_search(self, inputs: dict) -> dict:
         """Step 2: Search (Vector + Fulltext + Rerank)"""
+        start_time = time.perf_counter()
         query_obj = inputs["query_obj"]
         question = inputs["question"]
         
@@ -117,10 +124,15 @@ class GraphRAGPipeline:
             if reranked:
                 print(f"   Top candidate: {reranked[0].get('score')} -> {reranked[0].get('rerank_score')}")
 
+        elapsed = time.perf_counter() - start_time
+        print(f"   ⏱️ Search Time: {elapsed:.3f}s")
+        self._timing['search'] = elapsed
+        
         return results
 
     def _step_extract(self, inputs: dict) -> dict:
         """Step 3: Extract Structured Data"""
+        start_time = time.perf_counter()
         results = inputs["results"]
         query_obj = inputs["query_obj"]
         
@@ -135,6 +147,10 @@ class GraphRAGPipeline:
         
         print(f"   Found: {num_seeds} primary nodes, {num_expanded} related nodes, {num_rels} relationships")
         print(f"   Context: {num_entities} entities will be sent to LLM")
+        
+        elapsed = time.perf_counter() - start_time
+        print(f"   ⏱️ Extraction Time: {elapsed:.3f}s")
+        self._timing['extract'] = elapsed
         
         return structured
 
@@ -157,12 +173,29 @@ class GraphRAGPipeline:
 
         # 2. Invoke Chain
         print("\n🚀 Invoking Pipeline Chain...")
+        self._timing = {}  # Reset timing dict
+        pipeline_start = time.perf_counter()
+        
         try:
             # The chain returns a dict with all steps' outputs: {question, query_obj, results, context, answer}
             output = self.chain.invoke({"question": question})
             answer = output["answer"]
             results = output["results"]
             
+            # Calculate LLM time (total - other steps)
+            pipeline_total = time.perf_counter() - pipeline_start
+            other_time = sum(self._timing.values())
+            llm_time = pipeline_total - other_time
+            self._timing['llm'] = llm_time
+            
+            # Print timing summary
+            print(f"\n⏱️ Pipeline Timing Summary:")
+            print(f"   Transform: {self._timing.get('transform', 0):.3f}s")
+            print(f"   Search:    {self._timing.get('search', 0):.3f}s")
+            print(f"   Extract:   {self._timing.get('extract', 0):.3f}s")
+            print(f"   LLM:       {self._timing.get('llm', 0):.3f}s")
+            print(f"   ────────────────────")
+            print(f"   Total:     {pipeline_total:.3f}s")
             print("\nตอบ:\n", answer)
 
             # 3. Update Answer Cache
