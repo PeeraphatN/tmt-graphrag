@@ -26,14 +26,3 @@ def get_formatter_chain() -> Runnable:
     )
     
     return chain
-
-def format_answer_llm(question: str, structured_data: dict) -> str:
-    """
-    Helper function to run formatting immediately.
-    """
-    chain = get_formatter_chain()
-    try:
-        return chain.invoke({"question": question, "context": structured_data})
-    except Exception as e:
-        print(f"Formatter Error: {e}")
-        return "เกิดข้อผิดพลาดในการสร้างคำตอบ"

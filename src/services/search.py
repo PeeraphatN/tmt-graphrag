@@ -386,20 +386,18 @@ def execute_listing_query(query_obj, k: int = 100) -> dict:
 def advanced_graphrag_search(query_obj, k: int = 10, depth: int = 2) -> dict:
     """
     Intent Router: Dispatches the search to specific functions based on query_obj.strategy.
-    """
-    strategy = getattr(query_obj, 'strategy', 'retrieve')
     
-    # 1. Router Logic
-    if strategy == 'count':
-        return execute_count_query(query_obj)
-        
-    elif strategy == 'list':
-        return execute_listing_query(query_obj, k=50)
-        
-    elif strategy == 'verify':
-        print(f"   [Strategy: VERIFY] Redirecting to General Search for broader context...")
-        return search_general(query_obj, k=k, depth=depth)
-        
-    else:
-        # Default: RETRIEVE
-        return search_general(query_obj, k=k, depth=depth)
+    NOTE: Multi-strategy routing disabled temporarily. Always uses RETRIEVE (hybrid search)
+    to ensure consistent search results. Count/List strategies can be re-enabled when
+    the intent classification is more accurate.
+    """
+    # SIMPLIFIED: Always use RETRIEVE strategy (hybrid search)
+    # Original multi-strategy code commented out for now
+    
+    # strategy = getattr(query_obj, 'strategy', 'retrieve')
+    # if strategy == 'count':
+    #     return execute_count_query(query_obj)
+    # elif strategy == 'list':
+    #     return execute_listing_query(query_obj, k=50)
+    
+    return search_general(query_obj, k=k, depth=depth)

@@ -154,7 +154,7 @@ def extract_structured_data(results: dict, question_type: str) -> dict:
     return {
         "question_type": question_type,
         "entities": entities,
-        "evidence": evidence,
+        # "evidence": evidence,
         "total_entities": len(entities),
         "total_relationships": len(evidence)
     }
