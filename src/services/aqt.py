@@ -10,36 +10,16 @@ For now, uses regex patterns for filter extraction as a placeholder for NER.
 import re
 from src.schemas.query import GraphRAGQuery
 from src.services.intent_classifier import get_intent_classifier
+from src.services.manufacturer_lookup import find_manufacturer_with_alias, load_manufacturers
 
 
 # ============================================================
 # FILTER EXTRACTION (Placeholder for future NER)
 # ============================================================
 
-# Common manufacturer patterns
-KNOWN_MANUFACTURERS = {
-    "gpo": "GPO",
-    "องค์การเภสัชกรรม": "GPO",
-    "องค์การ": "GPO",
-    "pfizer": "Pfizer",
-    "bayer": "Bayer",
-    "sanofi": "Sanofi",
-    "novartis": "Novartis",
-    "gsk": "GSK",
-    "glaxo": "GSK",
-    "astrazeneca": "AstraZeneca",
-    "astra": "AstraZeneca",
-    "merck": "Merck",
-    "abbott": "Abbott",
-    "สยามเภสัช": "Siam Pharmaceutical",
-    "สยามยา": "Siam Pharmaceutical",
-    "ไบโอฟาร์ม": "Biopharm",
-    "biopharm": "Biopharm",
-    "เบอร์ลิน": "Berlin",
-    "berlin": "Berlin",
-    "t.o. pharma": "T.O. Pharma",
-    "ยูเมด้า": "Umeda",
-}
+# Load manufacturers at module import (cached)
+load_manufacturers()
+
 
 # NLEM/Reimbursement patterns
 NLEM_PATTERNS = [
@@ -62,29 +42,8 @@ NLEM_CATEGORY_PATTERNS = {
 
 
 def extract_manufacturer(question: str) -> str:
-    """Extract manufacturer name from question (Placeholder for NER)."""
-    q_lower = question.lower()
-    
-    # Check for known manufacturers
-    for key, value in KNOWN_MANUFACTURERS.items():
-        if key in q_lower:
-            return value
-    
-    # Try pattern matching for "บริษัท X"
-    patterns = [
-        r"บริษัท\s*([^\s,]+)",
-        r"ของ\s*([A-Za-z]+(?:\s+[A-Za-z]+)?)",
-        r"โดย\s*([A-Za-z]+(?:\s+[A-Za-z]+)?)",
-    ]
-    for pattern in patterns:
-        match = re.search(pattern, question)
-        if match:
-            candidate = match.group(1)
-            # Filter out non-manufacturer words
-            if candidate.lower() not in ['ยา', 'ตัว', 'นี้', 'ไหน']:
-                return candidate
-    
-    return None
+    """Extract manufacturer name using dynamic lookup from Neo4j data."""
+    return find_manufacturer_with_alias(question)
 
 
 def extract_nlem_filter(question: str) -> bool:

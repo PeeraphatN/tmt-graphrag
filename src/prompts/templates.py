@@ -8,7 +8,7 @@ from langchain_core.prompts import ChatPromptTemplate
 
 
 # ==============================================================================
-# 2. QUERY EXTRACTION PROMPT (Self-Querying)
+# 1. QUERY EXTRACTION PROMPT (Self-Querying)
 # ==============================================================================
 QUERY_EXTRACTION_SYSTEM_PROMPT = """
 You are an expert pharmaceutical assistant using a GraphRAG system.
@@ -85,7 +85,7 @@ QUERY_EXTRACTION_PROMPT = ChatPromptTemplate.from_messages([
 
 
 # ==============================================================================
-# 3. FORMATTER PROMPT (RAG Answer Generator)
+# 2. FORMATTER PROMPT (RAG Answer Generator)
 # ==============================================================================
 FORMATTER_SYSTEM_PROMPT = """คุณเป็นเภสัชกรที่ตอบคำถามเกี่ยวกับยาภาษาไทย
 

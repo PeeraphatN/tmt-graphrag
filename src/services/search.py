@@ -266,9 +266,9 @@ def search_general(query_obj, k: int = 10, depth: int = 2) -> dict:
         
         # Extract filters from query_obj (New)
         filters = {}
-        if getattr(query_obj, 'nlem_filter', None): filters['nlem'] = True
-        if getattr(query_obj, 'nlem_category', None): filters['nlem_category'] = query_obj.nlem_category
-        if getattr(query_obj, 'manufacturer_filter', None): filters['manufacturer'] = query_obj.manufacturer_filter
+        if getattr(query_obj, 'nlem_filter', None) is not None: filters['nlem'] = query_obj.nlem_filter
+        if getattr(query_obj, 'nlem_category', None) is not None: filters['nlem_category'] = query_obj.nlem_category
+        if getattr(query_obj, 'manufacturer_filter', None) is not None: filters['manufacturer'] = query_obj.manufacturer_filter
         
         results = hybrid_search(q_str, k=k, allowed_levels=config["allowed_levels"], filters=filters)
         for item in results:

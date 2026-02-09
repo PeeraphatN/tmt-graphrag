@@ -152,17 +152,3 @@ def get_intent_classifier() -> IntentClassifier:
         _classifier_instance = IntentClassifier()
     return _classifier_instance
 
-
-def classify_intent(query: str, query_embedding: np.ndarray = None) -> dict:
-    """
-    Convenience function to classify intent.
-    
-    Args:
-        query: User question
-        query_embedding: Pre-computed embedding (optional)
-    
-    Returns:
-        dict with intent, confidence, base_intent, action
-    """
-    classifier = get_intent_classifier()
-    return classifier.classify(query, query_embedding)
