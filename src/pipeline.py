@@ -62,6 +62,7 @@ class GraphRAGPipeline:
 
         # build the LCEL chain
         self.chain = self._build_chain()
+        self._timing = {}
 
     def _build_chain(self) -> Runnable:
         """
@@ -83,6 +84,8 @@ class GraphRAGPipeline:
 
     def _step_transform(self, inputs: dict) -> GraphRAGQuery:
         """Step 1: AQT - Intent Classification + Filter Extraction (no LLM)"""
+        if not hasattr(self, "_timing"):
+            self._timing = {}
         start_time = time.perf_counter()
         question = inputs["question"]
         q_embedding = inputs.get("q_embedding")  # From run() for cache optimization
@@ -95,10 +98,18 @@ class GraphRAGPipeline:
         # Print debug info
         raw_intent = getattr(query_obj, '_raw_intent', 'unknown')
         confidence = getattr(query_obj, '_intent_confidence', 0.0)
+        target_conf = getattr(query_obj, '_target_confidence', 0.0)
+        target_margin = getattr(query_obj, '_target_margin', 0.0)
         
-        print(f"   Intent: {raw_intent} (confidence: {confidence:.4f})")
+        print(f"   Intent: {raw_intent} (fine_conf: {confidence:.4f}, target_conf: {target_conf:.4f}, margin: {target_margin:.4f})")
         print(f"   Target Type: {query_obj.target_type.upper()} | Strategy: {query_obj.strategy}")
         print(f"   Filters: NLEM={query_obj.nlem_filter}, Cat={query_obj.nlem_category}, Manu={query_obj.manufacturer_filter}")
+        print(
+            "   Retrieval Profile: "
+            f"mode={query_obj.retrieval_mode}, "
+            f"entity_ratio={query_obj.entity_ratio:.2f}, "
+            f"weights(v={query_obj.vector_weight:.2f}, f={query_obj.fulltext_weight:.2f})"
+        )
         print(f"   Search Term: '{query_obj.query}'")
         
         elapsed = time.perf_counter() - start_time
@@ -109,6 +120,8 @@ class GraphRAGPipeline:
 
     def _step_search(self, inputs: dict) -> dict:
         """Step 2: Search (Vector + Fulltext + Rerank)"""
+        if not hasattr(self, "_timing"):
+            self._timing = {}
         start_time = time.perf_counter()
         query_obj = inputs["query_obj"]
         question = inputs["question"]
@@ -132,6 +145,8 @@ class GraphRAGPipeline:
 
     def _step_extract(self, inputs: dict) -> dict:
         """Step 3: Extract Structured Data"""
+        if not hasattr(self, "_timing"):
+            self._timing = {}
         start_time = time.perf_counter()
         results = inputs["results"]
         query_obj = inputs["query_obj"]
@@ -178,7 +193,7 @@ class GraphRAGPipeline:
         
         try:
             # The chain returns a dict with all steps' outputs: {question, query_obj, results, context, answer}
-            output = self.chain.invoke({"question": question})
+            output = self.chain.invoke({"question": question, "q_embedding": q_embedding})
             answer = output["answer"]
             results = output["results"]
             

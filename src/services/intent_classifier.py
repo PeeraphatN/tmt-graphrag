@@ -4,141 +4,196 @@ Uses bge-m3 embeddings via Ollama.
 """
 import json
 import numpy as np
-import os
+from collections import defaultdict
 from pathlib import Path
 
 import ollama
 
+from src.config import EMBED_MODEL
+
 # Configuration
-EMBED_MODEL = "bge-m3:latest"
 INTENT_DATASET_PATH = Path(__file__).parent.parent / "api" / "intent_dataset.json"
 
 
 class IntentClassifier:
     """
-    Centroid-based Intent Classifier.
-    
-    1. Loads intent dataset (intent -> list of example queries)
-    2. Computes centroid (mean) embedding for each intent
-    3. Classifies new queries by finding nearest centroid (cosine similarity)
+    Centroid-based Intent Classifier with two levels:
+    1) Fine intent labels (e.g. manufacturer_find, nlem_check)
+    2) Target intent labels (e.g. manufacturer, nlem)
     """
-    
-    def __init__(self, dataset_path: str = None):
+
+    ACTION_SUFFIXES = {"find", "check", "count"}
+
+    def __init__(
+        self,
+        dataset_path: str = None,
+        confidence_threshold: float = 0.55,
+        ambiguity_margin: float = 0.03,
+    ):
         self.dataset_path = dataset_path or str(INTENT_DATASET_PATH)
-        self.centroids = {}  # intent_name -> np.array (embedding)
+        self.confidence_threshold = confidence_threshold
+        self.ambiguity_margin = ambiguity_margin
+        self.fine_centroids = {}  # fine_intent -> np.array
+        self.target_centroids = {}  # target_type -> np.array
         self.intent_names = []
+        self.target_names = []
         self._initialized = False
-    
+
+    @staticmethod
+    def _parse_intent_name(intent_name: str) -> tuple[str, str]:
+        """
+        Convert fine label into (target, action) pair.
+        Example: 'manufacturer_find' -> ('manufacturer', 'find')
+        """
+        if "_" not in intent_name:
+            return intent_name, "find"
+
+        base, suffix = intent_name.rsplit("_", 1)
+        if suffix in IntentClassifier.ACTION_SUFFIXES:
+            return base, suffix
+        return intent_name, "find"
+
+    @staticmethod
+    def _normalize(vec: np.ndarray) -> np.ndarray:
+        norm = np.linalg.norm(vec)
+        return vec if norm == 0 else (vec / norm)
+
+    def _embed_text(self, text: str) -> np.ndarray | None:
+        try:
+            response = ollama.embeddings(model=EMBED_MODEL, prompt=text)
+            return np.array(response["embedding"], dtype=np.float32)
+        except Exception as e:
+            print(f"   Warning: Failed to embed '{text[:30]}...': {e}")
+            return None
+
+    def _score_against(self, query_embedding: np.ndarray, centroids: dict[str, np.ndarray]) -> list[tuple[str, float]]:
+        """
+        Return cosine similarity scores sorted descending.
+        """
+        q = self._normalize(query_embedding)
+        scores = []
+        for name, centroid in centroids.items():
+            c = self._normalize(centroid)
+            score = float(np.dot(q, c))
+            scores.append((name, score))
+        scores.sort(key=lambda x: x[1], reverse=True)
+        return scores
+
     def initialize(self):
         """Load dataset and compute centroids. Call once at startup."""
         if self._initialized:
             return
-        
+
         print("   Loading intent dataset...")
         with open(self.dataset_path, "r", encoding="utf-8") as f:
             dataset = json.load(f)
-        
-        print(f"   Computing centroids for {len(dataset)} intents...")
-        
-        for intent_name, examples in dataset.items():
-            embeddings = []
+
+        print(f"   Computing centroids for {len(dataset)} fine intents...")
+
+        fine_vectors: dict[str, list[np.ndarray]] = defaultdict(list)
+        target_vectors: dict[str, list[np.ndarray]] = defaultdict(list)
+
+        for fine_intent, examples in dataset.items():
+            target, _ = self._parse_intent_name(fine_intent)
             for example in examples:
-                try:
-                    response = ollama.embeddings(model=EMBED_MODEL, prompt=example)
-                    embeddings.append(response["embedding"])
-                except Exception as e:
-                    print(f"   Warning: Failed to embed '{example[:30]}...': {e}")
+                emb = self._embed_text(example)
+                if emb is None:
                     continue
-            
-            if embeddings:
-                # Compute centroid (mean of all embeddings)
-                centroid = np.mean(embeddings, axis=0)
-                self.centroids[intent_name] = centroid
-                self.intent_names.append(intent_name)
-        
+                fine_vectors[fine_intent].append(emb)
+                target_vectors[target].append(emb)
+
+        for fine_intent, vectors in fine_vectors.items():
+            if vectors:
+                self.fine_centroids[fine_intent] = np.mean(vectors, axis=0)
+                self.intent_names.append(fine_intent)
+
+        for target, vectors in target_vectors.items():
+            if vectors:
+                self.target_centroids[target] = np.mean(vectors, axis=0)
+                self.target_names.append(target)
+
         self._initialized = True
-        print(f"   ✅ Intent Classifier initialized with {len(self.centroids)} intents")
-    
+        print(
+            f"   ✅ Intent Classifier initialized "
+            f"(fine={len(self.fine_centroids)}, target={len(self.target_centroids)})"
+        )
+
     def classify(self, query: str, query_embedding: np.ndarray = None) -> dict:
         """
-        Classify a query into one of the known intents.
-        
-        Args:
-            query: The user question
-            query_embedding: Pre-computed embedding (optional, to avoid re-embedding)
-        
-        Returns:
-            dict with:
-                - intent: The predicted intent name
-                - confidence: Cosine similarity score (0-1)
-                - base_intent: The base intent category (e.g., 'manufacturer' from 'manufacturer_find')
-                - action: The action type (e.g., 'find', 'check', 'count')
+        Classify query into both fine intent and target intent.
         """
         if not self._initialized:
             self.initialize()
-        
-        # Get query embedding if not provided
+
         if query_embedding is None:
-            try:
-                response = ollama.embeddings(model=EMBED_MODEL, prompt=query)
-                query_embedding = np.array(response["embedding"])
-            except Exception as e:
-                print(f"   Error embedding query: {e}")
-                return {"intent": "general_find", "confidence": 0.0, "base_intent": "general", "action": "find"}
+            query_embedding = self._embed_text(query)
+            if query_embedding is None:
+                return {
+                    "intent": "general_find",
+                    "confidence": 0.0,
+                    "base_intent": "general",
+                    "action": "find",
+                    "target_type": "general",
+                    "target_confidence": 0.0,
+                    "target_margin": 0.0,
+                    "is_ambiguous": True,
+                }
         else:
-            query_embedding = np.array(query_embedding)
-        
-        # Normalize query embedding
-        query_norm = query_embedding / np.linalg.norm(query_embedding)
-        
-        # Compute cosine similarity with all centroids
-        best_intent = None
-        best_score = -1.0
-        
-        for intent_name, centroid in self.centroids.items():
-            centroid_norm = centroid / np.linalg.norm(centroid)
-            similarity = np.dot(query_norm, centroid_norm)
-            
-            if similarity > best_score:
-                best_score = similarity
-                best_intent = intent_name
-        
-        # Parse intent into base_intent and action
-        parts = best_intent.rsplit("_", 1) if best_intent else ["general", "find"]
-        base_intent = parts[0] if len(parts) == 2 else best_intent
-        action = parts[1] if len(parts) == 2 else "find"
-        
+            query_embedding = np.array(query_embedding, dtype=np.float32)
+
+        fine_scores = self._score_against(query_embedding, self.fine_centroids)
+        target_scores = self._score_against(query_embedding, self.target_centroids)
+
+        best_intent, best_score = fine_scores[0] if fine_scores else ("general_find", 0.0)
+        parsed_target, parsed_action = self._parse_intent_name(best_intent)
+
+        best_target, best_target_score = target_scores[0] if target_scores else ("general", 0.0)
+        second_target_score = target_scores[1][1] if len(target_scores) > 1 else -1.0
+        target_margin = best_target_score - second_target_score
+
+        is_ambiguous = (best_target_score < self.confidence_threshold) or (target_margin < self.ambiguity_margin)
+        if is_ambiguous:
+            resolved_target = "general"
+        else:
+            resolved_target = best_target or parsed_target
+
         return {
             "intent": best_intent,
             "confidence": float(best_score),
-            "base_intent": base_intent,
-            "action": action
+            "base_intent": resolved_target,
+            "action": parsed_action,
+            "target_type": resolved_target,
+            "target_confidence": float(best_target_score),
+            "target_margin": float(target_margin),
+            "is_ambiguous": is_ambiguous,
+            "top_targets": [{"target": name, "score": score} for name, score in target_scores[:3]],
         }
-    
-    def get_top_k(self, query: str, query_embedding: np.ndarray = None, k: int = 3) -> list:
+
+    def get_top_k(
+        self,
+        query: str,
+        query_embedding: np.ndarray = None,
+        k: int = 3,
+        level: str = "target",
+    ) -> list[dict]:
         """
         Get top-k intent predictions with scores.
-        Useful for debugging and confidence thresholding.
+        Args:
+            level: "target" or "fine"
         """
         if not self._initialized:
             self.initialize()
-        
+
         if query_embedding is None:
-            response = ollama.embeddings(model=EMBED_MODEL, prompt=query)
-            query_embedding = np.array(response["embedding"])
+            query_embedding = self._embed_text(query)
+            if query_embedding is None:
+                return []
         else:
-            query_embedding = np.array(query_embedding)
-        
-        query_norm = query_embedding / np.linalg.norm(query_embedding)
-        
-        scores = []
-        for intent_name, centroid in self.centroids.items():
-            centroid_norm = centroid / np.linalg.norm(centroid)
-            similarity = np.dot(query_norm, centroid_norm)
-            scores.append((intent_name, float(similarity)))
-        
-        scores.sort(key=lambda x: x[1], reverse=True)
-        return scores[:k]
+            query_embedding = np.array(query_embedding, dtype=np.float32)
+
+        centroids = self.target_centroids if level == "target" else self.fine_centroids
+        scores = self._score_against(query_embedding, centroids)
+        return [{"label": label, "score": score} for label, score in scores[:k]]
 
 
 # Global instance (singleton pattern)

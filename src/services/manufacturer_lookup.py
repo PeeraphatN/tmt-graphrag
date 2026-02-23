@@ -60,11 +60,11 @@ def load_manufacturers() -> set[str]:
                 _manufacturers_set.add(cleaned)
                 _manufacturers_lower.add(cleaned.lower())
         
-        print(f"   📦 Loaded {len(_manufacturers_set)} manufacturers")
+        print(f"   Loaded {len(_manufacturers_set)} manufacturers")
         return _manufacturers_set
         
     except FileNotFoundError:
-        print(f"   ⚠️ Manufacturer file not found: {MANUFACTURER_JSON}")
+        print(f"   Manufacturer file not found: {MANUFACTURER_JSON}")
         _manufacturers_set = set()
         _manufacturers_lower = set()
         return _manufacturers_set
@@ -142,7 +142,7 @@ if __name__ == "__main__":
         "ไฟเซอร์มียาอะไร",
     ]
     
-    print("\n🧪 Testing manufacturer lookup:")
+    print("\nTesting manufacturer lookup:")
     for q in test_queries:
         result = find_manufacturer_with_alias(q)
         print(f"   '{q}' -> {result}")

@@ -1,4 +1,4 @@
-from typing import Optional, List, Literal
+from typing import Optional
 from pydantic import BaseModel, Field
 from enum import Enum
 
@@ -15,6 +15,12 @@ class SearchStrategy(str, Enum):
     COUNT = "count"
     LIST = "list"
     VERIFY = "verify"
+
+
+class RetrievalMode(str, Enum):
+    VECTOR_HEAVY = "vector_heavy"
+    BALANCED = "balanced"
+    FULLTEXT_HEAVY = "fulltext_heavy"
 
 class GraphRAGQuery(BaseModel):
     """
@@ -55,6 +61,37 @@ class GraphRAGQuery(BaseModel):
     limit: int = Field(
         10,
         description="Number of results to return."
+    )
+
+    # Adaptive retrieval profile (set during AQT)
+    token_count: int = Field(
+        0,
+        description="Total token count for the user question."
+    )
+
+    entity_token_count: int = Field(
+        0,
+        description="Estimated count of entity-like tokens in the question."
+    )
+
+    entity_ratio: float = Field(
+        0.0,
+        description="entity_token_count / token_count. Used to adapt retrieval weights."
+    )
+
+    retrieval_mode: RetrievalMode = Field(
+        RetrievalMode.BALANCED,
+        description="Adaptive mode controlling vector/fulltext priority."
+    )
+
+    vector_weight: float = Field(
+        0.5,
+        description="Weight for vector ranking signal in weighted RRF."
+    )
+
+    fulltext_weight: float = Field(
+        0.5,
+        description="Weight for fulltext ranking signal in weighted RRF."
     )
 
     def to_cypher_filter(self) -> str:

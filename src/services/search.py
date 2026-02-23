@@ -49,9 +49,16 @@ def get_search_config(target_type: str) -> dict:
 
     return config
 
-def hybrid_search(question: str, k: int = 5, allowed_levels: list[str] = None, filters: dict = None) -> list[dict]:
+def hybrid_search(
+    question: str,
+    k: int = 5,
+    allowed_levels: list[str] = None,
+    filters: dict = None,
+    vector_weight: float = 0.5,
+    fulltext_weight: float = 0.5,
+) -> list[dict]:
     """
-    Perform hybrid search (Vector + Fulltext) with RRF fusion.
+    Perform hybrid search (Vector + Fulltext) with weighted RRF fusion.
     """
     embedding = get_embedding(question)
     if not embedding:
@@ -163,11 +170,13 @@ def hybrid_search(question: str, k: int = 5, allowed_levels: list[str] = None, f
             # print("   Skipping fulltext search (pure Thai or no keywords)")
             pass
 
-    # 3. RRF Calculation
+    # 3. Weighted RRF Calculation
     k_rrf = 60
     final_results = []
     for nid, data in results.items():
-        rrf_score = (1 / (k_rrf + data["v_rank"] + 1)) + (1 / (k_rrf + data["t_rank"] + 1))
+        vector_rrf = 1 / (k_rrf + data["v_rank"] + 1)
+        fulltext_rrf = 1 / (k_rrf + data["t_rank"] + 1)
+        rrf_score = (vector_weight * vector_rrf) + (fulltext_weight * fulltext_rrf)
         data["rrf_score"] = rrf_score
         final_results.append(data)
 
@@ -248,7 +257,9 @@ def search_general(query_obj, k: int = 10, depth: int = 2) -> dict:
     Strategy: RETRIEVE (Default)
     Standard Hybrid Search + Graph Traversal
     """
-    print(f"   [Strategy: RETRIEVE] Hybrid search for: {query_obj.query}")
+    strategy_obj = getattr(query_obj, "strategy", "retrieve")
+    strategy_name = strategy_obj.value if hasattr(strategy_obj, "value") else str(strategy_obj)
+    print(f"   [Strategy: {strategy_name.upper()}] Hybrid search for: {query_obj.query}")
     
     clean_query = query_obj.query if query_obj.query else "ยา"
     
@@ -270,7 +281,14 @@ def search_general(query_obj, k: int = 10, depth: int = 2) -> dict:
         if getattr(query_obj, 'nlem_category', None) is not None: filters['nlem_category'] = query_obj.nlem_category
         if getattr(query_obj, 'manufacturer_filter', None) is not None: filters['manufacturer'] = query_obj.manufacturer_filter
         
-        results = hybrid_search(q_str, k=k, allowed_levels=config["allowed_levels"], filters=filters)
+        results = hybrid_search(
+            q_str,
+            k=k,
+            allowed_levels=config["allowed_levels"],
+            filters=filters,
+            vector_weight=getattr(query_obj, "vector_weight", 0.5),
+            fulltext_weight=getattr(query_obj, "fulltext_weight", 0.5),
+        )
         for item in results:
             node = item["node"]
             nid = node.element_id if hasattr(node, 'element_id') else node.id
@@ -395,18 +413,16 @@ def execute_listing_query(query_obj, k: int = 100) -> dict:
 def advanced_graphrag_search(query_obj, k: int = 10, depth: int = 2) -> dict:
     """
     Intent Router: Dispatches the search to specific functions based on query_obj.strategy.
-    
-    NOTE: Multi-strategy routing disabled temporarily. Always uses RETRIEVE (hybrid search)
-    to ensure consistent search results. Count/List strategies can be re-enabled when
-    the intent classification is more accurate.
     """
-    # SIMPLIFIED: Always use RETRIEVE strategy (hybrid search)
-    # Original multi-strategy code commented out for now
-    
-    # strategy = getattr(query_obj, 'strategy', 'retrieve')
-    # if strategy == 'count':
-    #     return execute_count_query(query_obj)
-    # elif strategy == 'list':
-    #     return execute_listing_query(query_obj, k=50)
-    
+    strategy_obj = getattr(query_obj, "strategy", "retrieve")
+    strategy = strategy_obj.value if hasattr(strategy_obj, "value") else str(strategy_obj)
+
+    if strategy == "count":
+        return execute_count_query(query_obj)
+    if strategy == "list":
+        return execute_listing_query(query_obj, k=50)
+    if strategy == "verify":
+        # Verification benefits from precise seeds with shallow expansion.
+        return search_general(query_obj, k=max(8, min(k, 20)), depth=1)
+
     return search_general(query_obj, k=k, depth=depth)
