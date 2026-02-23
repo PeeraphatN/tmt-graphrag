@@ -9,3 +9,6 @@ pandas
 ragas
 sentence-transformers
 gradio
+transformers
+torch
+pythainlp

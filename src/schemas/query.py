@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Any
 from pydantic import BaseModel, Field
 from enum import Enum
 
@@ -92,6 +92,21 @@ class GraphRAGQuery(BaseModel):
     fulltext_weight: float = Field(
         0.5,
         description="Weight for fulltext ranking signal in weighted RRF."
+    )
+
+    id_lookup: Optional[str] = Field(
+        None,
+        description="Exact TMTID for direct ID lookup path."
+    )
+
+    must_match: list[str] = Field(
+        default_factory=list,
+        description="Hard constraints to preserve in retrieval/search."
+    )
+
+    intent_bundle: Optional[dict[str, Any]] = Field(
+        None,
+        description="IntentV2 bundle payload for routing/debug."
     )
 
     def to_cypher_filter(self) -> str:

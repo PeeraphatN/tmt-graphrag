@@ -114,7 +114,7 @@ class IntentClassifier:
 
         self._initialized = True
         print(
-            f"   ✅ Intent Classifier initialized "
+            "   Intent Classifier initialized "
             f"(fine={len(self.fine_centroids)}, target={len(self.target_centroids)})"
         )
 

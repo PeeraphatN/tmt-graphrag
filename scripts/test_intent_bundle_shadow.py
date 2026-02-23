@@ -16,6 +16,26 @@ from pathlib import Path
 # Add project root to import path.
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
+
+def _configure_stdout_utf8() -> None:
+    """
+    Best-effort UTF-8 stdout/stderr setup for Windows shells.
+    Prevents UnicodeEncodeError while printing Thai/Unicode logs.
+    """
+    try:
+        if hasattr(sys.stdout, "reconfigure"):
+            sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+    try:
+        if hasattr(sys.stderr, "reconfigure"):
+            sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
+
+_configure_stdout_utf8()
+
 from src.schemas.intent_bundle import (
     ActionIntent,
     TopicsIntent,
@@ -36,7 +56,7 @@ DOSE_UNIT_PATTERN = re.compile(r"\b\d+(?:\.\d+)?\s*(?:mg|g|mcg|ml|iu|%)\b", re.I
 
 def _to_dict(model_obj):
     if hasattr(model_obj, "model_dump"):
-        return model_obj.model_dump()
+        return model_obj.model_dump(mode="json")
     return model_obj.dict()
 
 

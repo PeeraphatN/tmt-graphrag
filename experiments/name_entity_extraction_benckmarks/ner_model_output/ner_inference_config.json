@@ -1,0 +1,54 @@
+{
+  "label_list": [
+    "O",
+    "B-DRUG",
+    "I-DRUG",
+    "B-BRAND",
+    "I-BRAND",
+    "B-MANUFACTURER",
+    "I-MANUFACTURER",
+    "B-FORM",
+    "I-FORM",
+    "B-STRENGTH",
+    "I-STRENGTH"
+  ],
+  "id2label": {
+    "0": "O",
+    "1": "B-DRUG",
+    "2": "I-DRUG",
+    "3": "B-BRAND",
+    "4": "I-BRAND",
+    "5": "B-MANUFACTURER",
+    "6": "I-MANUFACTURER",
+    "7": "B-FORM",
+    "8": "I-FORM",
+    "9": "B-STRENGTH",
+    "10": "I-STRENGTH"
+  },
+  "label2id": {
+    "O": 0,
+    "B-DRUG": 1,
+    "I-DRUG": 2,
+    "B-BRAND": 3,
+    "I-BRAND": 4,
+    "B-MANUFACTURER": 5,
+    "I-MANUFACTURER": 6,
+    "B-FORM": 7,
+    "I-FORM": 8,
+    "B-STRENGTH": 9,
+    "I-STRENGTH": 10
+  },
+  "entity_threshold": 0.6,
+  "query_priority": [
+    "BRAND",
+    "DRUG"
+  ],
+  "mapping_rules": {
+    "manufacturer_filter": "MANUFACTURER"
+  },
+  "auxiliary_entities": [
+    "FORM",
+    "STRENGTH"
+  ],
+  "max_seq_length": 128
+}

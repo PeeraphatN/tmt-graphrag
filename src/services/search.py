@@ -89,6 +89,10 @@ def hybrid_search(
              where_parts.append("node.manufacturer CONTAINS $manu")
              params["manu"] = filters["manufacturer"]
 
+        if filters.get("tmtid"):
+             where_parts.append("node.tmtid = $tmtid")
+             params["tmtid"] = filters["tmtid"]
+
     where_clause = ("WHERE " + " AND ".join(where_parts)) if where_parts else ""
 
     with drv.session() as session:
@@ -140,6 +144,8 @@ def hybrid_search(
                     fulltext_params["nlem_cat"] = params["nlem_cat"]
                 if "manu" in params:
                     fulltext_params["manu"] = params["manu"]
+                if "tmtid" in params:
+                    fulltext_params["tmtid"] = params["tmtid"]
 
             fulltext_query = f"""
             CALL db.index.fulltext.queryNodes($index_name, $search_text, {{limit: $k}})
@@ -280,6 +286,7 @@ def search_general(query_obj, k: int = 10, depth: int = 2) -> dict:
         if getattr(query_obj, 'nlem_filter', None) is not None: filters['nlem'] = query_obj.nlem_filter
         if getattr(query_obj, 'nlem_category', None) is not None: filters['nlem_category'] = query_obj.nlem_category
         if getattr(query_obj, 'manufacturer_filter', None) is not None: filters['manufacturer'] = query_obj.manufacturer_filter
+        if getattr(query_obj, 'id_lookup', None) is not None: filters['tmtid'] = query_obj.id_lookup
         
         results = hybrid_search(
             q_str,
@@ -319,6 +326,46 @@ def search_general(query_obj, k: int = 10, depth: int = 2) -> dict:
         "seed_results": all_seed_results,
         "expanded_nodes": non_seed_nodes,
         "relationships": expanded["relationships"]
+    }
+
+
+def execute_id_lookup_query(query_obj, depth: int = 1) -> dict:
+    """
+    Exact lookup path for TMTID-based queries.
+    Falls back to hybrid search if exact node is not found.
+    """
+    tmtid = getattr(query_obj, "id_lookup", None)
+    if not tmtid:
+        return search_general(query_obj, k=10, depth=depth)
+
+    print(f"   [Strategy: ID_LOOKUP] Exact lookup for TMTID={tmtid}")
+    drv = init_driver()
+    nodes = []
+    with drv.session() as session:
+        recs = session.run(
+            """
+            MATCH (n:TMT {tmtid: $tmtid})
+            RETURN n
+            LIMIT 10
+            """,
+            tmtid=tmtid,
+        )
+        nodes = [rec["n"] for rec in recs]
+
+    if not nodes:
+        print("   [ID_LOOKUP] Exact match not found, falling back to hybrid search.")
+        return search_general(query_obj, k=10, depth=depth)
+
+    seed_results = [{"node": n, "score": 1.0, "rrf_score": 1.0, "found_by_query": tmtid} for n in nodes]
+    seed_node_ids = [(n.element_id if hasattr(n, "element_id") else n.id) for n in nodes]
+    expanded = expand_context(seed_node_ids, depth=max(0, min(depth, 1)))
+    non_seed_nodes = [n for n in expanded["nodes"] if not n.get("is_seed", False)]
+
+    return {
+        "strategy": "id_lookup",
+        "seed_results": seed_results,
+        "expanded_nodes": non_seed_nodes,
+        "relationships": expanded["relationships"],
     }
 
 def execute_count_query(query_obj) -> dict:
@@ -416,6 +463,9 @@ def advanced_graphrag_search(query_obj, k: int = 10, depth: int = 2) -> dict:
     """
     strategy_obj = getattr(query_obj, "strategy", "retrieve")
     strategy = strategy_obj.value if hasattr(strategy_obj, "value") else str(strategy_obj)
+
+    if getattr(query_obj, "id_lookup", None):
+        return execute_id_lookup_query(query_obj, depth=1)
 
     if strategy == "count":
         return execute_count_query(query_obj)

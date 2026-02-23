@@ -2,6 +2,7 @@ import json
 import time
 import uuid
 import pathlib
+import sys
 from datetime import datetime
 from operator import itemgetter
 
@@ -25,6 +26,26 @@ from src.cache.result_cache import (
 from src.models.embeddings import embed_text
 from src.schemas.query import GraphRAGQuery
 from src.services.ranking_service import Reranker
+
+
+def _configure_stdout_utf8() -> None:
+    """
+    Best-effort UTF-8 stdout/stderr setup for Windows shells.
+    Prevents UnicodeEncodeError in debug logs.
+    """
+    try:
+        if hasattr(sys.stdout, "reconfigure"):
+            sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+    try:
+        if hasattr(sys.stderr, "reconfigure"):
+            sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
+
+_configure_stdout_utf8()
 
 # Log path configuration
 LOG_PATH = "./logs/ragas_data.jsonl"
@@ -111,6 +132,13 @@ class GraphRAGPipeline:
             f"weights(v={query_obj.vector_weight:.2f}, f={query_obj.fulltext_weight:.2f})"
         )
         print(f"   Search Term: '{query_obj.query}'")
+        if getattr(query_obj, "id_lookup", None):
+            print(f"   ID Lookup: {query_obj.id_lookup}")
+        bundle = getattr(query_obj, "intent_bundle", None)
+        if bundle:
+            action = bundle.get("action_intent", "unknown")
+            topics = bundle.get("topics_intents", [])
+            print(f"   IntentV2: action={action}, topics={topics}")
         
         elapsed = time.perf_counter() - start_time
         print(f"   ⏱️ Transform Time: {elapsed:.3f}s")
