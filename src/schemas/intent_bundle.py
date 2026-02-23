@@ -21,7 +21,7 @@ class ActionIntent(str, Enum):
     UNKNOWN = "unknown"
 
 
-class FacetIntent(str, Enum):
+class TopicsIntent(str, Enum):
     MANUFACTURER = "manufacturer"
     INGREDIENT = "ingredient"
     NLEM = "nlem"
@@ -93,9 +93,9 @@ class IntentBundle(BaseModel):
         ActionIntent.UNKNOWN,
         description="Primary action intent (single-label).",
     )
-    facet_intents: list[FacetIntent] = Field(
+    topics_intents: list[TopicsIntent] = Field(
         default_factory=list,
-        description="Facet intents (multi-label).",
+        description="Topics intents (multi-label).",
     )
     slots: list[SlotValue] = Field(
         default_factory=list,
@@ -106,9 +106,9 @@ class IntentBundle(BaseModel):
         default_factory=dict,
         description="Optional score map from action classifier head.",
     )
-    facet_scores: dict[str, float] = Field(
+    topics_scores: dict[str, float] = Field(
         default_factory=dict,
-        description="Optional score map from facet classifier head.",
+        description="Optional score map from topics classifier head.",
     )
 
     control_features: IntentControlFeatures = Field(default_factory=IntentControlFeatures)
@@ -119,7 +119,7 @@ class IntentBundle(BaseModel):
         description="Debug metadata for observability and offline analysis.",
     )
 
-    def has_facet(self, facet: FacetIntent | str) -> bool:
-        facet_value = facet.value if isinstance(facet, FacetIntent) else str(facet)
-        return any(f.value == facet_value for f in self.facet_intents)
+    def has_topics(self, topics: TopicsIntent | str) -> bool:
+        topics_value = topics.value if isinstance(topics, TopicsIntent) else str(topics)
+        return any(t.value == topics_value for t in self.topics_intents)
 

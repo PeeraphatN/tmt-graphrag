@@ -18,7 +18,7 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 from src.schemas.intent_bundle import (
     ActionIntent,
-    FacetIntent,
+    TopicsIntent,
     IntentBundle,
     IntentControlFeatures,
     RetrievalPlan,
@@ -51,16 +51,16 @@ def _map_strategy_to_action(strategy: str) -> ActionIntent:
     return mapping.get(str(strategy), ActionIntent.UNKNOWN)
 
 
-def _map_target_to_facet(target: str) -> FacetIntent:
+def _map_target_to_topics(target: str) -> TopicsIntent:
     mapping = {
-        "manufacturer": FacetIntent.MANUFACTURER,
-        "ingredient": FacetIntent.INGREDIENT,
-        "nlem": FacetIntent.NLEM,
-        "formula": FacetIntent.FORMULA,
-        "hierarchy": FacetIntent.HIERARCHY,
-        "general": FacetIntent.GENERAL,
+        "manufacturer": TopicsIntent.MANUFACTURER,
+        "ingredient": TopicsIntent.INGREDIENT,
+        "nlem": TopicsIntent.NLEM,
+        "formula": TopicsIntent.FORMULA,
+        "hierarchy": TopicsIntent.HIERARCHY,
+        "general": TopicsIntent.GENERAL,
     }
-    return mapping.get(str(target), FacetIntent.GENERAL)
+    return mapping.get(str(target), TopicsIntent.GENERAL)
 
 
 def _extract_tmtid(question: str) -> str | None:
@@ -78,7 +78,7 @@ def build_shadow_bundle(question: str, legacy_query_obj) -> IntentBundle:
     strategy_value = strategy.value if hasattr(strategy, "value") else str(strategy)
 
     action_intent = _map_strategy_to_action(strategy_value)
-    facet_intents: list[FacetIntent] = [_map_target_to_facet(target_value)]
+    topics_intents: list[TopicsIntent] = [_map_target_to_topics(target_value)]
     slots: list[SlotValue] = []
 
     tmtid = _extract_tmtid(question)
@@ -86,8 +86,8 @@ def build_shadow_bundle(question: str, legacy_query_obj) -> IntentBundle:
     has_dose_unit = 1.0 if DOSE_UNIT_PATTERN.search(question) else 0.0
 
     if tmtid:
-        if FacetIntent.ID_LOOKUP not in facet_intents:
-            facet_intents.append(FacetIntent.ID_LOOKUP)
+        if TopicsIntent.ID_LOOKUP not in topics_intents:
+            topics_intents.append(TopicsIntent.ID_LOOKUP)
         slots.append(
             SlotValue(
                 name="tmtid",
@@ -187,10 +187,10 @@ def build_shadow_bundle(question: str, legacy_query_obj) -> IntentBundle:
     return IntentBundle(
         query=question,
         action_intent=action_intent,
-        facet_intents=facet_intents,
+        topics_intents=topics_intents,
         slots=slots,
         action_scores={},
-        facet_scores={},
+        topics_scores={},
         control_features=control_features,
         adaptive_retrieval_weights=retrieval_plan,
         metadata=metadata,
@@ -238,7 +238,7 @@ def run_shadow_compare() -> Path:
                 bundle_dict = _to_dict(bundle)
                 comparison = {
                     "action_equivalent": mapped_legacy_action == bundle.action_intent.value,
-                    "facet_contains_legacy_target": legacy_target in [f.value for f in bundle.facet_intents],
+                    "topics_contains_legacy_target": legacy_target in [t.value for t in bundle.topics_intents],
                     "weights_consistent": (
                         abs(
                             float(getattr(legacy_query_obj, "vector_weight", 0.5))
@@ -283,7 +283,7 @@ def run_shadow_compare() -> Path:
                 ok_count += 1
                 print(
                     f"[{idx}/{len(test_queries)}] PASS | "
-                    f"{legacy_strategy}/{legacy_target} -> {bundle.action_intent.value}/{[x.value for x in bundle.facet_intents]}"
+                    f"{legacy_strategy}/{legacy_target} -> {bundle.action_intent.value}/{[x.value for x in bundle.topics_intents]}"
                 )
             except Exception as exc:
                 duration_ms = (time.perf_counter() - start) * 1000.0
