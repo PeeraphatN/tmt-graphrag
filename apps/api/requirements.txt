@@ -1,0 +1,14 @@
+﻿fastapi
+uvicorn[standard]
+neo4j
+python-dotenv
+langchain_ollama
+langchain_core
+numpy
+cachetools
+sentence-transformers
+transformers
+torch
+pythainlp
+ollama
+requests

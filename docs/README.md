@@ -1,9 +1,17 @@
 ﻿# Docs
 
-This directory is the target home for onboarding, handoff, and architecture documentation.
+This directory holds documentation for the reorganized repository.
 
-Planned incoming sources:
+## Current Focus
 
-- main project README
-- reorg and migration notes
-- product-facing architecture and setup guides
+- `repo-reorg-plan.md`: high-level migration map for the new repo structure
+
+## Application-First Progress
+
+The first migration slice builds out the new product homes:
+
+- `apps/api`
+- `apps/web`
+- `infra`
+
+The original runtime under `/src` and `/frontend` remains untouched for now as the fallback source of truth.
