@@ -28,8 +28,8 @@ def inspect():
             WHERE n.manufacturer IS NOT NULL 
             RETURN n.manufacturer LIMIT 5
         """,
-        "Ingredient Sample": """
-            MATCH (n)-[r:HAS_INGREDIENT]->(i)
+        "Substance Sample": """
+            MATCH (n)-[r:HAS_SUBSTANCE]->(i)
             RETURN n.fsn, i.fsn LIMIT 1
         """
     }

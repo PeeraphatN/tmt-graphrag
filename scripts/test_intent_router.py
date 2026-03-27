@@ -57,12 +57,12 @@ async def test_intent_router():
             "expected_target": "general",
             "description": "General Info Lookup"
         },
-        # 6. Ingredient Logic
+        # 6. Substance Logic
         {
             "input": "Tiffy มีส่วนผสมอะไรบ้าง",
             "expected_strategy": SearchStrategy.RETRIEVE, # Often falls to retrieve or list, checking extraction mainly
-            "expected_target": "ingredient",
-            "description": "Ingredient Lookup"
+            "expected_target": "substance",
+            "description": "Substance Lookup"
         }
     ]
 

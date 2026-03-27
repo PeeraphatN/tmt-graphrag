@@ -13,8 +13,12 @@ import time
 from datetime import datetime
 from pathlib import Path
 
+PROJECT_ROOT = Path(__file__).resolve().parents[5]
+INTENT_EXPERIMENT_DIR = Path(__file__).resolve().parents[2]
+LOG_DIR = INTENT_EXPERIMENT_DIR / "results" / "shadow_compare"
+
 # Add project root to import path.
-sys.path.append(str(Path(__file__).resolve().parent.parent))
+sys.path.append(str(PROJECT_ROOT))
 
 
 def _configure_stdout_utf8() -> None:
@@ -48,7 +52,7 @@ from src.schemas.intent_bundle import (
 from src.services.aqt import transform_query
 
 
-LOG_DIR = Path("test_results")
+# Logs stay inside the intent experiment area.`r`nLOG_DIR = INTENT_EXPERIMENT_DIR / "results" / "shadow_compare"
 TMTID_PATTERN = re.compile(r"\b(?:tmtid|tmt-id|tmt)\s*[:#]?\s*(\d{5,10})\b", re.IGNORECASE)
 BARE_ID_PATTERN = re.compile(r"\b\d{6,10}\b")
 DOSE_UNIT_PATTERN = re.compile(r"\b\d+(?:\.\d+)?\s*(?:mg|g|mcg|ml|iu|%)\b", re.IGNORECASE)
@@ -74,7 +78,7 @@ def _map_strategy_to_action(strategy: str) -> ActionIntent:
 def _map_target_to_topics(target: str) -> TopicsIntent:
     mapping = {
         "manufacturer": TopicsIntent.MANUFACTURER,
-        "ingredient": TopicsIntent.INGREDIENT,
+        "substance": TopicsIntent.SUBSTANCE,
         "nlem": TopicsIntent.NLEM,
         "formula": TopicsIntent.FORMULA,
         "hierarchy": TopicsIntent.HIERARCHY,
@@ -220,13 +224,13 @@ def build_shadow_bundle(question: str, legacy_query_obj) -> IntentBundle:
 def run_shadow_compare() -> Path:
     test_queries = [
         "what is tmtid 662401",
-        "Paracetamol อยู่ในบัญชียาหลักใช่หรือไม่",
+        "Paracetamol à¸­à¸¢à¸¹à¹ˆà¹ƒà¸™à¸šà¸±à¸à¸Šà¸µà¸¢à¸²à¸«à¸¥à¸±à¸à¹ƒà¸Šà¹ˆà¸«à¸£à¸·à¸­à¹„à¸¡à¹ˆ",
         "Does Pfizer make Viagra?",
-        "ขอรายชื่อยาขององค์การเภสัชกรรม",
-        "มียากี่ตัวในบัญชี ง",
-        "Tiffy มีส่วนผสมอะไรบ้าง",
-        "ขอข้อมูลยา cefazolin",
-        "สวัสดี ผมชื่ออะไรให้ทาย",
+        "à¸‚à¸­à¸£à¸²à¸¢à¸Šà¸·à¹ˆà¸­à¸¢à¸²à¸‚à¸­à¸‡à¸­à¸‡à¸„à¹Œà¸à¸²à¸£à¹€à¸ à¸ªà¸±à¸Šà¸à¸£à¸£à¸¡",
+        "à¸¡à¸µà¸¢à¸²à¸à¸µà¹ˆà¸•à¸±à¸§à¹ƒà¸™à¸šà¸±à¸à¸Šà¸µ à¸‡",
+        "Tiffy à¸¡à¸µà¸ªà¹ˆà¸§à¸™à¸œà¸ªà¸¡à¸­à¸°à¹„à¸£à¸šà¹‰à¸²à¸‡",
+        "à¸‚à¸­à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¸¢à¸² cefazolin",
+        "à¸ªà¸§à¸±à¸ªà¸”à¸µ à¸œà¸¡à¸Šà¸·à¹ˆà¸­à¸­à¸°à¹„à¸£à¹ƒà¸«à¹‰à¸—à¸²à¸¢",
     ]
 
     LOG_DIR.mkdir(parents=True, exist_ok=True)

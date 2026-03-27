@@ -1,17 +1,18 @@
-﻿# Docs
+# Docs
 
-This directory holds documentation for the reorganized repository.
+This directory holds documentation for the current canonical repository layout.
 
 ## Current Focus
 
 - `repo-reorg-plan.md`: high-level migration map for the new repo structure
+- `planning/`: archived planning and reference material
 
-## Application-First Progress
+## Product Homes
 
-The first migration slice builds out the new product homes:
+The product runtime now lives in:
 
 - `apps/api`
 - `apps/web`
 - `infra`
 
-The original runtime under `/src` and `/frontend` remains untouched for now as the fallback source of truth.
+Legacy runtime folders under `/src` and `/frontend` are kept only as migration references and should not be treated as the main handoff surface.
