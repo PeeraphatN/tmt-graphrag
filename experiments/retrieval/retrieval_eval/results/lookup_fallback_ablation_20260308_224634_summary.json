@@ -1,0 +1,56 @@
+{
+  "generated_at": "2026-03-08T22:51:38.139482",
+  "input_ground_truth": "experiments\\retrieval_eval\\eval\\phase1_ground_truth.json",
+  "output_jsonl": "experiments\\retrieval_eval\\results\\lookup_fallback_ablation_20260308_224634.jsonl",
+  "config": {
+    "policy": "static",
+    "k": 10,
+    "depth": 2,
+    "sample_substances": 20,
+    "sample_manufacturers": 20,
+    "seed": 42
+  },
+  "counts": {
+    "total": 120,
+    "ok": 120,
+    "error": 0,
+    "fallback_attempt_count": 120,
+    "fallback_used_count": 98,
+    "resolved_operator_distribution": {
+      "lookup": 120
+    }
+  },
+  "baseline": {
+    "hit@1": 0.408333,
+    "hit@3": 0.55,
+    "hit@5": 0.591667,
+    "hit@10": 0.65,
+    "p@5": 0.426667,
+    "r@5": 0.039871,
+    "mrr": 0.477835,
+    "ndcg@10": 0.391815,
+    "latency_ms_avg": 1151.353625
+  },
+  "fallback": {
+    "hit@1": 0.508333,
+    "hit@3": 0.691667,
+    "hit@5": 0.7,
+    "hit@10": 0.883333,
+    "p@5": 0.511667,
+    "r@5": 0.054763,
+    "mrr": 0.618349,
+    "ndcg@10": 0.527592,
+    "latency_ms_avg": 1168.904133
+  },
+  "delta_fallback_minus_baseline": {
+    "hit@1": 0.1,
+    "hit@3": 0.141667,
+    "hit@5": 0.108333,
+    "hit@10": 0.233333,
+    "p@5": 0.085,
+    "r@5": 0.014892,
+    "mrr": 0.140514,
+    "ndcg@10": 0.135777,
+    "latency_ms_avg": 17.550508
+  }
+}

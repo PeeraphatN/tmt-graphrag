@@ -1,4 +1,4 @@
-# Codex Persistent Knowledge
+﻿# Codex Persistent Knowledge
 
 This file is a persistent memory reference for ongoing work in this repository.
 Update it when architecture, workflow, or operating rules change.
@@ -34,8 +34,8 @@ Update it when architecture, workflow, or operating rules change.
 ## Intent V2 Design Anchors
 
 - Intent schema: `action_intent` + `topics_intents` + `slots`
-- Bundle contract file: `src/schemas/intent_bundle.py`
-- Shadow compare script: `scripts/test_intent_bundle_shadow.py`
+- Bundle contract file: `apps/api/src/schemas/intent_bundle.py`
+- Shadow compare script: `experiments/question_understanding/intent_classification/integration_with_app/shadow_compare/test_intent_bundle_shadow.py`
 - Latest shadow logs: `test_results/*intent_bundle_shadow_compare.jsonl`
 
 ## Integration Rules
@@ -63,8 +63,8 @@ Update it when architecture, workflow, or operating rules change.
 Run quick environment + pipeline smoke:
 
 ```powershell
-.\.venv\Scripts\python.exe -c "from src.config import validate_env; validate_env(); print('ENV_OK')"
-.\.venv\Scripts\python.exe scripts\test_intent_bundle_shadow.py
+.\.venv\Scripts\python.exe -c "import sys; from pathlib import Path; sys.path.insert(0, str(Path('apps/api').resolve())); from src.config import validate_env; validate_env(); print('ENV_OK')"
+.\.venv\Scripts\python.exe experiments\question_understanding\intent_classification\integration_with_app\shadow_compare\test_intent_bundle_shadow.py
 ```
 
 ## Current Risks / Watchlist
@@ -78,25 +78,25 @@ Run quick environment + pipeline smoke:
 Top-impact tasks from latest flow audit:
 
 1. `[DONE][VALIDATED]` Fix fulltext query construction to avoid over-constrained Lucene queries.
-   - Target: `src/query_processor.py`
+   - Target: `apps/api/src/query_processor.py`
    - Goal: recover non-zero fulltext channel hits on list/lookup queries.
 2. `[DONE][VALIDATED]` Add robust graph anchor fallback when fulltext anchor misses.
-   - Target: `src/services/search.py` (`_graph_anchor_search`)
+   - Target: `apps/api/src/services/search.py` (`_graph_anchor_search`)
    - Goal: make traversal usable for Thai/manufacturer-heavy queries.
 3. `[DONE][VALIDATED]` Add deterministic-empty fallback in manufacturer list route.
-   - Target: `src/services/search.py` (`execute_listing_query`)
+   - Target: `apps/api/src/services/search.py` (`execute_listing_query`)
    - Goal: avoid zero-result hard fail; fallback to graph-hybrid route.
 
 Next queue after top 3:
 
 4. `[DONE][VALIDATED]` Remove/relax hard cap effect for large manufacturer result sets (`k=200`) during eval mode.
-   - Change: `src/services/search.py` now supports eval-aware cap relaxation via `RETRIEVAL_EVAL_MODE`.
+   - Change: `apps/api/src/services/search.py` now supports eval-aware cap relaxation via `RETRIEVAL_EVAL_MODE`.
    - Validation: top-20 large manufacturer recall with `k=200` moved from `0.528` (eval off) to `1.000` (eval on).
 5. `[DONE][VALIDATED]` Align fulltext index schema in DB with search expectations (handle existing IF NOT EXISTS drift).
-   - Change: `src/services/database.py` now detects fulltext schema drift and auto-rebuilds index.
+   - Change: `apps/api/src/services/database.py` now detects fulltext schema drift and auto-rebuilds index.
    - Validation: `tmt_fulltext_index` properties reconciled from `['name','fsn','embedding_text']` to expected search fields.
 6. `[DONE][VALIDATED]` Rationalize reranker initialization (single load path) to reduce startup/VRAM overhead.
-   - Change: singleton accessor `get_reranker()` in `src/services/ranking_service.py`; both `pipeline` and `search` use shared instance.
+   - Change: singleton accessor `get_reranker()` in `apps/api/src/services/ranking_service.py`; both `pipeline` and `search` use shared instance.
    - Validation: runtime check confirms `GraphRAGPipeline().reranker is get_reranker()` is `True`.
 
 ## Model Candidate Notes (2026-03-07)
@@ -241,11 +241,11 @@ Goal: improve overall question coverage (especially abstract/mixed queries) whil
 ### Phase Plan
 
 1. Phase 1 - Policy rebalance (P0)
-   - Target file: `src/services/aqt.py`
+   - Target file: `apps/api/src/services/aqt.py`
    - Adjust `choose_retrieval_profile()` thresholds and default routing balance.
    - Add guardrail: maintain minimum vector contribution for non-`id_lookup`.
 2. Phase 2 - Signal quality gate (P1)
-   - Target file: `src/services/aqt.py`
+   - Target file: `apps/api/src/services/aqt.py`
    - Filter low-quality NER spans before they affect `entity_ratio`.
    - Separate hard entities (`tmtid`, dose/strength, manufacturer) from soft semantic spans.
 3. Phase 3 - Evaluation rebalance (P2)
@@ -285,7 +285,7 @@ Observed metrics:
 
 Key improvements:
 - `ner_sanitized` metadata now present, with dropped entity/slot audit trail.
-- One noisy manufacturer entity (`"ผู้ผลิต"`) correctly dropped in Manufacturer listing case.
+- One noisy manufacturer entity (`"à¸œà¸¹à¹‰à¸œà¸¥à¸´à¸•"`) correctly dropped in Manufacturer listing case.
 - Exact `id_lookup` path still preserved (tmtid filter + must_match + depth=1).
 
 Remaining issues (linked to I2 / NER quality):
@@ -438,8 +438,8 @@ Scope completed:
 - Added synthetic regression dataset:
   - `experiments/intent_benchmarks/aqt_synthetic_phase1_cases.json`
 - Added synthetic test runner:
-  - `scripts/test_aqt_phase1_synthetic.py`
-- Implemented slot trust policy in `src/services/aqt.py`:
+  - `experiments/question_understanding/intent_classification/integration_with_app/shadow_compare/test_aqt_phase1_synthetic.py`
+- Implemented slot trust policy in `apps/api/src/services/aqt.py`:
   1. suppress `brand` when exact `tmtid` signal exists
   2. suppress `brand` that conflicts with deterministic manufacturer signal
   3. suppress `brand` noise in compare queries when drug signal exists
@@ -457,3 +457,4 @@ Validation snapshot:
 Known residual noise after Phase 1:
 - Some manufacturer-style aliases may still appear as `brand` in generic listing contexts (e.g. short alias tokens).
 - This is tracked for Phase 2/next policy tuning (confidence-aware disambiguation + slot scoring).
+

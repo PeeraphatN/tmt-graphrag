@@ -1,0 +1,93 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Phase 3 Visualization (uniform vs static)</title>
+<style>
+  body { font-family: "Segoe UI", Arial, sans-serif; margin: 20px; color: #0f172a; background: #f8fafc; }
+  h1, h2, h3 { margin: 0 0 10px 0; }
+  .meta { color: #334155; margin-bottom: 18px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(320px,1fr)); gap: 14px; margin-bottom: 14px; }
+  .card { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 14px; box-shadow: 0 2px 8px rgba(15,23,42,0.06); }
+  .kpi { display: flex; justify-content: space-between; margin: 6px 0; }
+  .kpi b { color: #111827; }
+  .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .data-table th, .data-table td { border: 1px solid #dbeafe; padding: 6px 8px; vertical-align: top; }
+  .data-table th { background: #eff6ff; text-align: left; }
+  .bar-track { width: 100%; height: 10px; background: #e2e8f0; border-radius: 8px; margin-top: 3px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 8px; }
+  .legend { display: inline-flex; gap: 14px; margin-bottom: 8px; font-size: 12px; color: #334155; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+  .small { font-size: 12px; color: #475569; }
+</style>
+</head>
+<body>
+  <h1>Phase 3 Benchmark Visualization (RRF-only)</h1>
+  <div class="meta">
+    generated_at: <b>2026-03-03T15:23:49.088899</b> | total_records: <b>1716</b> | 
+    config: k=<b>10</b>, depth=<b>2</b>, 
+    policies=<b>[&#x27;uniform&#x27;, &#x27;static&#x27;]</b>, rrf_only=<b>True</b><br/>
+    source summary: <code>experiments\retrieval_eval\results\phase3_uniform_static_summary_20260303_150507.json</code>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Retrieval Metrics (700 queries)</h3>
+      <div class="legend">
+        <span><span class="dot" style="background:#4f46e5"></span>uniform</span>
+        <span><span class="dot" style="background:#059669"></span>static</span>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>metric</th><th>uniform</th><th>static</th></tr></thead>
+        <tbody><tr><td>hit@1</td><td>0.780000<div class='bar-track'><div class='bar-fill' style='width:100.00%; background:#4f46e5;'></div></div></td><td>0.780000<div class='bar-track'><div class='bar-fill' style='width:100.00%; background:#059669;'></div></div></td></tr><tr><td>hit@3</td><td>0.835714<div class='bar-track'><div class='bar-fill' style='width:100.00%; background:#4f46e5;'></div></div></td><td>0.835714<div class='bar-track'><div class='bar-fill' style='width:100.00%; background:#059669;'></div></div></td></tr><tr><td>hit@5</td><td>0.852857<div class='bar-track'><div class='bar-fill' style='width:100.00%; background:#4f46e5;'></div></div></td><td>0.852857<div class='bar-track'><div class='bar-fill' style='width:100.00%; background:#059669;'></div></div></td></tr><tr><td>hit@10</td><td>0.868571<div class='bar-track'><div class='bar-fill' style='width:100.00%; background:#4f46e5;'></div></div></td><td>0.868571<div class='bar-track'><div class='bar-fill' style='width:100.00%; background:#059669;'></div></div></td></tr><tr><td>mrr</td><td>0.811591<div class='bar-track'><div class='bar-fill' style='width:100.00%; background:#4f46e5;'></div></div></td><td>0.811591<div class='bar-track'><div class='bar-fill' style='width:100.00%; background:#059669;'></div></div></td></tr><tr><td>ndcg@10</td><td>0.802891<div class='bar-track'><div class='bar-fill' style='width:100.00%; background:#4f46e5;'></div></div></td><td>0.802891<div class='bar-track'><div class='bar-fill' style='width:100.00%; background:#059669;'></div></div></td></tr><tr><td>p@5</td><td>0.451429<div class='bar-track'><div class='bar-fill' style='width:100.00%; background:#4f46e5;'></div></div></td><td>0.451429<div class='bar-track'><div class='bar-fill' style='width:100.00%; background:#059669;'></div></div></td></tr><tr><td>r@5</td><td>0.480047<div class='bar-track'><div class='bar-fill' style='width:100.00%; background:#4f46e5;'></div></div></td><td>0.480047<div class='bar-track'><div class='bar-fill' style='width:100.00%; background:#059669;'></div></div></td></tr></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>Latency & Run Health</h3>
+      <div class="kpi"><span>uniform avg latency</span><b>669.25 ms</b></div>
+      <div class="kpi"><span>static avg latency</span><b>637.68 ms</b></div>
+      <div class="kpi"><span>delta (static - uniform)</span><b>-31.562 ms</b></div>
+      <hr/>
+      <div class="kpi"><span>uniform success / error</span><b>858 / 0</b></div>
+      <div class="kpi"><span>static success / error</span><b>858 / 0</b></div>
+      <div class="small">ทั้งสอง policy รันครบทุก query และไม่มี error ในชุดนี้</div>
+    </div>
+
+    <div class="card">
+      <h3>Count Metrics (122 queries)</h3>
+      <table class="data-table">
+        <thead><tr><th>metric</th><th>uniform</th><th>static</th><th>delta</th></tr></thead>
+        <tbody>
+          <tr><td>exact_match</td><td>0.278689</td><td>0.278689</td><td>0.000000</td></tr>
+          <tr><td>mae</td><td>46873.426230</td><td>46873.426230</td><td>0.000000</td></tr>
+          <tr><td>mape</td><td>898.792473</td><td>898.792473</td><td>0.000000</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>Verify Metrics (36 queries)</h3>
+      <table class="data-table">
+        <thead><tr><th>metric</th><th>uniform</th><th>static</th><th>delta</th></tr></thead>
+        <tbody>
+          <tr><td>accuracy</td><td>1.000000</td><td>1.000000</td><td>0.000000</td></tr>
+          <tr><td>precision</td><td>1.000000</td><td>1.000000</td><td>0.000000</td></tr>
+          <tr><td>recall</td><td>1.000000</td><td>1.000000</td><td>0.000000</td></tr>
+          <tr><td>f1</td><td>1.000000</td><td>1.000000</td><td>0.000000</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Operator Breakdown</h3>
+    <table class='data-table'><thead><tr><th>operator</th><th>family</th><th>count</th><th>metrics</th><th>uniform m1</th><th>static m1</th><th>delta m1</th><th>uniform m2</th><th>static m2</th><th>delta m2</th></tr></thead><tbody><tr><td>analyze_compare</td><td>retrieval</td><td>60</td><td>hit@10 / mrr</td><td>0.966667</td><td>0.966667</td><td>0.000000</td><td>0.722540</td><td>0.722540</td><td>0.000000</td></tr><tr><td>analyze_count</td><td>count</td><td>122</td><td>exact_match / mae</td><td>0.278689</td><td>0.278689</td><td>0.000000</td><td>46873.426230</td><td>46873.426230</td><td>0.000000</td></tr><tr><td>id_lookup</td><td>retrieval</td><td>240</td><td>hit@10 / mrr</td><td>1.000000</td><td>1.000000</td><td>0.000000</td><td>1.000000</td><td>1.000000</td><td>0.000000</td></tr><tr><td>list</td><td>retrieval</td><td>240</td><td>hit@10 / mrr</td><td>0.970833</td><td>0.970833</td><td>0.000000</td><td>0.900394</td><td>0.900394</td><td>0.000000</td></tr><tr><td>lookup</td><td>retrieval</td><td>160</td><td>hit@10 / mrr</td><td>0.481250</td><td>0.481250</td><td>0.000000</td><td>0.429167</td><td>0.429167</td><td>0.000000</td></tr><tr><td>verify</td><td>verify</td><td>36</td><td>accuracy</td><td>1.000000</td><td>1.000000</td><td>0.000000</td><td>0.000000</td><td>0.000000</td><td>0.000000</td></tr></tbody></table>
+  </div>
+
+  <div class='card'><h3>Query-Level Diagnostics</h3><p>paired queries: <b>858</b> | weight-different queries: <b>247</b> | top10-different queries: <b>3</b></p><p>latency delta (static - uniform): avg <b>-31.562 ms</b>, median <b>-1.296 ms</b>, p90 <b>65.766 ms</b></p><table class='data-table'><thead><tr><th>query_id</th><th>operator</th><th>query (trimmed)</th><th>uniform top3</th><th>static top3</th></tr></thead><tbody><tr><td>silver_q_000269</td><td>lookup</td><td>ข้อมูลยา DIANEAL LOW CALCIUM (2.5 MEQ/L) PERITONEAL DIALYSIS SOLUTION WITH 4.25% DEXTROSE (VANTIVE MANUFACTURING, SINGAP</td><td>1353898, 1352169, 1351733</td><td>1353898, 1352169, 1351733</td></tr><tr><td>silver_q_000335</td><td>lookup</td><td>ข้อมูลยา ZINNAT (GLAXO WELLCOME OPERATIONS, U.K.) (cefuroxime 250 mg/5 mL) powder for oral suspension</td><td>599960, 156701, 599941</td><td>599960, 599941, 481922</td></tr><tr><td>silver_q_000345</td><td>lookup</td><td>ข้อมูลยา PUREGON (N.V. ORGANON, NETHERLANDS) (follitropin beta 100 iu/0.5 mL) powder for solution for injection</td><td>683021, 681317, 683176</td><td>683021, 683176, 683124</td></tr></tbody></table></div>
+
+</body>
+</html>

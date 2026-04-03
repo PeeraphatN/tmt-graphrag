@@ -1,6 +1,6 @@
-﻿# Web App
+# Web App
 
-This is the staged home for the Next.js frontend of the GraphRAG PoC.
+This is the canonical home for the Next.js frontend of the GraphRAG PoC.
 
 ## Runtime Contents
 

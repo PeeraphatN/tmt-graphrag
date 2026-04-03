@@ -1,129 +1,105 @@
-# Experiment Repro Manifest
+﻿# Experiment Repro Manifest
 
-Last updated: 2026-02-23  
+Last updated: 2026-03-27  
 Repo: `C:\Work\PlayGround\Intern\GenAI`
 
-## Baseline Policy
+## Layout Policy
 
-- `master` is the frozen baseline reference branch.
-- Do not merge experimental work into `master` unless explicitly approved.
+Experiments now live under stable folder-based homes instead of being described primarily as branch-only work:
 
-## Branch Mapping
+- `experiments/question_understanding/intent_classification`
+- `experiments/question_understanding/ner_finetuning`
+- `experiments/retrieval/retrieval_eval`
 
-1. `master` (`48c70cb`)
-2. `experiment/intent-classification-benchmarks` (`e466e44`)
-3. `experiment/ner-wangchanberta` (`52fcdd6`)
-4. `feature/search-hybrid-rerank` (`46ab1f3`)
+`master` remains the historical baseline branch, but this manifest now records the canonical file layout in the current repo tree.
 
-Lineage (current):
+## 1) Intent Classification
 
-```text
-master -> intent-classification-benchmarks -> ner-wangchanberta -> search-hybrid-rerank
-```
+Canonical root:
+- `experiments/question_understanding/intent_classification`
 
-## Repro Anchors (Tags)
+Key areas:
+- `data/`
+- `data/source_snapshots/`
+- `embedding_model_selection/`
+- `intent_structure_fci_hic/`
+- `baselines/llm_prompting/`
+- `integration_with_app/`
+- `results/`
 
-- `baseline-master-20260209` -> `master` baseline (`48c70cb`)
-- `exp-intent-benchmarks-20260223` -> intent benchmark + shadow bundle point (`e466e44`)
-- `exp-ner-wangchanberta-20260210` -> NER experiment point (`52fcdd6`)
-- `exp-search-hybrid-rerank-20260219` -> search experiment point (`46ab1f3`)
+Standalone entry points:
+- `python experiments/question_understanding/intent_classification/data/builders/build_intent_dataset_v2_reference.py`
+- `python experiments/question_understanding/intent_classification/data/builders/generate_dataset.py`
+- `python experiments/question_understanding/intent_classification/embedding_model_selection/benchmark_intent.py`
+- `python experiments/question_understanding/intent_classification/baselines/llm_prompting/benchmark_llm.py`
+- `python experiments/question_understanding/intent_classification/intent_structure_fci_hic/benchmark_intent_v2_vs_legacy.py`
 
-## Experiment Inventory
+App-integration entry points:
+- `python experiments/question_understanding/intent_classification/integration_with_app/shadow_compare/test_intent_bundle_shadow.py`
+- `python experiments/question_understanding/intent_classification/integration_with_app/shadow_compare/test_aqt_phase1_synthetic.py`
+- `python experiments/question_understanding/intent_classification/integration_with_app/aqt_cli/test_aqt_cli.py`
 
-### 1) Intent Benchmarks
+Notes:
+- standalone intent builders and benchmarks use `data/source_snapshots/legacy_intent_dataset.json` instead of reading `src/api/intent_dataset.json`
+- app-coupled checks are isolated under `integration_with_app/`
 
-- Branch: `experiment/intent-classification-benchmarks`
-- Core files:
-  - `experiments/intent_benchmarks/benchmark_intent.py`
-  - `experiments/intent_benchmarks/benchmark_llm.py`
-  - `experiments/intent_benchmarks/benchmark_intent_v2_vs_legacy.py`
-  - `experiments/intent_benchmarks/intent_dataset_v2_reference.json`
-- Existing result artifacts:
-  - `experiments/intent_benchmarks/results/benchmark_intent_20260202_161033.txt`
-  - `experiments/intent_benchmarks/results/benchmark_intent_20260206_140509.txt`
-  - `experiments/intent_benchmarks/results/benchmark_intent_v2_vs_legacy_20260220_134337.json`
-  - `experiments/intent_benchmarks/results/real_query_fci_vs_hic_preview.json`
+## 2) NER Fine-Tuning
 
-Re-run commands:
+Canonical root:
+- `experiments/question_understanding/ner_finetuning`
 
-```powershell
-git checkout exp-intent-benchmarks-20260223
-python experiments/intent_benchmarks/benchmark_intent.py
-python experiments/intent_benchmarks/benchmark_llm.py
-python experiments/intent_benchmarks/benchmark_intent_v2_vs_legacy.py
-```
+Kept in Git:
+- `run/extract_entities.py`
+- `run/generate_ner_data.py`
+- `run/finetune_ner.py`
+- `run/analyze_all_entities.py`
+- `run/ner_inference_helper.py`
+- `configs/ner_inference_config.json`
+- `configs/train_config.reference.json`
+- `data/dataset_manifest.json`
+- reproducibility splits and small entity lists
 
-### 2) IntentBundle Shadow Compare
+Intentionally cleared from repo surface:
+- trained model weights
+- tokenizer exports
+- large trainer output directories
 
-- Branch: `experiment/intent-classification-benchmarks`
-- Core files:
-  - `src/schemas/intent_bundle.py`
-  - `scripts/test_intent_bundle_shadow.py`
-- Existing result artifacts:
-  - `test_results/20260223_121035_intent_bundle_shadow_compare.jsonl`
-  - `test_results/20260223_121124_intent_bundle_shadow_compare.jsonl`
+Execution policy:
+- standalone NER flow lives under `run/` and must not import `src/`
+- optional app-coupling checks live under `integration_with_app/`
+- `run/generate_ner_data.py` writes `artifacts/generated_records.jsonl` so integration checks can run later without changing the standalone generator
 
-Re-run command:
+Representative entry points:
+- `python experiments/question_understanding/ner_finetuning/run/extract_entities.py`
+- `python experiments/question_understanding/ner_finetuning/run/generate_ner_data.py`
+- `python experiments/question_understanding/ner_finetuning/run/finetune_ner.py`
+- `python experiments/question_understanding/ner_finetuning/integration_with_app/run_aqt_sanity.py`
 
-```powershell
-git checkout exp-intent-benchmarks-20260223
-$env:PYTHONIOENCODING='utf-8'
-python scripts/test_intent_bundle_shadow.py
-```
+## 3) Retrieval Evaluation
 
-### 3) NER WangchanBERTa Experiment
+Canonical root:
+- `experiments/retrieval/retrieval_eval`
 
-- Branch: `experiment/ner-wangchanberta`
-- Core files:
-  - `experiments/name_entity_extraction_benckmarks/finetune_ner.py`
-  - `experiments/name_entity_extraction_benckmarks/ner_inference_helper.py`
-  - `experiments/name_entity_extraction_benckmarks/train.json`
-  - `src/services/aqt.py` (NER integration point)
-- Existing artifacts:
-  - `experiments/name_entity_extraction_benckmarks/ner_model_output/*`
+Key areas:
+- `data/phase1_ground_truth.json`
+- `data/phase2_silver_queries.json`
+- `data/poc_acceptance_criteria_semantic_v1.json`
+- `run/`
+- `integration_with_app/`
+- `docs/`
+- `results/`
 
-Re-run command (example):
-
-```powershell
-git checkout exp-ner-wangchanberta-20260210
-python experiments/name_entity_extraction_benckmarks/finetune_ner.py
-```
-
-### 4) Search Hybrid + Rerank Experiment
-
-- Branch: `feature/search-hybrid-rerank`
-- Core files:
-  - `src/services/search.py`
-  - `src/pipeline.py`
-  - `src/services/aqt.py`
-- Verification script:
-  - `scripts/test_intent_router.py`
-
-Re-run command:
-
-```powershell
-git checkout exp-search-hybrid-rerank-20260219
-python scripts/test_intent_router.py
-```
-
-## Environment Notes
-
-- Use the project virtual environment before running experiments.
-- Required services for retrieval experiments:
-  - Neo4j
-  - Ollama
-- Suggested startup:
-
-```powershell
-docker-compose up -d
-```
+Representative entry points:
+- `python experiments/retrieval/retrieval_eval/integration_with_app/build_phase1_ground_truth.py`
+- `python experiments/retrieval/retrieval_eval/integration_with_app/build_phase2_silver_queries.py`
+- `python experiments/retrieval/retrieval_eval/integration_with_app/run_phase3_uniform_static.py`
+- `python experiments/retrieval/retrieval_eval/integration_with_app/run_lookup_fallback_ablation.py`
+- `python experiments/retrieval/retrieval_eval/run/check_poc_acceptance_semantic.py --runs-jsonl <runs.jsonl>`
 
 ## Repro Rules
 
-1. Every experiment run should produce a timestamped artifact in `experiments/.../results/` or `test_results/`.
-2. Save deterministic settings in code/config:
-   - random seed
-   - embedding model
-   - train/test split method
-3. Do not overwrite previous results; append new timestamped files.
-4. Keep `master` unchanged as the baseline reference.
+1. Put executable experiment logic in the experiment folder that owns it; avoid creating new repo-level ad hoc script folders for experiment work.
+2. Keep deterministic datasets, configs, and small result summaries in Git when they help reproduction.
+3. Keep large generated artifacts out of Git, especially NER model weights and export directories.
+4. Write standalone outputs into the owning experiment's `results/` or `artifacts/` subtree.
+5. If a script imports `src/`, move it under `integration_with_app/` instead of mixing it with standalone experiment code.

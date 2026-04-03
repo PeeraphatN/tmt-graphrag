@@ -1,8 +1,8 @@
-﻿# Apps
+# Apps
 
-This directory now holds the staged product runtime surfaces for the repo reorganization.
+This directory is the canonical home for the product runtime.
 
-- `api/`: FastAPI and GraphRAG backend runtime copied from the current source of truth
-- `web/`: Next.js frontend runtime with dependencies owned locally by the web app
+- `api/`: FastAPI and GraphRAG backend
+- `web/`: Next.js frontend with app-local dependencies
 
-The original `/src` and `/frontend` directories are still intact for fallback while migration continues.
+Use these directories as the primary runtime surface for development, local testing, and handoff.

@@ -48,12 +48,10 @@ def _configure_stdout_utf8() -> None:
 
 _configure_stdout_utf8()
 
-# Log path configuration
-LOG_PATH = "./logs/ragas_data.jsonl"
-pathlib.Path(LOG_PATH).parent.mkdir(parents=True, exist_ok=True)
-
-# Intent Classification dataset
-INTENT_DATASET = "./api/intent_dataset.json"
+# App-local path configuration
+APP_ROOT = pathlib.Path(__file__).resolve().parents[1]
+LOG_PATH = APP_ROOT / "logs" / "ragas_data.jsonl"
+LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
 HYBRID_FINAL_TOP_K = 25
 
 NLEM_UNSUPPORTED_PATTERNS = [

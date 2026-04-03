@@ -1,10 +1,10 @@
-﻿# API App
+# API App
 
-This is the staged home for the FastAPI and GraphRAG backend runtime.
+This is the canonical home for the FastAPI and GraphRAG backend runtime.
 
 ## Runtime Contents
 
-- `src/`: backend application code copied from the current runtime surface
+- `src/`: backend application code
 - `manufacturers.json`: runtime lookup data required by manufacturer filtering
 - `requirements.txt`: backend runtime dependencies
 - `Dockerfile`: container entrypoint for the API app

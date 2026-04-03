@@ -1,4 +1,4 @@
-# Environment variables
+﻿# Environment variables
 .env
 
 # Python
@@ -7,6 +7,7 @@ __pycache__/
 *$py.class
 *.so
 .Python
+.venv/
 env/
 venv/
 ENV/
@@ -30,16 +31,24 @@ Thumbs.db
 logs/
 daily_logs/
 
+# JavaScript / Node
+node_modules/
+.npm/
+
 # Data
 data/
 *.db
 *.sqlite
 cache/
 test_results/
-frontend/.next/
 apps/web/.next/
 apps/api/cache/
 apps/api/logs/
 _tmp_*.py
 aqt_out.json
 eval_results.csv
+experiments/question_understanding/ner_finetuning/artifacts/*
+!experiments/question_understanding/ner_finetuning/artifacts/.gitkeep
+experiments/question_understanding/ner_finetuning/exports/*
+!experiments/question_understanding/ner_finetuning/exports/.gitkeep
+experiments/question_understanding/intent_classification/integration_with_app/results/experiments/question_understanding/ner_finetuning/integration_with_app/results/

@@ -1,0 +1,112 @@
+{
+  "generated_at": "2026-03-08T22:57:44.591834",
+  "total_records": 320,
+  "policy_summaries": {
+    "uniform": {
+      "records_total": 160,
+      "success_count": 160,
+      "error_count": 0,
+      "operator_distribution": {
+        "lookup": 160
+      },
+      "latency_ms_avg": 941.60685,
+      "retrieval": {
+        "count": 160,
+        "hit@1": 0.41875,
+        "hit@3": 0.58125,
+        "hit@5": 0.6125,
+        "hit@10": 0.63125,
+        "p@5": 0.1225,
+        "r@5": 0.6125,
+        "mrr": 0.509132,
+        "ndcg@10": 0.53787
+      },
+      "count": {
+        "count": 0,
+        "exact_match": 0.0,
+        "mae": 0.0,
+        "mape": 0.0
+      },
+      "verify": {
+        "count": 0,
+        "accuracy": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "confusion": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "tn": 0
+        }
+      },
+      "by_operator": {
+        "lookup": {
+          "metric_family": "retrieval",
+          "count": 160,
+          "hit@10": 0.63125,
+          "mrr": 0.509132
+        }
+      }
+    },
+    "static": {
+      "records_total": 160,
+      "success_count": 160,
+      "error_count": 0,
+      "operator_distribution": {
+        "lookup": 160
+      },
+      "latency_ms_avg": 763.369731,
+      "retrieval": {
+        "count": 160,
+        "hit@1": 0.41875,
+        "hit@3": 0.58125,
+        "hit@5": 0.6125,
+        "hit@10": 0.63125,
+        "p@5": 0.1225,
+        "r@5": 0.6125,
+        "mrr": 0.509161,
+        "ndcg@10": 0.53778
+      },
+      "count": {
+        "count": 0,
+        "exact_match": 0.0,
+        "mae": 0.0,
+        "mape": 0.0
+      },
+      "verify": {
+        "count": 0,
+        "accuracy": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "confusion": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "tn": 0
+        }
+      },
+      "by_operator": {
+        "lookup": {
+          "metric_family": "retrieval",
+          "count": 160,
+          "hit@10": 0.63125,
+          "mrr": 0.509161
+        }
+      }
+    }
+  },
+  "input_queries_path": "experiments\\retrieval_eval\\eval\\phase2_lookup_only_queries.json",
+  "output_jsonl": "experiments\\retrieval_eval\\results\\phase3_uniform_static_runs_20260308_225241.jsonl",
+  "config": {
+    "k": 10,
+    "depth": 2,
+    "policies": [
+      "uniform",
+      "static"
+    ],
+    "max_queries": null,
+    "rrf_only": true
+  }
+}

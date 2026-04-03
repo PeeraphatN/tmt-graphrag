@@ -1,0 +1,249 @@
+{
+  "generated_at": "2026-03-07T13:28:17.499139",
+  "runs_jsonl": "experiments\\retrieval_eval\\results\\phase3_uniform_static_runs_20260307_130406.jsonl",
+  "criteria_json": "experiments\\retrieval_eval\\eval\\poc_acceptance_criteria_semantic_v1.json",
+  "policies": {
+    "static": {
+      "overall_pass": false,
+      "metrics": {
+        "overall_semantic_hit@10": {
+          "value": 0.5956521739130435,
+          "count": 460
+        },
+        "lookup_hit@10": {
+          "value": 0.33125,
+          "count": 160
+        },
+        "list_hit@10": {
+          "value": 0.7,
+          "count": 240
+        },
+        "compare_hit@10": {
+          "value": 0.8833333333333333,
+          "count": 60
+        },
+        "overall_semantic_mrr": {
+          "value": 0.48330112690755633,
+          "count": 460
+        },
+        "overall_semantic_ndcg@10": {
+          "value": 0.43691843652070667,
+          "count": 460
+        },
+        "count_exact_match": {
+          "value": 0.1885245901639344,
+          "count": 122
+        },
+        "count_mape": {
+          "value": 162.72223848914498,
+          "count": 122
+        },
+        "error_rate": {
+          "value": 0.0,
+          "count": 942
+        },
+        "latency_p95_ms": {
+          "value": 1252.4125499999998,
+          "count": 942
+        },
+        "verify_non_id_accuracy": {
+          "value": null,
+          "count": 0
+        }
+      },
+      "checks": {
+        "overall_semantic_hit@10": {
+          "value": 0.5956521739130435,
+          "count": 460,
+          "pass": false,
+          "target": 0.75,
+          "op": ">="
+        },
+        "lookup_hit@10": {
+          "value": 0.33125,
+          "count": 160,
+          "pass": false,
+          "target": 0.55,
+          "op": ">="
+        },
+        "list_hit@10": {
+          "value": 0.7,
+          "count": 240,
+          "pass": false,
+          "target": 0.8,
+          "op": ">="
+        },
+        "compare_hit@10": {
+          "value": 0.8833333333333333,
+          "count": 60,
+          "pass": true,
+          "target": 0.85,
+          "op": ">="
+        },
+        "overall_semantic_mrr": {
+          "value": 0.48330112690755633,
+          "count": 460,
+          "pass": false,
+          "target": 0.55,
+          "op": ">="
+        },
+        "overall_semantic_ndcg@10": {
+          "value": 0.43691843652070667,
+          "count": 460,
+          "pass": false,
+          "target": 0.6,
+          "op": ">="
+        },
+        "count_exact_match": {
+          "value": 0.1885245901639344,
+          "count": 122,
+          "pass": false,
+          "target": 0.45,
+          "op": ">="
+        },
+        "count_mape": {
+          "value": 162.72223848914498,
+          "count": 122,
+          "pass": false,
+          "target": 40.0,
+          "op": "<="
+        },
+        "error_rate": {
+          "value": 0.0,
+          "count": 942,
+          "pass": true,
+          "target": 0.01,
+          "op": "<="
+        },
+        "latency_p95_ms": {
+          "value": 1252.4125499999998,
+          "count": 942,
+          "pass": true,
+          "target": 2500.0,
+          "op": "<="
+        }
+      }
+    },
+    "uniform": {
+      "overall_pass": false,
+      "metrics": {
+        "overall_semantic_hit@10": {
+          "value": 0.6021739130434782,
+          "count": 460
+        },
+        "lookup_hit@10": {
+          "value": 0.33125,
+          "count": 160
+        },
+        "list_hit@10": {
+          "value": 0.7,
+          "count": 240
+        },
+        "compare_hit@10": {
+          "value": 0.9333333333333333,
+          "count": 60
+        },
+        "overall_semantic_mrr": {
+          "value": 0.4828835575712227,
+          "count": 460
+        },
+        "overall_semantic_ndcg@10": {
+          "value": 0.4374905679372953,
+          "count": 460
+        },
+        "count_exact_match": {
+          "value": 0.1885245901639344,
+          "count": 122
+        },
+        "count_mape": {
+          "value": 162.72223848914498,
+          "count": 122
+        },
+        "error_rate": {
+          "value": 0.0,
+          "count": 942
+        },
+        "latency_p95_ms": {
+          "value": 1268.4671999999998,
+          "count": 942
+        },
+        "verify_non_id_accuracy": {
+          "value": null,
+          "count": 0
+        }
+      },
+      "checks": {
+        "overall_semantic_hit@10": {
+          "value": 0.6021739130434782,
+          "count": 460,
+          "pass": false,
+          "target": 0.75,
+          "op": ">="
+        },
+        "lookup_hit@10": {
+          "value": 0.33125,
+          "count": 160,
+          "pass": false,
+          "target": 0.55,
+          "op": ">="
+        },
+        "list_hit@10": {
+          "value": 0.7,
+          "count": 240,
+          "pass": false,
+          "target": 0.8,
+          "op": ">="
+        },
+        "compare_hit@10": {
+          "value": 0.9333333333333333,
+          "count": 60,
+          "pass": true,
+          "target": 0.85,
+          "op": ">="
+        },
+        "overall_semantic_mrr": {
+          "value": 0.4828835575712227,
+          "count": 460,
+          "pass": false,
+          "target": 0.55,
+          "op": ">="
+        },
+        "overall_semantic_ndcg@10": {
+          "value": 0.4374905679372953,
+          "count": 460,
+          "pass": false,
+          "target": 0.6,
+          "op": ">="
+        },
+        "count_exact_match": {
+          "value": 0.1885245901639344,
+          "count": 122,
+          "pass": false,
+          "target": 0.45,
+          "op": ">="
+        },
+        "count_mape": {
+          "value": 162.72223848914498,
+          "count": 122,
+          "pass": false,
+          "target": 40.0,
+          "op": "<="
+        },
+        "error_rate": {
+          "value": 0.0,
+          "count": 942,
+          "pass": true,
+          "target": 0.01,
+          "op": "<="
+        },
+        "latency_p95_ms": {
+          "value": 1268.4671999999998,
+          "count": 942,
+          "pass": true,
+          "target": 2500.0,
+          "op": "<="
+        }
+      }
+    }
+  }
+}

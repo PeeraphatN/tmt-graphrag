@@ -1,24 +1,34 @@
-﻿'use client';
+'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Send, Trash2, Bot, User, Loader2, Copy, Check, Sparkles, Pill, Search, HelpCircle } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Bot,
+  Check,
+  Copy,
+  HelpCircle,
+  Loader2,
+  Pill,
+  Search,
+  Send,
+  Sparkles,
+  Trash2,
+  User,
+} from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 
-// Types
 interface Message {
   role: 'user' | 'bot';
   content: string;
   timestamp: Date;
 }
 
-// Example Questions
 const API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8000').replace(/\/$/, '');
 
 const EXAMPLE_QUESTIONS = [
-  { icon: Pill, text: 'à¸¢à¸² Paracetamol à¸¡à¸µà¹ƒà¸„à¸£à¸œà¸¥à¸´à¸•à¸šà¹‰à¸²à¸‡?' },
-  { icon: Search, text: 'à¹ƒà¸„à¸£à¸œà¸¥à¸´à¸•à¸¢à¸² Amoxicillin?' },
-  { icon: HelpCircle, text: 'à¸¢à¸² Simvastatin à¸¡à¸µà¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¸­à¸°à¹„à¸£à¸šà¹‰à¸²à¸‡?' },
+  { icon: Pill, text: 'ยา Paracetamol มีใครผลิตบ้าง?' },
+  { icon: Search, text: 'ใครผลิตยา Amoxicillin?' },
+  { icon: HelpCircle, text: 'ยา Simvastatin มีข้อมูลอะไรบ้าง?' },
 ];
 
 export default function Home() {
@@ -28,7 +38,6 @@ export default function Home() {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -37,14 +46,12 @@ export default function Home() {
     scrollToBottom();
   }, [messages, isLoading]);
 
-  // Copy to clipboard
   const copyToClipboard = (text: string, index: number) => {
     navigator.clipboard.writeText(text);
     setCopiedIndex(index);
     setTimeout(() => setCopiedIndex(null), 2000);
   };
 
-  // Handle Send
   const handleSend = async (messageText?: string) => {
     const text = messageText || input.trim();
     if (!text || isLoading) return;
@@ -60,106 +67,106 @@ export default function Home() {
         body: JSON.stringify({ message: text }),
       });
 
-      if (!res.ok) throw new Error('API Error');
+      if (!res.ok) {
+        throw new Error('API Error');
+      }
 
       const data = await res.json();
       setMessages((prev) => [...prev, { role: 'bot', content: data.response, timestamp: new Date() }]);
     } catch {
       setMessages((prev) => [
         ...prev,
-        { role: 'bot', content: 'âŒ à¹€à¸à¸´à¸”à¸‚à¹‰à¸­à¸œà¸´à¸”à¸žà¸¥à¸²à¸”à¹ƒà¸™à¸à¸²à¸£à¹€à¸Šà¸·à¹ˆà¸­à¸¡à¸•à¹ˆà¸­à¸à¸±à¸š Server', timestamp: new Date() },
+        {
+          role: 'bot',
+          content: 'เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์',
+          timestamp: new Date(),
+        },
       ]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Enter Key
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
   };
 
-  // Format Time
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
   };
 
   return (
-    <main className="flex flex-col h-screen bg-gradient-to-br from-slate-100 via-teal-50 to-emerald-100 text-slate-800 font-sans">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-lg border-b border-slate-200/50 p-4 shadow-sm z-10">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
+    <main className="flex h-screen flex-col bg-gradient-to-br from-slate-100 via-teal-50 to-emerald-100 text-slate-800">
+      <header className="z-10 border-b border-slate-200/50 bg-white/80 p-4 shadow-sm backdrop-blur-lg">
+        <div className="mx-auto flex max-w-4xl items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="relative">
-              <div className="bg-gradient-to-br from-teal-500 to-emerald-600 p-2.5 rounded-xl text-white shadow-lg shadow-teal-200">
+              <div className="rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600 p-2.5 text-white shadow-lg shadow-teal-200">
                 <Bot size={24} />
               </div>
               <motion.div
-                className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-white"
+                className="absolute -right-1 -top-1 h-3 w-3 rounded-full border-2 border-white bg-green-400"
                 animate={{ scale: [1, 1.2, 1] }}
                 transition={{ repeat: Infinity, duration: 2 }}
               />
             </div>
             <div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
+              <h1 className="bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-xl font-bold text-transparent">
                 TMT Drug RAG
               </h1>
-              <p className="text-xs text-slate-500">à¸£à¸°à¸šà¸šà¸„à¹‰à¸™à¸«à¸²à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¸¢à¸²</p>
+              <p className="text-xs text-slate-500">ระบบค้นหาข้อมูลยา</p>
             </div>
           </div>
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setMessages([])}
-            className="flex items-center gap-2 text-slate-400 hover:text-red-500 transition-colors px-3 py-2 rounded-lg hover:bg-red-50"
+            className="flex items-center gap-2 rounded-lg px-3 py-2 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-500"
           >
             <Trash2 size={18} />
-            <span className="text-sm hidden sm:inline">à¸¥à¹‰à¸²à¸‡à¸›à¸£à¸°à¸§à¸±à¸•à¸´</span>
+            <span className="hidden text-sm sm:inline">ล้างประวัติ</span>
           </motion.button>
         </div>
       </header>
 
-      {/* Chat Area */}
       <div className="flex-1 overflow-y-auto p-4">
-        <div className="max-w-3xl mx-auto pb-4">
-          {/* Welcome Screen */}
+        <div className="mx-auto max-w-3xl pb-4">
           {messages.length === 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-center mt-12 space-y-8"
+              className="mt-12 space-y-8 text-center"
             >
               <motion.div
                 animate={{ y: [0, -10, 0] }}
                 transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
               >
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-teal-100 text-teal-700 rounded-full text-sm font-medium">
+                <div className="inline-flex items-center gap-2 rounded-full bg-teal-100 px-4 py-2 text-sm font-medium text-teal-700">
                   <Sparkles size={16} />
                   Powered by Local LLM
                 </div>
               </motion.div>
               <Bot size={80} className="mx-auto text-teal-300" />
               <div>
-                <h2 className="text-3xl font-bold text-slate-700 mb-2">à¸ªà¸§à¸±à¸ªà¸”à¸µà¸„à¸£à¸±à¸š! ðŸ‘‹</h2>
-                <p className="text-slate-500 max-w-md mx-auto">
-                  à¸–à¸²à¸¡à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¸¢à¸² TMT, à¸œà¸¹à¹‰à¸œà¸¥à¸´à¸•, à¸ªà¹ˆà¸§à¸™à¸›à¸£à¸°à¸à¸­à¸š à¸«à¸£à¸·à¸­à¸šà¸±à¸à¸Šà¸µà¸¢à¸²à¸«à¸¥à¸±à¸à¹à¸«à¹ˆà¸‡à¸Šà¸²à¸•à¸´à¹„à¸”à¹‰à¹€à¸¥à¸¢à¸„à¸£à¸±à¸š
+                <h2 className="mb-2 text-3xl font-bold text-slate-700">สวัสดีครับ</h2>
+                <p className="mx-auto max-w-md text-slate-500">
+                  ถามข้อมูลยา TMT, ผู้ผลิต, ส่วนประกอบ หรือบัญชียาหลักแห่งชาติได้เลยครับ
                 </p>
               </div>
 
-              {/* Example Questions */}
               <div className="space-y-3">
-                <p className="text-sm text-slate-400">à¸¥à¸­à¸‡à¸–à¸²à¸¡à¸„à¸³à¸–à¸²à¸¡à¹€à¸«à¸¥à¹ˆà¸²à¸™à¸µà¹‰:</p>
+                <p className="text-sm text-slate-400">ลองถามคำถามเหล่านี้:</p>
                 <div className="flex flex-wrap justify-center gap-3">
-                  {EXAMPLE_QUESTIONS.map((q, i) => (
+                  {EXAMPLE_QUESTIONS.map((q) => (
                     <motion.button
-                      key={i}
+                      key={q.text}
                       whileHover={{ scale: 1.03, y: -2 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => handleSend(q.text)}
-                      className="flex items-center gap-2 px-4 py-3 bg-white rounded-xl shadow-md hover:shadow-lg border border-slate-100 text-sm text-slate-600 transition-all"
+                      className="flex items-center gap-2 rounded-xl border border-slate-100 bg-white px-4 py-3 text-sm text-slate-600 shadow-md transition-all hover:shadow-lg"
                     >
                       <q.icon size={16} className="text-teal-500" />
                       <span>{q.text}</span>
@@ -170,41 +177,42 @@ export default function Home() {
             </motion.div>
           )}
 
-          {/* Messages */}
           <AnimatePresence initial={false}>
             {messages.map((msg, index) => (
               <motion.div
-                key={index}
+                key={`${msg.role}-${index}-${msg.timestamp.toISOString()}`}
                 initial={{ opacity: 0, y: 15, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ duration: 0.3 }}
-                className={`flex gap-3 mb-6 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                className={`mb-6 flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
-                {/* Bot Avatar */}
                 {msg.role === 'bot' && (
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-teal-400 to-emerald-500 flex items-center justify-center text-white flex-shrink-0 mt-1 shadow-md">
+                  <div className="mt-1 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-teal-400 to-emerald-500 text-white shadow-md">
                     <Bot size={18} />
                   </div>
                 )}
 
-                {/* Message Bubble */}
                 <div className="group relative max-w-[80%]">
                   <div
-                    className={`rounded-2xl px-5 py-3 shadow-md ${msg.role === 'user'
-                      ? 'bg-gradient-to-r from-teal-500 to-emerald-600 text-white rounded-br-sm'
-                      : 'bg-white/90 backdrop-blur-sm border border-slate-100 text-slate-800 rounded-bl-sm prose prose-sm max-w-none'
-                      }`}
+                    className={`rounded-2xl px-5 py-3 shadow-md ${
+                      msg.role === 'user'
+                        ? 'rounded-br-sm bg-gradient-to-r from-teal-500 to-emerald-600 text-white'
+                        : 'prose prose-sm max-w-none rounded-bl-sm border border-slate-100 bg-white/90 text-slate-800 backdrop-blur-sm'
+                    }`}
                   >
                     <ReactMarkdown>{msg.content}</ReactMarkdown>
                   </div>
-                  {/* Timestamp & Copy */}
-                  <div className={`flex items-center gap-2 mt-1 text-[10px] text-slate-400 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div
+                    className={`mt-1 flex items-center gap-2 text-[10px] text-slate-400 ${
+                      msg.role === 'user' ? 'justify-end' : 'justify-start'
+                    }`}
+                  >
                     <span>{formatTime(msg.timestamp)}</span>
                     {msg.role === 'bot' && (
                       <button
                         onClick={() => copyToClipboard(msg.content, index)}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-slate-100 rounded"
-                        title="à¸„à¸±à¸”à¸¥à¸­à¸"
+                        className="rounded p-1 opacity-0 transition-opacity hover:bg-slate-100 group-hover:opacity-100"
+                        title="คัดลอก"
                       >
                         {copiedIndex === index ? <Check size={12} className="text-green-500" /> : <Copy size={12} />}
                       </button>
@@ -212,9 +220,8 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* User Avatar */}
                 {msg.role === 'user' && (
-                  <div className="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 flex-shrink-0 mt-1 shadow-sm">
+                  <div className="mt-1 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-slate-200 text-slate-600 shadow-sm">
                     <User size={18} />
                   </div>
                 )}
@@ -222,30 +229,29 @@ export default function Home() {
             ))}
           </AnimatePresence>
 
-          {/* Typing Indicator */}
           {isLoading && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex gap-3 items-start mb-6"
+              className="mb-6 flex items-start gap-3"
             >
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-teal-400 to-emerald-500 flex items-center justify-center text-white shadow-md">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-teal-400 to-emerald-500 text-white shadow-md">
                 <Bot size={18} />
               </div>
-              <div className="bg-white/90 backdrop-blur-sm rounded-2xl rounded-bl-sm px-5 py-4 shadow-md border border-slate-100">
+              <div className="rounded-2xl rounded-bl-sm border border-slate-100 bg-white/90 px-5 py-4 shadow-md backdrop-blur-sm">
                 <div className="flex gap-1.5">
                   <motion.div
-                    className="w-2.5 h-2.5 bg-teal-400 rounded-full"
+                    className="h-2.5 w-2.5 rounded-full bg-teal-400"
                     animate={{ y: [0, -6, 0] }}
                     transition={{ repeat: Infinity, duration: 0.6, delay: 0 }}
                   />
                   <motion.div
-                    className="w-2.5 h-2.5 bg-teal-400 rounded-full"
+                    className="h-2.5 w-2.5 rounded-full bg-teal-400"
                     animate={{ y: [0, -6, 0] }}
                     transition={{ repeat: Infinity, duration: 0.6, delay: 0.15 }}
                   />
                   <motion.div
-                    className="w-2.5 h-2.5 bg-teal-400 rounded-full"
+                    className="h-2.5 w-2.5 rounded-full bg-teal-400"
                     animate={{ y: [0, -6, 0] }}
                     transition={{ repeat: Infinity, duration: 0.6, delay: 0.3 }}
                   />
@@ -257,16 +263,15 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Input Area */}
-      <footer className="bg-white/80 backdrop-blur-lg border-t border-slate-200/50 p-4">
-        <div className="max-w-3xl mx-auto">
+      <footer className="border-t border-slate-200/50 bg-white/80 p-4 backdrop-blur-lg">
+        <div className="mx-auto max-w-3xl">
           <div className="relative flex items-end gap-2">
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="à¸žà¸´à¸¡à¸žà¹Œà¸„à¸³à¸–à¸²à¸¡à¸—à¸µà¹ˆà¸™à¸µà¹ˆ..."
-              className="flex-1 bg-white/80 backdrop-blur border border-slate-200 rounded-2xl pl-4 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent resize-none shadow-sm text-slate-900 placeholder:text-slate-400 transition-all"
+              placeholder="พิมพ์คำถามที่นี่..."
+              className="flex-1 resize-none rounded-2xl border border-slate-200 bg-white/80 px-4 py-3 text-slate-900 shadow-sm transition-all placeholder:text-slate-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-teal-400"
               rows={1}
               style={{ minHeight: '52px', maxHeight: '150px' }}
             />
@@ -275,18 +280,16 @@ export default function Home() {
               whileTap={{ scale: 0.95 }}
               onClick={() => handleSend()}
               disabled={!input.trim() || isLoading}
-              className="p-3 bg-gradient-to-r from-teal-500 to-emerald-600 text-white rounded-xl hover:from-teal-600 hover:to-emerald-700 disabled:opacity-50 disabled:hover:from-teal-500 disabled:hover:to-emerald-600 transition-all shadow-lg shadow-teal-200/50"
+              className="rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 p-3 text-white shadow-lg shadow-teal-200/50 transition-all hover:from-teal-600 hover:to-emerald-700 disabled:opacity-50 disabled:hover:from-teal-500 disabled:hover:to-emerald-600"
             >
               {isLoading ? <Loader2 className="animate-spin" size={22} /> : <Send size={22} />}
             </motion.button>
           </div>
-          <p className="text-center text-[10px] text-slate-400 mt-2">
-            ðŸ”’ à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¸–à¸¹à¸à¸›à¸£à¸°à¸¡à¸§à¸¥à¸œà¸¥à¸ à¸²à¸¢à¹ƒà¸™à¹€à¸„à¸£à¸·à¹ˆà¸­à¸‡ 100% | Local LLM + Neo4j
+          <p className="mt-2 text-center text-[10px] text-slate-400">
+            ข้อมูลถูกประมวลผลภายในเครื่อง | Local LLM + Neo4j
           </p>
         </div>
       </footer>
     </main>
   );
 }
-
-

@@ -1,0 +1,98 @@
+{
+  "generated_at": "2026-03-08T22:38:29.100479",
+  "total_records": 942,
+  "policy_summaries": {
+    "static": {
+      "records_total": 942,
+      "success_count": 942,
+      "error_count": 0,
+      "operator_distribution": {
+        "id_lookup": 240,
+        "lookup": 160,
+        "list": 240,
+        "analyze_count": 122,
+        "verify": 120,
+        "analyze_compare": 60
+      },
+      "latency_ms_avg": 355.88732,
+      "retrieval": {
+        "count": 700,
+        "hit@1": 0.781429,
+        "hit@3": 0.845714,
+        "hit@5": 0.867143,
+        "hit@10": 0.89,
+        "p@5": 0.412571,
+        "r@5": 0.597876,
+        "mrr": 0.821508,
+        "ndcg@10": 0.782687
+      },
+      "count": {
+        "count": 122,
+        "exact_match": 0.655738,
+        "mae": 72.360656,
+        "mape": 0.891481
+      },
+      "verify": {
+        "count": 120,
+        "accuracy": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "confusion": {
+          "tp": 60,
+          "fp": 0,
+          "fn": 0,
+          "tn": 60
+        }
+      },
+      "by_operator": {
+        "analyze_compare": {
+          "metric_family": "retrieval",
+          "count": 60,
+          "hit@10": 0.95,
+          "mrr": 0.725444
+        },
+        "analyze_count": {
+          "metric_family": "count",
+          "count": 122,
+          "exact_match": 0.655738,
+          "mae": 72.360656
+        },
+        "id_lookup": {
+          "metric_family": "retrieval",
+          "count": 240,
+          "hit@10": 1.0,
+          "mrr": 1.0
+        },
+        "list": {
+          "metric_family": "retrieval",
+          "count": 240,
+          "hit@10": 0.9375,
+          "mrr": 0.875309
+        },
+        "lookup": {
+          "metric_family": "retrieval",
+          "count": 160,
+          "hit@10": 0.63125,
+          "mrr": 0.509092
+        },
+        "verify": {
+          "metric_family": "verify",
+          "count": 120,
+          "accuracy": 1.0
+        }
+      }
+    }
+  },
+  "input_queries_path": "experiments\\retrieval_eval\\eval\\phase2_silver_queries.json",
+  "output_jsonl": "experiments\\retrieval_eval\\results\\phase3_uniform_static_runs_20260308_223039.jsonl",
+  "config": {
+    "k": 10,
+    "depth": 2,
+    "policies": [
+      "static"
+    ],
+    "max_queries": null,
+    "rrf_only": true
+  }
+}

@@ -1,12 +1,12 @@
-version: '3.8'
+version: "3.8"
 
 services:
   neo4j:
     image: neo4j:5.15.0
     container_name: neo4j-tmt
     ports:
-      - "7474:7474"   # HTTP
-      - "7687:7687"   # Bolt
+      - "7474:7474"
+      - "7687:7687"
     environment:
       - NEO4J_AUTH=${NEO4J_AUTH}
       - NEO4J_PLUGINS=["apoc"]
@@ -37,9 +37,11 @@ services:
     networks:
       - genai-network
 
-  app:
-    build: .
-    container_name: genai-app
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: genai-api
     depends_on:
       - neo4j
       - ollama
@@ -50,14 +52,43 @@ services:
       - OLLAMA_URL=http://ollama:11434/api/chat
       - OLLAMA_EMBED_URL=http://ollama:11434/api/embeddings
       - LLM_MODEL=${LLM_MODEL}
+      - CLASSIFICATION_MODEL=${CLASSIFICATION_MODEL}
       - EMBED_MODEL=${EMBED_MODEL}
       - VECTOR_INDEX_NAME=${VECTOR_INDEX_NAME}
       - FULLTEXT_INDEX_NAME=${FULLTEXT_INDEX_NAME}
       - EMBEDDING_DIM=${EMBEDDING_DIM}
+      - GRAPH_TRAVERSAL_DEPTH=${GRAPH_TRAVERSAL_DEPTH:-2}
+      - NLEM_QA_ENABLED=${NLEM_QA_ENABLED:-false}
+      - INTENT_V2_ENABLED=${INTENT_V2_ENABLED:-true}
+      - INTENT_V2_USE_NER=${INTENT_V2_USE_NER:-false}
+      - INTENT_V2_ADAPTIVE_PLANNER=${INTENT_V2_ADAPTIVE_PLANNER:-true}
+      - INTENT_CENTROID_CACHE_ENABLED=${INTENT_CENTROID_CACHE_ENABLED:-true}
+      - INTENT_CENTROID_CACHE_DIR=/app/cache/intent_classifier
+      - NER_MODEL_DIR=/app/artifacts/ner/final_model
+      - NER_CONFIDENCE_THRESHOLD=${NER_CONFIDENCE_THRESHOLD:-0.60}
+      - NER_MAX_SEQ_LENGTH=${NER_MAX_SEQ_LENGTH:-128}
+    ports:
+      - "8000:8000"
     volumes:
-      - .:/app
-    stdin_open: true # docker run -i
-    tty: true        # docker run -t
+      - ./apps/api/artifacts:/app/artifacts
+      - ./apps/api/cache:/app/cache
+      - ./apps/api/logs:/app/logs
+    stdin_open: true
+    tty: true
+    networks:
+      - genai-network
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: genai-web
+    depends_on:
+      - api
+    environment:
+      - NEXT_PUBLIC_API_BASE_URL=http://api:8000
+    ports:
+      - "3000:3000"
     networks:
       - genai-network
 

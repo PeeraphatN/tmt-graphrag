@@ -1,8 +1,11 @@
 ﻿import os
+from pathlib import Path
+
 from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
+APP_ROOT = Path(__file__).resolve().parents[1]
 
 
 def _as_bool(value: str | None, default: bool = False) -> bool:
@@ -43,7 +46,7 @@ INTENT_V2_ADAPTIVE_PLANNER = _as_bool(os.getenv("INTENT_V2_ADAPTIVE_PLANNER"), d
 # NER runtime config
 NER_MODEL_DIR = os.getenv(
     "NER_MODEL_DIR",
-    "artifacts/ner/final_model",
+    str(APP_ROOT / "artifacts" / "ner" / "final_model"),
 )
 NER_CONFIDENCE_THRESHOLD = float(os.getenv("NER_CONFIDENCE_THRESHOLD", "0.60"))
 NER_MAX_SEQ_LENGTH = int(os.getenv("NER_MAX_SEQ_LENGTH", "128"))

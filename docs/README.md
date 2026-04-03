@@ -15,4 +15,4 @@ The product runtime now lives in:
 - `apps/web`
 - `infra`
 
-Legacy runtime folders under `/src` and `/frontend` are kept only as migration references and should not be treated as the main handoff surface.
+The old root-level runtime folders have been removed from the main repo surface.
