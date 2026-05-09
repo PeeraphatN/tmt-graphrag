@@ -1,4 +1,5 @@
 import json
+import logging
 import re
 import time
 import uuid
@@ -27,6 +28,8 @@ from src.cache.result_cache import (
 from src.models.embeddings import embed_text
 from src.schemas.query import GraphRAGQuery
 from src.services.ranking_service import get_reranker
+
+logger = logging.getLogger(__name__)
 
 
 def _configure_stdout_utf8() -> None:
@@ -98,23 +101,23 @@ class GraphRAGPipeline:
         try:
             validate_env()
         except RuntimeError as e:
-            print(f"Configuration Error: {e}")
+            logger.error("Configuration Error: %s", e)
             raise
 
         init_driver()
-        print("=== Neo4j + Ollama Hybrid Retriever Demo (Modular - LangChain Phase 3) ===")
-        
+        logger.info("=== Neo4j + Ollama Hybrid Retriever Demo (Modular - LangChain Phase 3) ===")
+
         try:
             setup_indexes()
         except Exception as e:
-            print(f"Warning: Could not setup indexes: {e}")
+            logger.warning("Warning: Could not setup indexes: %s", e)
 
         # Initialize (shared singleton) Reranker
         self.reranker = get_reranker()
         # self.reranker = None  # Configurable: Set to Reranker() if needed
 
         # Initialize Intent Classifier (compute centroids at startup)
-        print("\n🧠 Initializing Intent Classifier...")
+        logger.info("\n🧠 Initializing Intent Classifier...")
         self.intent_classifier = get_intent_classifier()
         self.intent_classifier.initialize()
 
@@ -149,37 +152,38 @@ class GraphRAGPipeline:
         question = inputs["question"]
         q_embedding = inputs.get("q_embedding")  # From run() for cache optimization
         
-        print(f"\n→ Process: AQT (Intent + Filters) ...")
-        
+        logger.info("\n→ Process: AQT (Intent + Filters) ...")
+
         # transform_query now handles both intent classification and filter extraction
         query_obj = transform_query(question, q_embedding)
-        
+
         # Print debug info
         raw_intent = getattr(query_obj, '_raw_intent', 'unknown')
         confidence = getattr(query_obj, '_intent_confidence', 0.0)
         target_conf = getattr(query_obj, '_target_confidence', 0.0)
         target_margin = getattr(query_obj, '_target_margin', 0.0)
-        
-        print(f"   Intent: {raw_intent} (fine_conf: {confidence:.4f}, target_conf: {target_conf:.4f}, margin: {target_margin:.4f})")
-        print(f"   Target Type: {query_obj.target_type.upper()} | Strategy: {query_obj.strategy}")
-        print(f"   Filters: NLEM={query_obj.nlem_filter}, Cat={query_obj.nlem_category}, Manu={query_obj.manufacturer_filter}")
-        print(
-            "   Retrieval Profile: "
-            f"mode={query_obj.retrieval_mode}, "
-            f"entity_ratio={query_obj.entity_ratio:.2f}, "
-            f"weights(v={query_obj.vector_weight:.2f}, f={query_obj.fulltext_weight:.2f})"
+
+        logger.info("   Intent: %s (fine_conf: %.4f, target_conf: %.4f, margin: %.4f)", raw_intent, confidence, target_conf, target_margin)
+        logger.info("   Target Type: %s | Strategy: %s", query_obj.target_type.upper(), query_obj.strategy)
+        logger.info("   Filters: NLEM=%s, Cat=%s, Manu=%s", query_obj.nlem_filter, query_obj.nlem_category, query_obj.manufacturer_filter)
+        logger.info(
+            "   Retrieval Profile: mode=%s, entity_ratio=%.2f, weights(v=%.2f, f=%.2f)",
+            query_obj.retrieval_mode,
+            query_obj.entity_ratio,
+            query_obj.vector_weight,
+            query_obj.fulltext_weight,
         )
-        print(f"   Search Term: '{query_obj.query}'")
+        logger.info("   Search Term: '%s'", query_obj.query)
         if getattr(query_obj, "id_lookup", None):
-            print(f"   ID Lookup: {query_obj.id_lookup}")
+            logger.info("   ID Lookup: %s", query_obj.id_lookup)
         bundle = getattr(query_obj, "intent_bundle", None)
         if bundle:
             action = bundle.get("action_intent", "unknown")
             topics = bundle.get("topics_intents", [])
-            print(f"   IntentV2: action={action}, topics={topics}")
-        
+            logger.info("   IntentV2: action=%s, topics=%s", action, topics)
+
         elapsed = time.perf_counter() - start_time
-        print(f"   ⏱️ Transform Time: {elapsed:.3f}s")
+        logger.debug("   ⏱️ Transform Time: %.3fs", elapsed)
         self._timing['transform'] = elapsed
         
         return query_obj
@@ -192,17 +196,17 @@ class GraphRAGPipeline:
         query_obj = inputs["query_obj"]
         question = inputs["question"]
         
-        print(f"\\n→ Process: Advanced GraphRAG Search ...")
+        logger.info("\n→ Process: Advanced GraphRAG Search ...")
         results = advanced_graphrag_search(query_obj, k=50, depth=GRAPH_TRAVERSAL_DEPTH)
         # Selective reranking: apply only on lookup route.
         route = results.get("route") or {}
         route_operator = str(route.get("operator") or "").lower()
         if self.reranker and route_operator == "lookup" and results.get("seed_results"):
-            print(f"\n-> Process: Re-ranking lookup seeds ({len(results['seed_results'])} candidates) ...")
+            logger.info("\n-> Process: Re-ranking lookup seeds (%d candidates) ...", len(results['seed_results']))
             reranked = self.reranker.rerank(question, results["seed_results"], top_k=50)
             results["seed_results"] = reranked
             if reranked:
-                print(f"   Top candidate: {reranked[0].get('score')} -> {reranked[0].get('rerank_score')}")
+                logger.info("   Top candidate: %s -> %s", reranked[0].get('score'), reranked[0].get('rerank_score'))
 
         # Final seed cap for hybrid routes only.
         # Cypher deterministic routes keep all results as requested.
@@ -213,10 +217,10 @@ class GraphRAGPipeline:
         ):
             before = len(results["seed_results"])
             results["seed_results"] = results["seed_results"][:HYBRID_FINAL_TOP_K]
-            print(f"   Hybrid seed cap applied: {before} -> {len(results['seed_results'])}")
+            logger.info("   Hybrid seed cap applied: %d -> %d", before, len(results['seed_results']))
 
         elapsed = time.perf_counter() - start_time
-        print(f"   ⏱️ Search Time: {elapsed:.3f}s")
+        logger.debug("   ⏱️ Search Time: %.3fs", elapsed)
         self._timing['search'] = elapsed
         
         return results
@@ -229,7 +233,7 @@ class GraphRAGPipeline:
         results = inputs["results"]
         query_obj = inputs["query_obj"]
         
-        print(f"\\n→ Process: Data Extraction ...")
+        logger.info("\n→ Process: Data Extraction ...")
         structured = extract_structured_data(results, query_obj.target_type)
 
         # Debug info
@@ -237,12 +241,12 @@ class GraphRAGPipeline:
         num_expanded = len(results.get("expanded_nodes", []))
         num_rels = len(results.get("relationships", []))
         num_entities = len(structured.get("entities", []))
-        
-        print(f"   Found: {num_seeds} primary nodes, {num_expanded} related nodes, {num_rels} relationships")
-        print(f"   Context: {num_entities} entities will be sent to LLM")
-        
+
+        logger.info("   Found: %d primary nodes, %d related nodes, %d relationships", num_seeds, num_expanded, num_rels)
+        logger.info("   Context: %d entities will be sent to LLM", num_entities)
+
         elapsed = time.perf_counter() - start_time
-        print(f"   ⏱️ Extraction Time: {elapsed:.3f}s")
+        logger.debug("   ⏱️ Extraction Time: %.3fs", elapsed)
         self._timing['extract'] = elapsed
         
         return structured
@@ -304,11 +308,11 @@ class GraphRAGPipeline:
             )
 
         # 1. Generate Embedding (for Intent Classification)
-        print("\n→ Generating question embedding...")
+        logger.info("\n→ Generating question embedding...")
         q_embedding = embed_text(question)
 
         # 2. Invoke Chain
-        print("\n🚀 Invoking Pipeline Chain...")
+        logger.info("\n🚀 Invoking Pipeline Chain...")
         self._timing = {}  # Reset timing dict
         pipeline_start = time.perf_counter()
         
@@ -325,14 +329,14 @@ class GraphRAGPipeline:
             self._timing['llm'] = llm_time
             
             # Print timing summary
-            print(f"\n⏱️ Pipeline Timing Summary:")
-            print(f"   Transform: {self._timing.get('transform', 0):.3f}s")
-            print(f"   Search:    {self._timing.get('search', 0):.3f}s")
-            print(f"   Extract:   {self._timing.get('extract', 0):.3f}s")
-            print(f"   LLM:       {self._timing.get('llm', 0):.3f}s")
-            print(f"   ────────────────────")
-            print(f"   Total:     {pipeline_total:.3f}s")
-            print("\nตอบ:\n", answer)
+            logger.debug("\n⏱️ Pipeline Timing Summary:")
+            logger.debug("   Transform: %.3fs", self._timing.get('transform', 0))
+            logger.debug("   Search:    %.3fs", self._timing.get('search', 0))
+            logger.debug("   Extract:   %.3fs", self._timing.get('extract', 0))
+            logger.debug("   LLM:       %.3fs", self._timing.get('llm', 0))
+            logger.debug("   ────────────────────")
+            logger.debug("   Total:     %.3fs", pipeline_total)
+            logger.info("Answer: %s", answer)
 
             # 3. Update Answer Cache
             set_cached_answer_semantic(question, q_embedding, answer)
@@ -343,43 +347,41 @@ class GraphRAGPipeline:
             return answer
 
         except Exception as e:
-            print(f"❌ Pipeline Execution Failed: {e}")
-            import traceback
-            traceback.print_exc()
+            logger.error("❌ Pipeline Execution Failed: %s", e, exc_info=True)
             return "ขออภัย เกิดข้อผิดพลาดในระบบประมวลผล"
 
     def warmup(self):
         """Warmup models (Embedding & LLM) to reduce first-inference latency."""
-        print("🔥 Warming up models (this may take a few seconds)...")
-        
+        logger.info("🔥 Warming up models (this may take a few seconds)...")
+
         # 1. Warmup Embedding
         try:
             embed_text("warmup")
-            print("   ✅ Embedding Model Ready")
+            logger.info("   ✅ Embedding Model Ready")
         except Exception as e:
-            print(f"   ⚠️ Embedding Warmup Failed: {e}")
+            logger.warning("   ⚠️ Embedding Warmup Failed: %s", e)
 
         # 2. Warmup Classification LLM (Small model)
         try:
             # Import locally to avoid circular deps if any
             from src.models.llm import get_llm
             from src.config import CLASSIFICATION_MODEL
-            
+
             llm = get_llm(model=CLASSIFICATION_MODEL)
             llm.invoke("Hi")
-            print("   ✅ Classification Model Ready")
+            logger.info("   ✅ Classification Model Ready")
         except Exception as e:
-            print(f"   ⚠️ LLM Warmup Failed: {e}")
-        
+            logger.warning("   ⚠️ LLM Warmup Failed: %s", e)
+
         # 3. Warmup Reranker
         try:
             if self.reranker:
-                 self.reranker.rerank("warmup", [{"node": {"fsn": "test"}}], top_k=1)
-                 print("   ✅ Reranker Ready")
+                self.reranker.rerank("warmup", [{"node": {"fsn": "test"}}], top_k=1)
+                logger.info("   ✅ Reranker Ready")
         except Exception as e:
-             print(f"   ⚠️ Reranker Warmup Failed: {e}")
+            logger.warning("   ⚠️ Reranker Warmup Failed: %s", e)
 
-        print("🔥 System Ready!\n")
+        logger.info("🔥 System Ready!\n")
 
     def _log_interaction(self, question: str, results: dict, answer: str, ground_truth: str = None):
         """Append interaction log to JSONL file."""
@@ -416,6 +418,6 @@ class GraphRAGPipeline:
     def print_cache_stats(self):
         """Print current cache statistics."""
         stats = get_cache_stats()
-        print("\n\n📊 Cache Statistics:")
-        print(f"   Answer Cache: {stats['answer_cache']['hits_exact']} exact + {stats['answer_cache']['hits_semantic']} semantic / {stats['answer_cache']['misses']} misses")
-        print(f"   Query Cache:  {stats['query_cache']['hits']} hits / {stats['query_cache']['misses']} misses")
+        logger.info("\n\n📊 Cache Statistics:")
+        logger.info("   Answer Cache: %s exact + %s semantic / %s misses", stats['answer_cache']['hits_exact'], stats['answer_cache']['hits_semantic'], stats['answer_cache']['misses'])
+        logger.info("   Query Cache:  %s hits / %s misses", stats['query_cache']['hits'], stats['query_cache']['misses'])

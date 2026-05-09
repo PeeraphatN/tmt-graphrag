@@ -2,11 +2,17 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+import logging
 import sys
 import os
 
 # Ensure project root is in python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
+
+from src.logging_config import setup_logging
+setup_logging()
+
+logger = logging.getLogger(__name__)
 
 from src.pipeline import GraphRAGPipeline
 
@@ -17,15 +23,15 @@ pipeline = None
 async def lifespan(app: FastAPI):
     """Initialize Pipeline on Startup"""
     global pipeline
-    print("🚀 Starting TMT GraphRAG API...")
+    logger.info("🚀 Starting TMT GraphRAG API...")
     try:
         pipeline = GraphRAGPipeline()
         pipeline.warmup()
-        print("✅ Pipeline Ready!")
+        logger.info("✅ Pipeline Ready!")
     except Exception as e:
-        print(f"❌ Startup Error: {e}")
+        logger.error("❌ Startup Error: %s", e)
     yield
-    print("🛑 Shutting down API...")
+    logger.info("🛑 Shutting down API...")
 
 # Create FastAPI App
 app = FastAPI(
@@ -67,13 +73,23 @@ async def chat(request: ChatRequest):
     global pipeline
     if not pipeline:
         raise HTTPException(status_code=503, detail="Pipeline is not ready")
-    
+
     try:
+        import asyncio
         from starlette.concurrency import run_in_threadpool
-        
+        from src.config import CHAT_TIMEOUT_SECONDS
+
         # Offload blocking task to threadpool to prevent blocking the Event Loop
-        answer = await run_in_threadpool(pipeline.run, request.message)
+        answer = await asyncio.wait_for(
+            run_in_threadpool(pipeline.run, request.message),
+            timeout=CHAT_TIMEOUT_SECONDS,
+        )
         return ChatResponse(response=answer)
+    except asyncio.TimeoutError:
+        raise HTTPException(
+            status_code=504,
+            detail=f"Request timed out after {CHAT_TIMEOUT_SECONDS}s — LLM or retrieval took too long",
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

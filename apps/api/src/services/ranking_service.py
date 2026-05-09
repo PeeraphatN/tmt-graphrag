@@ -1,4 +1,52 @@
+import logging
 import torch
+
+from src.config import RERANKER_DEVICE
+
+logger = logging.getLogger(__name__)
+
+
+def _resolve_device(device_cfg: str) -> str:
+    """Resolve the RERANKER_DEVICE config value to an actual torch device string."""
+    if device_cfg == "cuda":
+        if not torch.cuda.is_available():
+            raise RuntimeError(
+                "RERANKER_DEVICE=cuda was requested but CUDA is not available on this system."
+            )
+        return "cuda"
+    if device_cfg == "cpu":
+        return "cpu"
+    # "auto" or anything unrecognised — pick CUDA if present, else CPU
+    return "cuda" if torch.cuda.is_available() else "cpu"
+
+
+def _log_device(device: str) -> None:
+    """Emit a structured log line about the resolved reranker device."""
+    if device == "cuda":
+        try:
+            free_bytes, total_bytes = torch.cuda.mem_get_info()
+            free_gb = free_bytes / (1024 ** 3)
+            total_gb = total_bytes / (1024 ** 3)
+            logger.info(
+                "Reranker device: cuda (VRAM free: %.1f GB / %.1f GB)",
+                free_gb,
+                total_gb,
+            )
+        except Exception:
+            # Fallback if mem_get_info is unavailable
+            try:
+                props = torch.cuda.get_device_properties(0)
+                total_gb = props.total_memory / (1024 ** 3)
+                logger.info(
+                    "Reranker device: cuda (total VRAM: %.1f GB)", total_gb
+                )
+            except Exception:
+                logger.info("Reranker device: cuda")
+    else:
+        forced = RERANKER_DEVICE == "cpu"
+        suffix = " (forced via RERANKER_DEVICE=cpu)" if forced else ""
+        logger.info("Reranker device: cpu%s", suffix)
+
 
 class Reranker:
     def __init__(self, model_name: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"):
@@ -6,14 +54,15 @@ class Reranker:
         Initialize the Reranker with a CrossEncoder model.
         Using a lightweight model by default for speed.
         """
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        print(f"Loading Reranker model: {model_name} on {self.device}...")
+        self.device = _resolve_device(RERANKER_DEVICE)
+        _log_device(self.device)
+        logger.info("Loading Reranker model: %s on %s...", model_name, self.device)
         try:
             from sentence_transformers import CrossEncoder
             self.model = CrossEncoder(model_name, device=self.device)
-            print("Reranker model loaded successfully.")
+            logger.info("Reranker model loaded successfully.")
         except Exception as e:
-            print(f"Failed to load Reranker model (Import Error or other): {e}")
+            logger.error("Failed to load Reranker model: %s", e)
             self.model = None
 
     def rerank(self, query: str, candidates: list[dict], top_k: int = 10) -> list[dict]:

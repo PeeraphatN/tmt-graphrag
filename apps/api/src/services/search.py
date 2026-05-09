@@ -8,6 +8,7 @@ Operator-driven search with 3-channel retrieval:
 
 from __future__ import annotations
 
+import logging
 import math
 import re
 from typing import Any
@@ -18,8 +19,14 @@ from src.query_processor import sanitize_fulltext_query
 from src.services.database import check_index_exists, init_driver
 from src.services.ranking_service import get_reranker
 
+logger = logging.getLogger(__name__)
+
 COMPARE_SPLIT_PATTERN = re.compile(
-    r"\b(?:vs\.?|versus|and|or|with)\b|[\u0E00-\u0E7F]*\s*(?:à¸à¸±à¸š|à¸à¸š|à¹à¸¥à¸°|à¸«à¸£à¸·à¸­)\s*[\u0E00-\u0E7F]*",
+    r"\b(?:vs\.?|versus|and|or|with)\b"
+    r"|และ"        # และ
+    r"|หรือ"       # หรือ
+    r"|กับ"        # กับ
+    r"|เทียบกับ",  # เทียบกับ
     re.IGNORECASE,
 )
 
@@ -552,7 +559,7 @@ def _vector_channel_search(
         return []
 
     if not _check_index_exists_cached(session, VECTOR_INDEX_NAME):
-        print(f"Index {VECTOR_INDEX_NAME} not found. Skipping vector search.")
+        logger.warning("Index %s not found. Skipping vector search.", VECTOR_INDEX_NAME)
         return []
 
     parts, params = _build_filter_parts("node", allowed_levels, filters, "vec_")
@@ -569,7 +576,7 @@ def _vector_channel_search(
         recs = session.run(query, **query_params)
         return [{"node": rec["node"], "score": float(rec["score"] or 0.0)} for rec in recs]
     except Exception as exc:
-        print(f"Vector search error: {exc}")
+        logger.error("Vector search error: %s", exc)
         return []
 
 
@@ -585,7 +592,7 @@ def _fulltext_channel_search(
         return []
 
     if not _check_index_exists_cached(session, FULLTEXT_INDEX_NAME):
-        print(f"Index {FULLTEXT_INDEX_NAME} not found. Skipping fulltext search.")
+        logger.warning("Index %s not found. Skipping fulltext search.", FULLTEXT_INDEX_NAME)
         return []
 
     parts, params = _build_filter_parts("node", allowed_levels, filters, "ft_")
@@ -602,7 +609,7 @@ def _fulltext_channel_search(
         recs = session.run(query, **query_params)
         return [{"node": rec["node"], "score": float(rec["score"] or 0.0)} for rec in recs]
     except Exception as exc:
-        print(f"Fulltext search error: {exc}")
+        logger.error("Fulltext search error: %s", exc)
         return []
 
 
@@ -650,7 +657,7 @@ def _graph_anchor_search(
                     _upsert_anchor(rec["node"], float(rec["score"] or 0.0), rank)
                     found_in_term += 1
             except Exception as exc:
-                print(f"Graph anchor fulltext error: {exc}")
+                logger.error("Graph anchor fulltext error: %s", exc)
 
         # Fallback anchor path:
         # when fulltext is unavailable/empty or query sanitizer becomes too strict.
@@ -686,7 +693,7 @@ def _graph_anchor_search(
                 for rank, rec in enumerate(recs):
                     _upsert_anchor(rec["node"], 200.0 - rank, rank)
             except Exception as exc:
-                print(f"Graph anchor lexical fallback error: {exc}")
+                logger.error("Graph anchor lexical fallback error: %s", exc)
 
     manu = str(filters.get("manufacturer", "")).strip().lower() if filters else ""
     if manu:
@@ -705,7 +712,7 @@ def _graph_anchor_search(
             for rank, rec in enumerate(recs):
                 _upsert_anchor(rec["node"], 350.0 - rank, rank)
         except Exception as exc:
-            print(f"Graph anchor manufacturer fallback error: {exc}")
+            logger.error("Graph anchor manufacturer fallback error: %s", exc)
 
     tmtid = str(filters.get("tmtid", "")).strip() if filters else ""
     if tmtid:
@@ -721,7 +728,7 @@ def _graph_anchor_search(
             for rec in recs:
                 _upsert_anchor(rec["node"], 999.0, 0)
         except Exception as exc:
-            print(f"Graph anchor id error: {exc}")
+            logger.error("Graph anchor id error: %s", exc)
 
     anchor_list = list(anchors.values())
     anchor_list.sort(key=lambda item: (-item["score"], item["rank"]))
@@ -786,7 +793,7 @@ def _graph_traversal_channel_search(
                 }
             )
     except Exception as exc:
-        print(f"Graph traversal search error: {exc}")
+        logger.error("Graph traversal search error: %s", exc)
         return []
 
     return rows
@@ -933,7 +940,7 @@ def expand_context(node_ids: list[str], depth: int = 2) -> dict:
                 if path:
                     paths.append(path)
         except Exception as exc:
-            print(f"Relationship traversal error: {exc}")
+            logger.error("Relationship traversal error: %s", exc)
 
     return {
         "nodes": list(expanded_nodes.values()),
@@ -963,7 +970,7 @@ def search_general(
     strategy_name = _enum_value(getattr(query_obj, "strategy", "retrieve"))
     raw_query = query_override or (query_obj.query if getattr(query_obj, "query", None) else "drug")
     clean_query = _normalize_query_for_search(raw_query) or "drug"
-    print(f"   [Strategy: {strategy_name.upper()}] 3-channel search for: {clean_query}")
+    logger.info("   [Strategy: %s] 3-channel search for: %s", strategy_name.upper(), clean_query)
 
     raw_search_queries = [raw_query]
     if query_override is None and getattr(query_obj, "expanded_queries", None):
@@ -1096,11 +1103,11 @@ def search_general(
     expanded = expand_context(seed_node_ids, depth=depth)
     non_seed_nodes = [n for n in expanded["nodes"] if not n.get("is_seed", False)]
     if rerank_expanded and non_seed_nodes:
-        print(f"   [Pruning] Reranking {len(non_seed_nodes)} expanded nodes...")
+        logger.info("   [Pruning] Reranking %d expanded nodes...", len(non_seed_nodes))
         try:
             non_seed_nodes = get_reranker().rerank(clean_query, non_seed_nodes, top_k=20)
         except Exception as exc:
-            print(f"   [Warning] Reranking failed, using original list: {exc}")
+            logger.warning("   [Warning] Reranking failed, using original list: %s", exc)
 
     channel_hits = {
         "vector": sum(1 for row in all_seed_results if int(row.get("v_rank", 9999)) < 9999),
@@ -1143,7 +1150,7 @@ def execute_id_lookup_query(query_obj, depth: int = 1) -> dict:
     if not tmtid:
         return search_general(query_obj, k=10, depth=depth)
 
-    print(f"   [Strategy: ID_LOOKUP] Exact lookup for TMTID={tmtid}")
+    logger.info("   [Strategy: ID_LOOKUP] Exact lookup for TMTID=%s", tmtid)
     drv = init_driver()
     nodes = []
     with drv.session() as session:
@@ -1158,7 +1165,7 @@ def execute_id_lookup_query(query_obj, depth: int = 1) -> dict:
         nodes = [rec["n"] for rec in recs]
 
     if not nodes:
-        print("   [ID_LOOKUP] Exact match not found, falling back to search.")
+        logger.info("   [ID_LOOKUP] Exact match not found, falling back to search.")
         fallback = search_general(
             query_obj,
             k=10,
@@ -2387,7 +2394,7 @@ def execute_compare_query(query_obj, k: int = 10, depth: int = 2) -> dict:
         try:
             non_seed_nodes = get_reranker().rerank(compare_query, non_seed_nodes, top_k=20)
         except Exception as exc:
-            print(f"   [Warning] Compare rerank failed, using original list: {exc}")
+            logger.warning("   [Warning] Compare rerank failed, using original list: %s", exc)
 
     return {
         "strategy": "compare",

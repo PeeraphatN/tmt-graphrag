@@ -52,3 +52,14 @@ experiments/question_understanding/ner_finetuning/artifacts/*
 experiments/question_understanding/ner_finetuning/exports/*
 !experiments/question_understanding/ner_finetuning/exports/.gitkeep
 experiments/question_understanding/intent_classification/integration_with_app/results/experiments/question_understanding/ner_finetuning/integration_with_app/results/
+
+# Experiment result dumps (keep summary .json, exclude raw JSONL)
+experiments/**/results/*.jsonl
+experiments/**/results/plots/
+
+# Pickle / binary model cache
+*.pkl
+
+# Claude Code worktrees and per-user local settings
+.claude/worktrees/
+.claude/settings.local.json

@@ -73,6 +73,13 @@ VERIFY_PATTERNS = [
     r"ใช่",
     r"จริง",
 ]
+# Yes/no English questions ("Is X ...?") should be classified as verify even
+# when the sentence contains "list" as a noun ("the NLEM list"). Matched
+# before LIST_PATTERNS in detect_strategy to override the noun-shaped match.
+VERIFY_LEADING_PATTERN = re.compile(
+    r"^\s*(is|are|was|were|does|do|did|can|could|should|will|would|has|have|had)\b",
+    re.IGNORECASE,
+)
 COMPARE_PATTERNS = [
     r"\bcompare\b",
     r"\bdifference\b",
@@ -249,12 +256,18 @@ def _contains_pattern(question: str, patterns: list[str]) -> bool:
 def detect_strategy(question: str) -> str:
     """
     Detect action-oriented strategy.
-    Priority: count > list > verify > retrieve
+    Priority: count > verify-leading > list > verify > retrieve
+
+    The verify-leading check sits between count and list so that yes/no
+    questions ("Is paracetamol in the NLEM list?") aren't misclassified as
+    list just because the noun "list" appears in the sentence.
     """
     q = question.strip()
 
     if _contains_pattern(q, COUNT_PATTERNS) or any(k in q for k in TH_COUNT_KEYWORDS):
         return "count"
+    if VERIFY_LEADING_PATTERN.match(q):
+        return "verify"
     if _contains_pattern(q, LIST_PATTERNS) or any(k in q for k in TH_LIST_KEYWORDS):
         return "list"
     if _contains_pattern(q, VERIFY_PATTERNS) or any(k in q for k in TH_VERIFY_KEYWORDS):

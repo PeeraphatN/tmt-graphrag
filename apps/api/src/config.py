@@ -51,6 +51,12 @@ NER_MODEL_DIR = os.getenv(
 NER_CONFIDENCE_THRESHOLD = float(os.getenv("NER_CONFIDENCE_THRESHOLD", "0.60"))
 NER_MAX_SEQ_LENGTH = int(os.getenv("NER_MAX_SEQ_LENGTH", "128"))
 
+# API timeout configuration
+CHAT_TIMEOUT_SECONDS = int(os.getenv("CHAT_TIMEOUT_SECONDS", "120"))
+
+# Reranker device: "auto" | "cpu" | "cuda"
+RERANKER_DEVICE = os.getenv("RERANKER_DEVICE", "auto").strip().lower()
+
 def validate_env():
     required_vars = {
         "NEO4J_URI": NEO4J_URI,

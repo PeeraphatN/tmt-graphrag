@@ -3,6 +3,7 @@ Intent Classification Service using Centroid-based Vector Similarity.
 Uses bge-m3 embeddings via Ollama.
 """
 import json
+import logging
 import os
 import pickle
 import hashlib
@@ -13,6 +14,8 @@ from pathlib import Path
 import ollama
 
 from src.config import EMBED_MODEL
+
+logger = logging.getLogger(__name__)
 
 # Configuration
 INTENT_DATASET_PATH = Path(__file__).parent.parent / "api" / "intent_dataset.json"
@@ -99,7 +102,7 @@ class IntentClassifier:
             with open(cache_file, "rb") as f:
                 payload = pickle.load(f)
         except Exception as e:
-            print(f"   Warning: Failed to read intent centroid cache: {e}")
+            logger.warning("   Warning: Failed to read intent centroid cache: %s", e)
             return False
 
         if not isinstance(payload, dict):
@@ -121,9 +124,10 @@ class IntentClassifier:
         self.intent_names = list(payload.get("intent_names", list(fine_centroids.keys())))
         self.target_names = list(payload.get("target_names", list(target_centroids.keys())))
 
-        print(
-            "   Loaded intent centroid cache "
-            f"(fine={len(self.fine_centroids)}, target={len(self.target_centroids)})"
+        logger.info(
+            "   Loaded intent centroid cache (fine=%d, target=%d)",
+            len(self.fine_centroids),
+            len(self.target_centroids),
         )
         return True
 
@@ -150,9 +154,9 @@ class IntentClassifier:
         try:
             with open(cache_file, "wb") as f:
                 pickle.dump(payload, f, protocol=pickle.HIGHEST_PROTOCOL)
-            print(f"   Saved intent centroid cache -> {cache_file}")
+            logger.info("   Saved intent centroid cache -> %s", cache_file)
         except Exception as e:
-            print(f"   Warning: Failed to save intent centroid cache: {e}")
+            logger.warning("   Warning: Failed to save intent centroid cache: %s", e)
 
     @staticmethod
     def _parse_intent_name(intent_name: str) -> tuple[str, str]:
@@ -178,7 +182,7 @@ class IntentClassifier:
             response = ollama.embeddings(model=EMBED_MODEL, prompt=text)
             return np.array(response["embedding"], dtype=np.float32)
         except Exception as e:
-            print(f"   Warning: Failed to embed '{text[:30]}...': {e}")
+            logger.warning("   Warning: Failed to embed '%s...': %s", text[:30], e)
             return None
 
     def _score_against(self, query_embedding: np.ndarray, centroids: dict[str, np.ndarray]) -> list[tuple[str, float]]:
@@ -208,11 +212,11 @@ class IntentClassifier:
             self._initialized = True
             return
 
-        print("   Loading intent dataset...")
+        logger.info("   Loading intent dataset...")
         with open(dataset_path, "r", encoding="utf-8") as f:
             dataset = json.load(f)
 
-        print(f"   Computing centroids for {len(dataset)} fine intents...")
+        logger.info("   Computing centroids for %d fine intents...", len(dataset))
 
         fine_vectors: dict[str, list[np.ndarray]] = defaultdict(list)
         target_vectors: dict[str, list[np.ndarray]] = defaultdict(list)
@@ -238,9 +242,10 @@ class IntentClassifier:
 
         self._save_centroids_to_cache(dataset_hash)
         self._initialized = True
-        print(
-            "   Intent Classifier initialized "
-            f"(fine={len(self.fine_centroids)}, target={len(self.target_centroids)})"
+        logger.info(
+            "   Intent Classifier initialized (fine=%d, target=%d)",
+            len(self.fine_centroids),
+            len(self.target_centroids),
         )
 
     def classify(self, query: str, query_embedding: np.ndarray = None) -> dict:

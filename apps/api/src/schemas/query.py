@@ -108,16 +108,3 @@ class GraphRAGQuery(BaseModel):
         None,
         description="IntentV2 bundle payload for routing/debug."
     )
-
-    def to_cypher_filter(self) -> str:
-        """Generates a Cypher WHERE clause fragment."""
-        clauses = []
-        if self.nlem_filter:
-            clauses.append("n.nlem = true")
-        if self.nlem_category:
-            clauses.append(f"n.nlem_category = '{self.nlem_category}'")
-        if self.manufacturer_filter:
-            # Note: This might need fuzzy match in real implementation
-            clauses.append(f"n.manufacturer CONTAINS '{self.manufacturer_filter}'")
-            
-        return " AND ".join(clauses) if clauses else "1=1"
