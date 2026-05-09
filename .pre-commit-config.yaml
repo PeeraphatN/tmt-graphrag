@@ -11,3 +11,14 @@ repos:
             experiments/.*\.json|
             experiments/.*\.jsonl
           )$
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-added-large-files
+        args: ['--maxkb=51200']  # 50 MB; large model weights belong on HF, not git
+      - id: check-merge-conflict
+      - id: end-of-file-fixer
+        exclude: '\.(json|svg|png|jpg|pdf|bin|model)$'
+      - id: trailing-whitespace
+        exclude: '\.(json|svg|png|jpg|pdf|bin|model)$'

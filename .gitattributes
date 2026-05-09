@@ -1,0 +1,20 @@
+# Force LF in repo for cross-platform consistency
+* text=auto eol=lf
+
+# Binary file types — never normalize line endings
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.pdf binary
+*.bin binary
+*.model binary
+*.bpe.model binary
+*.safetensors binary
+*.pt binary
+*.pth binary
+*.onnx binary
+*.pkl binary
+
+# Generated / vendored — collapse in diffs
+apps/web/package-lock.json -diff
