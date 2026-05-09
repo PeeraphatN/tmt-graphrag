@@ -1,0 +1,529 @@
+{
+  "generated_at": 1770633048,
+  "tokenizer_engine": "pythainlp_newmm",
+  "requested_samples": 30000,
+  "num_generated": 30000,
+  "num_discarded": 0,
+  "num_attempts": 30000,
+  "discard_reasons": {},
+  "distribution": {
+    "group": {
+      "formula.mix": {
+        "count": 4506,
+        "ratio": 0.1502
+      },
+      "general.retrieve": {
+        "count": 6115,
+        "ratio": 0.20383333333333334
+      },
+      "hierarchy.retrieve": {
+        "count": 1478,
+        "ratio": 0.04926666666666667
+      },
+      "ingredient.retrieve": {
+        "count": 4526,
+        "ratio": 0.15086666666666668
+      },
+      "manufacturer.mix": {
+        "count": 5817,
+        "ratio": 0.1939
+      },
+      "nlem.verify": {
+        "count": 4603,
+        "ratio": 0.15343333333333334
+      },
+      "short.practical": {
+        "count": 2955,
+        "ratio": 0.0985
+      }
+    },
+    "target_type": {
+      "formula": {
+        "count": 4506,
+        "ratio": 0.1502
+      },
+      "general": {
+        "count": 7582,
+        "ratio": 0.2527333333333333
+      },
+      "hierarchy": {
+        "count": 1478,
+        "ratio": 0.04926666666666667
+      },
+      "ingredient": {
+        "count": 4526,
+        "ratio": 0.15086666666666668
+      },
+      "manufacturer": {
+        "count": 6579,
+        "ratio": 0.2193
+      },
+      "nlem": {
+        "count": 5329,
+        "ratio": 0.17763333333333334
+      }
+    },
+    "strategy": {
+      "retrieve": {
+        "count": 17809,
+        "ratio": 0.5936333333333333
+      },
+      "verify": {
+        "count": 12191,
+        "ratio": 0.40636666666666665
+      }
+    },
+    "template_id": {
+      "F01": {
+        "count": 1125,
+        "ratio": 0.0375
+      },
+      "F02": {
+        "count": 1195,
+        "ratio": 0.03983333333333333
+      },
+      "F03": {
+        "count": 1110,
+        "ratio": 0.037
+      },
+      "F04": {
+        "count": 1076,
+        "ratio": 0.035866666666666665
+      },
+      "G01": {
+        "count": 1192,
+        "ratio": 0.039733333333333336
+      },
+      "G02": {
+        "count": 1181,
+        "ratio": 0.03936666666666667
+      },
+      "G03": {
+        "count": 1230,
+        "ratio": 0.041
+      },
+      "G04": {
+        "count": 1238,
+        "ratio": 0.04126666666666667
+      },
+      "G05": {
+        "count": 1274,
+        "ratio": 0.042466666666666666
+      },
+      "H01": {
+        "count": 503,
+        "ratio": 0.016766666666666666
+      },
+      "H02": {
+        "count": 526,
+        "ratio": 0.017533333333333335
+      },
+      "H03": {
+        "count": 449,
+        "ratio": 0.014966666666666666
+      },
+      "I01": {
+        "count": 1111,
+        "ratio": 0.037033333333333335
+      },
+      "I02": {
+        "count": 1116,
+        "ratio": 0.0372
+      },
+      "I03": {
+        "count": 1139,
+        "ratio": 0.03796666666666667
+      },
+      "I04": {
+        "count": 1160,
+        "ratio": 0.03866666666666667
+      },
+      "M01": {
+        "count": 1186,
+        "ratio": 0.03953333333333333
+      },
+      "M02": {
+        "count": 1150,
+        "ratio": 0.03833333333333333
+      },
+      "M03": {
+        "count": 1147,
+        "ratio": 0.038233333333333334
+      },
+      "M04": {
+        "count": 1139,
+        "ratio": 0.03796666666666667
+      },
+      "M05": {
+        "count": 1195,
+        "ratio": 0.03983333333333333
+      },
+      "N01": {
+        "count": 976,
+        "ratio": 0.03253333333333333
+      },
+      "N02": {
+        "count": 936,
+        "ratio": 0.0312
+      },
+      "N03": {
+        "count": 910,
+        "ratio": 0.030333333333333334
+      },
+      "N04": {
+        "count": 903,
+        "ratio": 0.0301
+      },
+      "N05": {
+        "count": 878,
+        "ratio": 0.029266666666666667
+      },
+      "S01": {
+        "count": 728,
+        "ratio": 0.024266666666666666
+      },
+      "S02": {
+        "count": 739,
+        "ratio": 0.024633333333333333
+      },
+      "S03": {
+        "count": 726,
+        "ratio": 0.0242
+      },
+      "S04": {
+        "count": 762,
+        "ratio": 0.0254
+      }
+    },
+    "label": {
+      "O": {
+        "count": 161924,
+        "ratio": 0.46786944360971777
+      },
+      "B-DRUG": {
+        "count": 15315,
+        "ratio": 0.04425175099974573
+      },
+      "I-DRUG": {
+        "count": 65472,
+        "ratio": 0.1891773190633596
+      },
+      "B-BRAND": {
+        "count": 14685,
+        "ratio": 0.04243140472943298
+      },
+      "I-BRAND": {
+        "count": 23972,
+        "ratio": 0.06926562030466239
+      },
+      "B-MANUFACTURER": {
+        "count": 4243,
+        "ratio": 0.012259887658630175
+      },
+      "I-MANUFACTURER": {
+        "count": 22888,
+        "ratio": 0.06613346894431474
+      },
+      "B-FORM": {
+        "count": 2305,
+        "ratio": 0.00666015579852523
+      },
+      "I-FORM": {
+        "count": 8116,
+        "ratio": 0.023450683063267145
+      },
+      "B-STRENGTH": {
+        "count": 3146,
+        "ratio": 0.00909017359746654
+      },
+      "I-STRENGTH": {
+        "count": 24022,
+        "ratio": 0.0694100922308777
+      }
+    }
+  },
+  "quality_checks": {
+    "template_smoke_test": {
+      "passed": true,
+      "required_per_template": 20,
+      "details": {
+        "G01": {
+          "passed": true,
+          "generated": 20,
+          "required": 20,
+          "attempts": 20,
+          "discard_reasons": {}
+        },
+        "G02": {
+          "passed": true,
+          "generated": 20,
+          "required": 20,
+          "attempts": 20,
+          "discard_reasons": {}
+        },
+        "G03": {
+          "passed": true,
+          "generated": 20,
+          "required": 20,
+          "attempts": 20,
+          "discard_reasons": {}
+        },
+        "G04": {
+          "passed": true,
+          "generated": 20,
+          "required": 20,
+          "attempts": 20,
+          "discard_reasons": {}
+        },
+        "G05": {
+          "passed": true,
+          "generated": 20,
+          "required": 20,
+          "attempts": 20,
+          "discard_reasons": {}
+        },
+        "M01": {
+          "passed": true,
+          "generated": 20,
+          "required": 20,
+          "attempts": 20,
+          "discard_reasons": {}
+        },
+        "M02": {
+          "passed": true,
+          "generated": 20,
+          "required": 20,
+          "attempts": 20,
+          "discard_reasons": {}
+        },
+        "M03": {
+          "passed": true,
+          "generated": 20,
+          "required": 20,
+          "attempts": 20,
+          "discard_reasons": {}
+        },
+        "M04": {
+          "passed": true,
+          "generated": 20,
+          "required": 20,
+          "attempts": 20,
+          "discard_reasons": {}
+        },
+        "M05": {
+          "passed": true,
+          "generated": 20,
+          "required": 20,
+          "attempts": 20,
+          "discard_reasons": {}
+        },
+        "I01": {
+          "passed": true,
+          "generated": 20,
+          "required": 20,
+          "attempts": 20,
+          "discard_reasons": {}
+        },
+        "I02": {
+          "passed": true,
+          "generated": 20,
+          "required": 20,
+          "attempts": 20,
+          "discard_reasons": {}
+        },
+        "I03": {
+          "passed": true,
+          "generated": 20,
+          "required": 20,
+          "attempts": 20,
+          "discard_reasons": {}
+        },
+        "I04": {
+          "passed": true,
+          "generated": 20,
+          "required": 20,
+          "attempts": 20,
+          "discard_reasons": {}
+        },
+        "F01": {
+          "passed": true,
+          "generated": 20,
+          "required": 20,
+          "attempts": 20,
+          "discard_reasons": {}
+        },
+        "F02": {
+          "passed": true,
+          "generated": 20,
+          "required": 20,
+          "attempts": 20,
+          "discard_reasons": {}
+        },
+        "F03": {
+          "passed": true,
+          "generated": 20,
+          "required": 20,
+          "attempts": 20,
+          "discard_reasons": {}
+        },
+        "F04": {
+          "passed": true,
+          "generated": 20,
+          "required": 20,
+          "attempts": 20,
+          "discard_reasons": {}
+        },
+        "N01": {
+          "passed": true,
+          "generated": 20,
+          "required": 20,
+          "attempts": 20,
+          "discard_reasons": {}
+        },
+        "N02": {
+          "passed": true,
+          "generated": 20,
+          "required": 20,
+          "attempts": 20,
+          "discard_reasons": {}
+        },
+        "N03": {
+          "passed": true,
+          "generated": 20,
+          "required": 20,
+          "attempts": 20,
+          "discard_reasons": {}
+        },
+        "N04": {
+          "passed": true,
+          "generated": 20,
+          "required": 20,
+          "attempts": 20,
+          "discard_reasons": {}
+        },
+        "N05": {
+          "passed": true,
+          "generated": 20,
+          "required": 20,
+          "attempts": 20,
+          "discard_reasons": {}
+        },
+        "H01": {
+          "passed": true,
+          "generated": 20,
+          "required": 20,
+          "attempts": 20,
+          "discard_reasons": {}
+        },
+        "H02": {
+          "passed": true,
+          "generated": 20,
+          "required": 20,
+          "attempts": 20,
+          "discard_reasons": {}
+        },
+        "H03": {
+          "passed": true,
+          "generated": 20,
+          "required": 20,
+          "attempts": 20,
+          "discard_reasons": {}
+        },
+        "S01": {
+          "passed": true,
+          "generated": 20,
+          "required": 20,
+          "attempts": 20,
+          "discard_reasons": {}
+        },
+        "S02": {
+          "passed": true,
+          "generated": 20,
+          "required": 20,
+          "attempts": 20,
+          "discard_reasons": {}
+        },
+        "S03": {
+          "passed": true,
+          "generated": 20,
+          "required": 20,
+          "attempts": 20,
+          "discard_reasons": {}
+        },
+        "S04": {
+          "passed": true,
+          "generated": 20,
+          "required": 20,
+          "attempts": 20,
+          "discard_reasons": {}
+        }
+      }
+    },
+    "label_integrity_test": {
+      "passed": true,
+      "checked": 30000,
+      "length_mismatch": 0,
+      "invalid_iob": 0
+    },
+    "graph_answerable_gate_test": {
+      "passed": true,
+      "checked": 30000,
+      "failed": 0,
+      "failure_reasons": {}
+    },
+    "distribution_test": {
+      "passed": true,
+      "tolerance": 0.03,
+      "details": {
+        "general.retrieve": {
+          "expected_ratio": 0.2,
+          "actual_ratio": 0.20383333333333334,
+          "delta": 0.0038333333333333275,
+          "within_tolerance": true
+        },
+        "manufacturer.mix": {
+          "expected_ratio": 0.2,
+          "actual_ratio": 0.1939,
+          "delta": 0.006100000000000022,
+          "within_tolerance": true
+        },
+        "ingredient.retrieve": {
+          "expected_ratio": 0.15,
+          "actual_ratio": 0.15086666666666668,
+          "delta": 0.0008666666666666822,
+          "within_tolerance": true
+        },
+        "formula.mix": {
+          "expected_ratio": 0.15,
+          "actual_ratio": 0.1502,
+          "delta": 0.00020000000000000573,
+          "within_tolerance": true
+        },
+        "nlem.verify": {
+          "expected_ratio": 0.15,
+          "actual_ratio": 0.15343333333333334,
+          "delta": 0.003433333333333344,
+          "within_tolerance": true
+        },
+        "hierarchy.retrieve": {
+          "expected_ratio": 0.05,
+          "actual_ratio": 0.04926666666666667,
+          "delta": 0.0007333333333333358,
+          "within_tolerance": true
+        },
+        "short.practical": {
+          "expected_ratio": 0.1,
+          "actual_ratio": 0.0985,
+          "delta": 0.0015000000000000013,
+          "within_tolerance": true
+        }
+      }
+    },
+    "aqt_sanity_test": {
+      "enabled": false,
+      "skipped": true,
+      "reason": "disabled_by_flag"
+    }
+  },
+  "all_quality_checks_passed": true
+}

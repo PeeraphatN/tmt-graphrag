@@ -1,0 +1,2769 @@
+{
+  "version": "v2-reference-1.0",
+  "created_at": "2026-02-20T07:22:59Z",
+  "source_of_truth": {
+    "source_file": "src/api/intent_dataset.json",
+    "method": "deterministic_label_mapping",
+    "notes": [
+      "This file is a V2 reference dataset derived from legacy fine labels.",
+      "No new user text was added; all text comes from source_file.",
+      "facet_intents is single-item list here because source labels are single-facet.",
+      "slot_targets is empty placeholder for future NER-supervised extension."
+    ]
+  },
+  "mapping": {
+    "legacy_action_to_v2_action": {
+      "find": "lookup",
+      "check": "verify",
+      "count": "count"
+    },
+    "legacy_facet_to_v2_facet": "identity",
+    "known_new_actions_not_covered_by_source": [
+      "list",
+      "compare",
+      "unknown"
+    ],
+    "known_new_facets_not_covered_by_source": [
+      "id_lookup"
+    ]
+  },
+  "stats": {
+    "total_records": 270,
+    "unique_texts": 270,
+    "action_distribution": {
+      "lookup": 90,
+      "verify": 90,
+      "count": 90
+    },
+    "facet_distribution": {
+      "manufacturer": 45,
+      "ingredient": 45,
+      "nlem": 45,
+      "hierarchy": 45,
+      "formula": 45,
+      "general": 45
+    },
+    "legacy_label_distribution": {
+      "manufacturer_find": 15,
+      "manufacturer_check": 15,
+      "manufacturer_count": 15,
+      "ingredient_find": 15,
+      "ingredient_check": 15,
+      "ingredient_count": 15,
+      "nlem_find": 15,
+      "nlem_check": 15,
+      "nlem_count": 15,
+      "hierarchy_find": 15,
+      "hierarchy_check": 15,
+      "hierarchy_count": 15,
+      "formula_find": 15,
+      "formula_check": 15,
+      "formula_count": 15,
+      "general_find": 15,
+      "general_check": 15,
+      "general_count": 15
+    }
+  },
+  "records": [
+    {
+      "text": "มียารายการไหนบ้างที่ผลิตโดยบริษัท Bayer",
+      "legacy_fine_label": "manufacturer_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาพาราเซตามอลตัวนี้เป็นยี่ห้อของบริษัทอะไรครับ",
+      "legacy_fine_label": "manufacturer_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ใครเป็นผู้ผลิตยาตัวนี้ ช่วยหาข้อมูลให้หน่อย",
+      "legacy_fine_label": "manufacturer_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ขอทราบชื่อบริษัทผู้ผลิตยาตัวนี้หน่อยครับ",
+      "legacy_fine_label": "manufacturer_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ใครเป็นเจ้าของลิขสิทธิ์ของยาตัวนี้",
+      "legacy_fine_label": "manufacturer_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้ผลิตที่โรงงานไหน",
+      "legacy_fine_label": "manufacturer_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยา Enalapril มียี่ห้อการค้าอะไรบ้าง",
+      "legacy_fine_label": "manufacturer_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้เป็นผลิตภัณฑ์ของบริษัทอะไร",
+      "legacy_fine_label": "manufacturer_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยายี่ห้อนี้ผลิตที่โรงงานไหน",
+      "legacy_fine_label": "manufacturer_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "บริษัทไหนเป็นเจ้าของยา Viagra",
+      "legacy_fine_label": "manufacturer_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยา Amoxycillin ตัวนี้ผลิตโดยบริษัทอะไร",
+      "legacy_fine_label": "manufacturer_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ขอรายชื่อบริษัทที่ผลิตยา Simvastatin หน่อยครับ",
+      "legacy_fine_label": "manufacturer_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้มีผู้จัดจำหน่ายคือบริษัทอะไร",
+      "legacy_fine_label": "manufacturer_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "โรงงานที่ผลิตยาตัวนี้ชื่ออะไรครับ",
+      "legacy_fine_label": "manufacturer_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้มาจากบริษัทยาข้ามชาติหรือบริษัทในไทย",
+      "legacy_fine_label": "manufacturer_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้เป็นของบริษัท Berlin หรือไม่",
+      "legacy_fine_label": "manufacturer_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้เป็นผลิตภัณฑ์ของบริษัท Pfizer หรือไม่",
+      "legacy_fine_label": "manufacturer_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยา Amoxycillin ตัวนี้เป็นของบริษัทองค์การเภสัชกรรม (GPO) หรือไม่",
+      "legacy_fine_label": "manufacturer_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้เป็นของบริษัทสยามเภสัชหรือไม่",
+      "legacy_fine_label": "manufacturer_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยา Tiffy นี้ผลิตโดยบริษัท T.O. Pharma ใช่หรือไม่",
+      "legacy_fine_label": "manufacturer_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้ใช่ของบริษัท Glaxo หรือไม่",
+      "legacy_fine_label": "manufacturer_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้ผลิตโดยบริษัทในเครือ J&J ใช่ไหมครับ",
+      "legacy_fine_label": "manufacturer_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาพาราเซตามอลนี้เป็นขององค์การเภสัชกรรมใช่หรือไม่",
+      "legacy_fine_label": "manufacturer_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้เป็นของบริษัทท้องถิ่นหรือเปล่าครับ",
+      "legacy_fine_label": "manufacturer_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "โรงงานที่ผลิตยาตัวนี้ได้รับรองมาตรฐาน GMP หรือไม่",
+      "legacy_fine_label": "manufacturer_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้ผลิตโดยบริษัท Astra ใช่หรือไม่",
+      "legacy_fine_label": "manufacturer_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้เป็นของบริษัทสยามยาใช่ไหมครับ",
+      "legacy_fine_label": "manufacturer_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้ใช่ของบริษัท Merck หรือไม่",
+      "legacy_fine_label": "manufacturer_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้เป็นผลิตภัณฑ์ของบริษัทญี่ปุ่นใช่ไหม",
+      "legacy_fine_label": "manufacturer_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้ผลิตโดยบริษัทเดียวกับยา Tylenol ใช่หรือไม่",
+      "legacy_fine_label": "manufacturer_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "บริษัท Bayer ผลิตยาทั้งหมดกี่รายการครับ",
+      "legacy_fine_label": "manufacturer_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "มียากี่ตัวที่ผลิตโดยองค์การเภสัชกรรม",
+      "legacy_fine_label": "manufacturer_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ขอยอดรวมจำนวนยาของบริษัท Pfizer หน่อย",
+      "legacy_fine_label": "manufacturer_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "โรงงานนี้ผลิตยาออกมาทั้งหมดกี่ชนิด",
+      "legacy_fine_label": "manufacturer_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "จำนวน SKU สินค้าของบริษัทนี้มีเท่าไหร่",
+      "legacy_fine_label": "manufacturer_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "มียา Amoxycillin กี่แบรนด์ในท้องตลาด",
+      "legacy_fine_label": "manufacturer_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาพาราเซตามอลมีผู้ผลิตทั้งหมดกี่เจ้า",
+      "legacy_fine_label": "manufacturer_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "บริษัทสยามเภสัชมีรายการยาในระบบกี่ตัว",
+      "legacy_fine_label": "manufacturer_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ขอนับจำนวนยี่ห้อยาที่นำเข้าจากต่างประเทศหน่อย",
+      "legacy_fine_label": "manufacturer_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "กลุ่มยานี้มีบริษัทผู้ผลิตเกิน 10 รายไหม",
+      "legacy_fine_label": "manufacturer_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ช่วยนับจำนวนโรงงานที่ผลิตยา Simvastatin ให้หน่อย",
+      "legacy_fine_label": "manufacturer_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "มียากี่รายการที่ได้รับการรับรองจากบริษัทนี้",
+      "legacy_fine_label": "manufacturer_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "อยากทราบจำนวนคู่แข่งที่ผลิตยาตัวเดียวกันนี้",
+      "legacy_fine_label": "manufacturer_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "บริษัทนี้จดทะเบียนยาไว้กี่ตำรับ",
+      "legacy_fine_label": "manufacturer_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "มีรายการยาของบริษัทยานี้กี่ตัวเบิกได้",
+      "legacy_fine_label": "manufacturer_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "manufacturer"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ในยา 1 เม็ดนี้มีตัวยาสำคัญอะไรบ้างครับ",
+      "legacy_fine_label": "ingredient_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ตัวยาสำคัญหลักของยาตัวนี้คืออะไร",
+      "legacy_fine_label": "ingredient_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "สารออกฤทธิ์หลักของยาตัวนี้คืออะไรครับ",
+      "legacy_fine_label": "ingredient_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ขอดูรายการตัวยาสำคัญในเม็ดยานี้หน่อย",
+      "legacy_fine_label": "ingredient_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "สูตรยาตัวนี้ประกอบด้วยสารอะไรบ้าง",
+      "legacy_fine_label": "ingredient_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ตัวยาหลักของยาตัวนี้คืออะไร",
+      "legacy_fine_label": "ingredient_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ขอทราบส่วนประกอบสำคัญของยาตัวนี้หน่อย",
+      "legacy_fine_label": "ingredient_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ส่วนผสมหลักของยาตัวนี้คืออะไร",
+      "legacy_fine_label": "ingredient_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้มีสูตรผสมของสารเคมีอะไรบ้าง",
+      "legacy_fine_label": "ingredient_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ช่วยบอกชื่อทางเคมีของตัวยาในเม็ดนี้หน่อย",
+      "legacy_fine_label": "ingredient_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้ประกอบด้วยสมุนไพรอะไรบ้าง",
+      "legacy_fine_label": "ingredient_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาแก้ไอนี้มีส่วนผสมของยาน้ำอะไรบ้าง",
+      "legacy_fine_label": "ingredient_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ใน 1 แคปซูลประกอบด้วยตัวยากี่มิลลิกรัม",
+      "legacy_fine_label": "ingredient_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "สารประกอบ inactive ingredient ของยาตัวนี้มีอะไรบ้าง",
+      "legacy_fine_label": "ingredient_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "สูตรโมเลกุลของยาตัวนี้คืออะไร",
+      "legacy_fine_label": "ingredient_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้เป็นยาเดี่ยวหรือยาสูตรผสม",
+      "legacy_fine_label": "ingredient_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้มีคาเฟอีนเป็นส่วนประกอบหรือไม่",
+      "legacy_fine_label": "ingredient_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาแก้ไอตัวนี้มี Dextromethorphan เป็นส่วนผสมหรือไม่",
+      "legacy_fine_label": "ingredient_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้มี Ibuprofen เป็นส่วนประกอบหรือไม่",
+      "legacy_fine_label": "ingredient_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้มีสเตียรอยด์เป็นส่วนประกอบหรือไม่",
+      "legacy_fine_label": "ingredient_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "สูตรยาตัวนี้มีแอลกอฮอล์เป็นส่วนผสมหรือไม่",
+      "legacy_fine_label": "ingredient_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้มีพาราเซตามอลเป็นส่วนประกอบหรือไม่",
+      "legacy_fine_label": "ingredient_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้มีน้ำตาลเป็นส่วนประกอบไหมครับ",
+      "legacy_fine_label": "ingredient_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้มีส่วนผสมของยาปฏิชีวนะหรือไม่",
+      "legacy_fine_label": "ingredient_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้มีแอสไพรินผสมอยู่ด้วยหรือเปล่า",
+      "legacy_fine_label": "ingredient_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาแก้แพ้นี้ทำให้ง่วงใช่ไหมเพราะมี CPM ผสม",
+      "legacy_fine_label": "ingredient_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้มีส่วนผสมของซัลฟา (Sulfa) หรือไม่",
+      "legacy_fine_label": "ingredient_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "คนแพ้ถั่วกินยาตัวนี้ได้ไหม มีส่วนผสมของถั่วเหลืองหรือเปล่า",
+      "legacy_fine_label": "ingredient_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้เป็นยาแก้ปวดที่ไม่มีพาราใช่ไหม",
+      "legacy_fine_label": "ingredient_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้มีสารกันบูดผสมไหมครับ",
+      "legacy_fine_label": "ingredient_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้มีส่วนประกอบทั้งหมดกี่ตัว",
+      "legacy_fine_label": "ingredient_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "นับจำนวนสารออกฤทธิ์ในยาเม็ดนี้ให้หน่อย",
+      "legacy_fine_label": "ingredient_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "สูตรนี้มีตัวยาผสมอยู่กี่ชนิดครับ",
+      "legacy_fine_label": "ingredient_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาแก้ไอตัวนี้มีส่วนผสมกี่อย่าง",
+      "legacy_fine_label": "ingredient_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ช่วยบอกจำนวน Active Ingredient ของยาตัวนี้หน่อย",
+      "legacy_fine_label": "ingredient_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ใน 1 เม็ดประกอบด้วยตัวยากี่ mg รวมกัน",
+      "legacy_fine_label": "ingredient_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "มียา Amoxycillin กี่รูปแบบความแรงที่ผสม Clavulanic acid",
+      "legacy_fine_label": "ingredient_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตำรับนี้มีสมุนไพรเป็นส่วนประกอบกี่ชนิด",
+      "legacy_fine_label": "ingredient_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "สารเติมเต็มในยานี้มีกี่ตัว",
+      "legacy_fine_label": "ingredient_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยานี้เป็นยาผสม 2 ตัวหรือ 3 ตัวครับ",
+      "legacy_fine_label": "ingredient_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "จำนวนส่วนประกอบสำคัญของยานี้คือเท่าไหร่",
+      "legacy_fine_label": "ingredient_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้มีสารก่อภูมิแพ้กี่ชนิด",
+      "legacy_fine_label": "ingredient_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "อยากรู้ว่ามีส่วนผสมหลักกี่ตัวครับ",
+      "legacy_fine_label": "ingredient_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "นับจำนวน inactive ingredients ให้หน่อย",
+      "legacy_fine_label": "ingredient_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "สูตรยานี้มีสารเคมีทั้งหมดกี่รายการ",
+      "legacy_fine_label": "ingredient_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "ingredient"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยา Amoxycillin จัดอยู่ในบัญชียาหลักแห่งชาติหมวด ก หรือ ข",
+      "legacy_fine_label": "nlem_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "สถานะบัญชียาหลักแห่งชาติของยาตัวนี้เป็นอย่างไร",
+      "legacy_fine_label": "nlem_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้อยู่ในบัญชียา ED หรือ NED",
+      "legacy_fine_label": "nlem_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้จัดอยู่ในหมวดไหนของบัญชียาหลักแห่งชาติ",
+      "legacy_fine_label": "nlem_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ขอทราบประเภทของบัญชียาหลักสำหรับยานี้หน่อย",
+      "legacy_fine_label": "nlem_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้ถูกจัดอยู่ในบัญชีย่อยประเภทใด",
+      "legacy_fine_label": "nlem_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "สถานะการเบิกจ่ายของยาตัวนี้เป็นแบบไหน",
+      "legacy_fine_label": "nlem_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยานี้อยู่ในกลุ่มยานอกบัญชีหรือยาในบัญชี",
+      "legacy_fine_label": "nlem_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ช่วยบอกหมวดยาในบัญชียาหลักของตัวนี้หน่อยครับ",
+      "legacy_fine_label": "nlem_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้อยู่ใน list ยาที่เบิกได้ประเภทไหน",
+      "legacy_fine_label": "nlem_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้มีความจำเป็นทางการแพทย์ระดับไหนในบัญชี",
+      "legacy_fine_label": "nlem_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้อยู่ในบัญชียาหลักแห่งชาติปีล่าสุดกลุ่มใด",
+      "legacy_fine_label": "nlem_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ขอทราบสถานะทางกฎหมายและการเบิกจ่ายของยาตัวนี้",
+      "legacy_fine_label": "nlem_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้อยู่ในบัญชียาเสพติดประเภทไหนหรือไม่",
+      "legacy_fine_label": "nlem_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้จัดเป็นวัตถุออกฤทธิ์ประเภทใดในบัญชี",
+      "legacy_fine_label": "nlem_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ช่วยตรวจสอบสิทธิ์การเบิกจ่ายของยาตัวนี้หน่อย",
+      "legacy_fine_label": "nlem_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้ต้องขออนุมัติก่อนหรือสามารถเบิกได้เลย",
+      "legacy_fine_label": "nlem_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้เป็นยานอกบัญชียาหลักแห่งชาติหรือไม่",
+      "legacy_fine_label": "nlem_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้อยู่ในกลุ่มยา จ (ยาเฉพาะทาง) หรือไม่",
+      "legacy_fine_label": "nlem_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้ผู้ป่วยต้องจ่ายเงินเองหรือไม่",
+      "legacy_fine_label": "nlem_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ค่ายาตัวนี้รัฐบาลสนับสนุนค่าใช้จ่ายหรือไม่",
+      "legacy_fine_label": "nlem_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ถ้าเป็นผู้ป่วยในโรงพยาบาล ยาตัวนี้สามารถเบิกได้หรือไม่ครับ",
+      "legacy_fine_label": "nlem_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้สามารถเบิกด้วยสิทธิ์บัตรทองได้หรือไม่",
+      "legacy_fine_label": "nlem_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้มีเงื่อนไขการสั่งใช้ (UE) หรือไม่",
+      "legacy_fine_label": "nlem_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยา Simvastatin สามารถเบิกจ่ายตรงได้หรือไม่",
+      "legacy_fine_label": "nlem_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้สามารเบิกด้วยสิทธิ์ประกันสังคมได้หรือไม่",
+      "legacy_fine_label": "nlem_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้เป็นยาจ.2 ที่ต้องใช้แพทย์เฉพาะทางสั่งใช่ไหม",
+      "legacy_fine_label": "nlem_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ถ้าใช้สิทธิ์ข้าราชการ ยาตัวนี้เบิกได้เต็มจำนวนหรือไม่",
+      "legacy_fine_label": "nlem_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้ต้องทำเรื่องขออนุมัติพิเศษ (Pre-authorization) หรือไม่",
+      "legacy_fine_label": "nlem_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้เป็นยานอกบัญชีที่ผู้ป่วยต้องชำระเงินเองใช่ไหม",
+      "legacy_fine_label": "nlem_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ในกลุ่มยาบัญชี ก มีรายการยาทั้งหมดกี่ตัว",
+      "legacy_fine_label": "nlem_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "มียาแก้ปวดกี่ตัวที่เบิกได้ตามสิทธิ์บัตรทอง",
+      "legacy_fine_label": "nlem_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ช่วยนับจำนวนยานอกบัญชี (NED) ในกลุ่มนี้ให้หน่อย",
+      "legacy_fine_label": "nlem_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "มียา Amoxycillin กี่รูปแบบที่อยู่ในบัญชียาหลัก",
+      "legacy_fine_label": "nlem_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "จำนวนรายการยาที่ต้องขออนุมัติ (UE) มีกี่รายการ",
+      "legacy_fine_label": "nlem_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "กลุ่มยาปฏิชีวนะในบัญชี ข มีกี่ตัวครับ",
+      "legacy_fine_label": "nlem_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "มียาเบาหวานกี่ตัวที่เบิกจ่ายตรงได้",
+      "legacy_fine_label": "nlem_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ขอยอดรวมจำนวนยาในบัญชียาหลักแห่งชาติปีล่าสุด",
+      "legacy_fine_label": "nlem_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "หมวดนี้มีรายการยาที่ถูกตัดออกกี่ตัว",
+      "legacy_fine_label": "nlem_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "นับจำนวนยาจิตเวชที่อยู่ในบัญชี จ ให้หน่อย",
+      "legacy_fine_label": "nlem_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "มียามะเร็งกี่ชนิดที่รัฐบาลสนับสนุนค่าใช้จ่าย",
+      "legacy_fine_label": "nlem_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "จำนวนคู่เทียบยาตัวนี้ในบัญชียาหลักมีกี่ตัว",
+      "legacy_fine_label": "nlem_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "กลุ่มยานี้มีเงื่อนไขการสั่งใช้กี่ข้อ",
+      "legacy_fine_label": "nlem_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "มียาความดันกี่ตัวเลือกสำหรับผู้ป่วยสิทธิ์ประกันสังคม",
+      "legacy_fine_label": "nlem_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "หมวดยานี้มีรายการยาเพิ่มเข้ามากี่รายการในปีนี้",
+      "legacy_fine_label": "nlem_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "nlem"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ขอทราบ GP ของยาตัวนี้ในระบบ TMT หน่อย",
+      "legacy_fine_label": "hierarchy_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ขอทราบชื่อสามัญทางยาของยาตัวนี้หน่อยครับ",
+      "legacy_fine_label": "hierarchy_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ชื่อสามัญ (Generic Name) ของยา Plavix คืออะไร",
+      "legacy_fine_label": "hierarchy_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้มีความสัมพันธ์กับยาต้นแบบอย่างไร",
+      "legacy_fine_label": "hierarchy_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "รหัส TMT นี้คือระดับ VTM หรือ GPU",
+      "legacy_fine_label": "hierarchy_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ขอทราบชื่อ VTM ที่เป็นต้นทางของยาตัวนี้",
+      "legacy_fine_label": "hierarchy_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้อยู่ตรงตำแหน่งไหนในโครงสร้างกราฟ TMT",
+      "legacy_fine_label": "hierarchy_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้มีความสัมพันธ์กับยา Aspirin อย่างไร",
+      "legacy_fine_label": "hierarchy_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยา Paracetamol มีชื่อการค้า (Trade Name) อะไรบ้าง",
+      "legacy_fine_label": "hierarchy_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยา Amoxycillin ตัวนี้มาจากตัวยาแม่ตัวไหน",
+      "legacy_fine_label": "hierarchy_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้มียาต้นแบบอะไรบ้าง",
+      "legacy_fine_label": "hierarchy_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้เป็นลูกข่ายของยาตัวไหนในระบบ TMT ครับ",
+      "legacy_fine_label": "hierarchy_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้อยู่ในกลุ่มเภสัชวิทยา (Pharmacology) กลุ่มไหน",
+      "legacy_fine_label": "hierarchy_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ขอทราบระดับชั้น (Layer) ของยาตัวนี้ใน TMT",
+      "legacy_fine_label": "hierarchy_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้มีความสัมพันธ์แบบ Is-A กับยาตัวไหนบ้าง",
+      "legacy_fine_label": "hierarchy_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้อยู่ในระดับ GP หรือ TP ของโครงสร้าง TMT",
+      "legacy_fine_label": "hierarchy_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้เป็นยาต้นแบบหรือยายี่ห้อ",
+      "legacy_fine_label": "hierarchy_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้จัดเป็น General Product หรือ Trade Product",
+      "legacy_fine_label": "hierarchy_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้เป็นยา Generic ของ Amoxil ใช่หรือไม่",
+      "legacy_fine_label": "hierarchy_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้เป็น VTM หรือ Substance ครับ",
+      "legacy_fine_label": "hierarchy_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้เป็นระดับ GPU ใช่ไหม",
+      "legacy_fine_label": "hierarchy_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้จัดอยู่ในกลุ่มยาปฏิชีวนะใช่หรือไม่",
+      "legacy_fine_label": "hierarchy_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้เป็น Trade Product ที่มาจาก Generic Name นี้ใช่ไหม",
+      "legacy_fine_label": "hierarchy_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้เป็นลูกของยา Paracetamol ในกราฟใช่หรือไม่",
+      "legacy_fine_label": "hierarchy_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้อยู่ระดับเดียวกับ Tylenol หรือไม่",
+      "legacy_fine_label": "hierarchy_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "รหัสนี้เป็นรหัสของ TPU ใช่ไหมครับ",
+      "legacy_fine_label": "hierarchy_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้ถือเป็นยาต้นแบบ (Original Drug) ใช่หรือไม่",
+      "legacy_fine_label": "hierarchy_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้มีความสัมพันธ์เป็นส่วนประกอบของยาอื่นหรือไม่",
+      "legacy_fine_label": "hierarchy_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้เป็น Parent ของยาตัวนั้นใช่ไหม",
+      "legacy_fine_label": "hierarchy_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้กับยาตัวนั้นอยู่ในกลุ่มเดียวกันใช่ไหม",
+      "legacy_fine_label": "hierarchy_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้มีชื่อการค้าทั้งหมดกี่ชื่อ",
+      "legacy_fine_label": "hierarchy_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "นับจำนวน Trade Product (TP) ของยาสามัญตัวนี้ให้หน่อย",
+      "legacy_fine_label": "hierarchy_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยา Paracetamol มีรูปแบบ GPU ทั้งหมดกี่แบบ",
+      "legacy_fine_label": "hierarchy_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "VTM ตัวนี้แตกกิ่งก้านสาขาออกไปกี่ยารายการ",
+      "legacy_fine_label": "hierarchy_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "มียี่ห้อยากี่ตัวที่อยู่ภายใต้ Generic Name นี้",
+      "legacy_fine_label": "hierarchy_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้มีลูกข่ายใน Direct Child กี่ตัว",
+      "legacy_fine_label": "hierarchy_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "จำนวนชั้นความลึก (Depth) ของยาตัวนี้ในกราฟคือเท่าไหร่",
+      "legacy_fine_label": "hierarchy_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "มียา Generic กี่ตัวที่เทียบเท่ากับ Original ตัวนี้",
+      "legacy_fine_label": "hierarchy_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ช่วยนับจำนวนรหัส TMT ที่เกี่ยวข้องกับยานี้",
+      "legacy_fine_label": "hierarchy_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยากลุ่มนี้มีสมาชิกทั้งหมดกี่ตัว",
+      "legacy_fine_label": "hierarchy_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "Substance นี้ถูกนำไปผลิตเป็นยาทั้งหมดกี่สูตร",
+      "legacy_fine_label": "hierarchy_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "จำนวนโหนดลูก (Child Nodes) ของ GP นี้คือเท่าไหร่",
+      "legacy_fine_label": "hierarchy_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "มียาคู่แข่งกี่ตัวในระดับ TP เดียวกัน",
+      "legacy_fine_label": "hierarchy_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้เชื่อมโยงกับ VTM กี่ตัว",
+      "legacy_fine_label": "hierarchy_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "นับจำนวนรูปแบบยา (Dosage Forms) ของตัวยานี้ในตลาด",
+      "legacy_fine_label": "hierarchy_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "hierarchy"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาฉีดตัวนี้มีความแรงกี่เปอร์เซ็นต์",
+      "legacy_fine_label": "formula_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "รูปแบบยา (Dosage Form) ของยาตัวนี้คืออะไร",
+      "legacy_fine_label": "formula_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาน้ำขวดนี้มีปริมาตรกี่มิลลิลิตรครับ",
+      "legacy_fine_label": "formula_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ความเข้มข้นของยาน้ำตัวนี้คือเท่าไหร่",
+      "legacy_fine_label": "formula_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ขอทราบรูปแบบเภสัชภัณฑ์ของยาตัวนี้หน่อย",
+      "legacy_fine_label": "formula_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยา Diclofenac แบบฉีดมีขนาดความแรงอะไรบ้าง",
+      "legacy_fine_label": "formula_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยา Augmentin มีขนาดความแรงเท่าไหร่บ้างครับ",
+      "legacy_fine_label": "formula_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้มีขนาดบรรจุกี่เม็ดต่อกล่อง",
+      "legacy_fine_label": "formula_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้มีรูปแบบยาเตรียมแบบไหนบ้าง",
+      "legacy_fine_label": "formula_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ความแรงของยาเม็ดนี้คือกี่มิลลิกรัม",
+      "legacy_fine_label": "formula_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาพ่นตัวนี้มีปริมาณยต่อหนึ่งการพ่นเท่าไหร่",
+      "legacy_fine_label": "formula_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาทาตัวนี้มีความเข้มข้นกี่เปอร์เซ็นต์",
+      "legacy_fine_label": "formula_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาหยอดตานี้มีขนาดกี่ ml",
+      "legacy_fine_label": "formula_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาฉีดตัวนี้มี volumn เท่าไหร่",
+      "legacy_fine_label": "formula_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ขอทราบขนาดความแรงของตัวยาสำคัญใน 5 ml",
+      "legacy_fine_label": "formula_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้เป็นรูปแบบผงละลายน้ำใช่หรือไม่ครับ",
+      "legacy_fine_label": "formula_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้มีรูปแบบ Syrup สำหรับเด็กหรือไม่",
+      "legacy_fine_label": "formula_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้มีขนาดความแรง 500 มิลลิกรัม หรือ 250 มิลลิกรัม",
+      "legacy_fine_label": "formula_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้มีขนาดบรรจุกระปุก 100 เม็ดหรือไม่",
+      "legacy_fine_label": "formula_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้เป็นเม็ดแคปซูลหรือเม็ดตอก",
+      "legacy_fine_label": "formula_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้เป็นรูปแบบ SR (ออกฤทธิ์นาน) หรือไม่",
+      "legacy_fine_label": "formula_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "รูปแบบยาตัวนี้เป็นยาน้ำแขวนตะกอนหรือไม่",
+      "legacy_fine_label": "formula_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้มีรูปแบบเม็ดหรือรูปแบบน้ำ",
+      "legacy_fine_label": "formula_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้เป็นยาเม็ดเคลือบฟิล์มใช่ไหม (Film Coated)",
+      "legacy_fine_label": "formula_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้เป็นยาฉีดเข้าเส้นเลือดดำใช่หรือไม่ (IV)",
+      "legacy_fine_label": "formula_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้มีรูปแบบยาอมใต้ลิ้นไหมครับ",
+      "legacy_fine_label": "formula_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้เป็นยาทาภายนอกใช่หรือไม่",
+      "legacy_fine_label": "formula_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้เป็นรูปแบบยาเก็บรักษาในตู้เย็นใช่ไหม",
+      "legacy_fine_label": "formula_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้มีรูปแบบปราศจากน้ำตาล (Sugar free) หรือไม่",
+      "legacy_fine_label": "formula_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้เป็นรูปแบบนาโนอีมัลชันใช่ไหม",
+      "legacy_fine_label": "formula_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้มีขนาดความแรงให้เลือกกี่ขนาด",
+      "legacy_fine_label": "formula_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "มีรูปแบบบรรจุภัณฑ์กี่แบบสำหรับยานี้",
+      "legacy_fine_label": "formula_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยา Paracetamol มี Dosage Form ในท้องตลาดกี่ชนิด",
+      "legacy_fine_label": "formula_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "จำนวนเม็ดยาต่อแผงของยี่ห้อนี้มีกี่เม็ด",
+      "legacy_fine_label": "formula_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาน้ำตัวนี้มีขนาดขวดกี่ขนาดครับ (60ml, 100ml)",
+      "legacy_fine_label": "formula_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "มียาฉีดกี่ความแรงสำหรับตัวยานี้",
+      "legacy_fine_label": "formula_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "นับจำนวนรูปแบบเภสัชภัณฑ์ของยา Amoxycillin ให้หน่อย",
+      "legacy_fine_label": "formula_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้มีขนาดบรรจุกี่แบบ (Size)",
+      "legacy_fine_label": "formula_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "มีกี่ความเข้มข้นให้เลือกสำหรับยาทาตัวนี้",
+      "legacy_fine_label": "formula_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "จำนวนรูปแบบการบริหารยา (Route of admin) ของยานี้มีกี่ทาง",
+      "legacy_fine_label": "formula_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาพ่นนี้พ่นได้กี่ครั้งต่อขวด (Number of doses)",
+      "legacy_fine_label": "formula_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยานี้แบ่งบรรจุขายกี่แบบ (กระปุก, แผง, กล่อง)",
+      "legacy_fine_label": "formula_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "มีกี่ยี่ห้อที่ทำรูปแบบยาน้ำสำหรับเด็ก",
+      "legacy_fine_label": "formula_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "จำนวนมิลลิกรัมของตัวยาในแต่ละเม็ดมีกี่ขนาด",
+      "legacy_fine_label": "formula_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาหยอดตานี้มีกี่ความแรงครับ",
+      "legacy_fine_label": "formula_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "formula"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "รหัสยา 24 หลักของยาตัวนี้คืออะไร",
+      "legacy_fine_label": "general_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ข้อมูลยาตัวนี้มีการอัปเดตล่าสุดเมื่อไหร่ครับ",
+      "legacy_fine_label": "general_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ช่วยสะกดชื่อยาตัวนี้ให้ถูกต้องหน่อย",
+      "legacy_fine_label": "general_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "วันที่ปรับปรุงข้อมูลล่าสุดของยาตัวนี้คือวันไหน",
+      "legacy_fine_label": "general_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ขอรายชื่อยาทั้งหมดที่มีคำว่า General อยู่ในชื่อ",
+      "legacy_fine_label": "general_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ขอทราบชื่อเต็มทางราชการของยาตัวนี้หน่อย",
+      "legacy_fine_label": "general_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ขอชื่อภาษาอังกฤษแบบเต็มของยาตัวนี้",
+      "legacy_fine_label": "general_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ข้อมูลยาตัวนี้มีการเปลี่ยนแปลงเมื่อวันที่เท่าไหร่",
+      "legacy_fine_label": "general_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ชื่ออย่างเป็นทางการของยาตัวนี้เขียนอย่างไร",
+      "legacy_fine_label": "general_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ขอทราบรหัส TMT ของยาตัวนี้หน่อย",
+      "legacy_fine_label": "general_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ขอทราบชื่อเต็มของยาตัวนี้หน่อย",
+      "legacy_fine_label": "general_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้ลงทะเบียนในระบบเมื่อไหร่",
+      "legacy_fine_label": "general_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้มีเลขทะเบียนตำรับยาอะไร",
+      "legacy_fine_label": "general_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ใครเป็นผู้รับผิดชอบข้อมูลยาชุดนี้ครับ",
+      "legacy_fine_label": "general_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ขอทราบแหล่งที่มาของข้อมูลยานี้หน่อย",
+      "legacy_fine_label": "general_find",
+      "action_intent": "lookup",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "สามารถค้นหาชื่อยาจากรหัส TMT ได้หรือไม่",
+      "legacy_fine_label": "general_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้มีรหัส ID ในระบบหรือไม่ครับ",
+      "legacy_fine_label": "general_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้มีรหัสอ้างอิงในระบบหรือไม่",
+      "legacy_fine_label": "general_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ข้อมูลยานี้เป็นข้อมูลล่าสุดแล้วใช่ไหมครับ",
+      "legacy_fine_label": "general_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ชื่อยาที่สะกดนี้ถูกต้องตามหลัก TMT หรือไม่",
+      "legacy_fine_label": "general_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "รหัส TMT นี้มีอยู่ในระบบฐานข้อมูลหรือไม่",
+      "legacy_fine_label": "general_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้ได้มีการยกเลิกทะเบียนไปแล้วใช่หรือไม่",
+      "legacy_fine_label": "general_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ข้อมูลยาตัวนี้เชื่อมโยงกับรหัส ICD-10 ไหมครับ",
+      "legacy_fine_label": "general_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ชื่อยานี้เป็นชื่อสามัญทางยาที่ถูกต้องหรือไม่",
+      "legacy_fine_label": "general_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "รหัสยานี้เป็นรหัสยาสามัญ 24 หลักใช่หรือไม่",
+      "legacy_fine_label": "general_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ข้อมูลนี้ได้รับการตรวจสอบจากเภสัชกรแล้วใช่ไหม",
+      "legacy_fine_label": "general_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ยาตัวนี้มีอยู่ในฐานข้อมูลแห่งชาติไหม",
+      "legacy_fine_label": "general_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ข้อมูลวันที่อัปเดตเป็นของปีนี้ใช่ไหม",
+      "legacy_fine_label": "general_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "รหัสนี้ใช้ค้นหาในระบบเบิกจ่ายตรงได้ไหม",
+      "legacy_fine_label": "general_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ชื่อภาษาอังกฤษนี้สะกดถูกไหมครับ",
+      "legacy_fine_label": "general_check",
+      "action_intent": "verify",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "มีรายการยาทั้งหมดกี่รายการในระบบ",
+      "legacy_fine_label": "general_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "นับจำนวนยาที่มีในฐานข้อมูลให้หน่อย",
+      "legacy_fine_label": "general_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ขอยอดรวมยาที่ขึ้นทะเบียนทั้งหมด",
+      "legacy_fine_label": "general_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ปีนี้มีการอัปเดตข้อมูลยาไปกี่ครั้ง",
+      "legacy_fine_label": "general_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "มีผู้ใช้งานระบบทั้งหมดกี่คน",
+      "legacy_fine_label": "general_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "นับจำนวนยาที่ชื่อขึ้นต้นด้วย A",
+      "legacy_fine_label": "general_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "มีรหัส TMT ทั้งหมดกี่รหัสในระบบ",
+      "legacy_fine_label": "general_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ฐานข้อมูลนี้เก็บข้อมูลยากี่ปีย้อนหลัง",
+      "legacy_fine_label": "general_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "จำนวนยาที่ถูกยกเลิกทะเบียนมีกี่ตัว",
+      "legacy_fine_label": "general_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "สรุปยอดรวมยาแยกตามประเภทให้หน่อยว่ามีกี่หมวด",
+      "legacy_fine_label": "general_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "มีเอกสารกำกับยากี่ฉบับในระบบ",
+      "legacy_fine_label": "general_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "ช่วยนับจำนวนยาที่เป็นภาษาอังกฤษให้หน่อย",
+      "legacy_fine_label": "general_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "มีบันทึกข้อมูลยาทั้งหมดกี่ record",
+      "legacy_fine_label": "general_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "จำนวนยาใหม่ที่เพิ่มเข้ามาเดือนนี้มีกี่ตัว",
+      "legacy_fine_label": "general_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    },
+    {
+      "text": "นับจำนวนยาที่ไม่มีรหัส TMT ให้หน่อย",
+      "legacy_fine_label": "general_count",
+      "action_intent": "count",
+      "facet_intents": [
+        "general"
+      ],
+      "slot_targets": [],
+      "derivation": "mapped_from_legacy_label"
+    }
+  ]
+}

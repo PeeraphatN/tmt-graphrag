@@ -1,0 +1,17 @@
+{
+  "model_checkpoint": "airesearch/wangchanberta-base-att-spm-uncased",
+  "batch_size": 4,
+  "eval_batch_size": 8,
+  "grad_accum_steps": 4,
+  "num_epochs": 6,
+  "max_seq_length": 128,
+  "learning_rate": 2e-05,
+  "weight_decay": 0.01,
+  "warmup_ratio": 0.1,
+  "seed": 42,
+  "fp16_mode": "auto",
+  "fp16_enabled": true,
+  "gradient_checkpointing": true,
+  "early_stopping_patience": 2,
+  "run_test_eval": true
+}

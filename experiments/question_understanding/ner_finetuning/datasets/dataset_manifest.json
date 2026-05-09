@@ -1,0 +1,18 @@
+{
+  "label_list": [
+    "O",
+    "B-DRUG",
+    "I-DRUG",
+    "B-BRAND",
+    "I-BRAND",
+    "B-MANUFACTURER",
+    "I-MANUFACTURER",
+    "B-FORM",
+    "I-FORM",
+    "B-STRENGTH",
+    "I-STRENGTH"
+  ],
+  "num_train": 24000,
+  "num_val": 3000,
+  "num_test": 3000
+}

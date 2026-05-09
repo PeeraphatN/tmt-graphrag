@@ -49,6 +49,7 @@ aqt_out.json
 eval_results.csv
 experiments/question_understanding/ner_finetuning/artifacts/*
 !experiments/question_understanding/ner_finetuning/artifacts/.gitkeep
+!experiments/question_understanding/ner_finetuning/artifacts/final_model/
 experiments/question_understanding/ner_finetuning/exports/*
 !experiments/question_understanding/ner_finetuning/exports/.gitkeep
 experiments/question_understanding/intent_classification/integration_with_app/results/experiments/question_understanding/ner_finetuning/integration_with_app/results/
@@ -57,8 +58,13 @@ experiments/question_understanding/ner_finetuning/exports/*
 experiments/**/results/*.jsonl
 experiments/**/results/plots/
 
-# Pickle / binary model cache
+# Pickle / binary model artifacts (weights, optimizer, scheduler state)
 *.pkl
+*.safetensors
+*.pt
+*.pth
+*.onnx
+training_args.bin
 
 # Claude Code worktrees and per-user local settings
 .claude/worktrees/

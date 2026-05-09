@@ -1,0 +1,16 @@
+{
+  "test_loss": 0.014541100710630417,
+  "test_precision": 0.9666172106824926,
+  "test_recall": 0.9856278366111951,
+  "test_f1": 0.9760299625468165,
+  "test_accuracy": 0.9955319244001608,
+  "test_f1_brand": 0.9912280701754386,
+  "test_f1_drug": 0.9615508885298869,
+  "test_f1_form": 0.9978858350951374,
+  "test_f1_manufacturer": 0.9896907216494845,
+  "test_f1_strength": 0.9388429752066116,
+  "test_f1_macro_entity": 0.9758396981313118,
+  "test_runtime": 25.57,
+  "test_samples_per_second": 117.325,
+  "test_steps_per_second": 14.666
+}
