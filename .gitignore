@@ -69,3 +69,4 @@ training_args.bin
 # Claude Code worktrees and per-user local settings
 .claude/worktrees/
 .claude/settings.local.json
+CLAUDE.md
