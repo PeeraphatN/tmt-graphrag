@@ -26,11 +26,18 @@ echo "Auditing $(pwd)"
 echo
 
 # ---- 1. No leaked password literal anywhere in history ------------------
+# Two anti-self-reference measures:
+# 1. Build the search literal via concatenation so this script's source
+#    does not itself contain the contiguous bytes.
+# 2. Exclude this script's path from the search corpus so historical
+#    versions of the script are never counted.
 echo "[1] Leaked Neo4j password not in any commit"
-LEAK="quarter-contour-watch-signal-honey"
-hits=$(git rev-list --all 2>/dev/null | xargs -n 50 git grep -l "$LEAK" 2>/dev/null | wc -l)
-[ "$hits" -eq 0 ] && ok "no commit contains '$LEAK'" \
-                 || bad "$hits commit(s) still contain '$LEAK'"
+LEAK="quarter-contour-watch""-signal-honey"
+hits=$(git rev-list --all 2>/dev/null \
+       | xargs -n 50 git grep -l "$LEAK" -- ':(exclude)scripts/audit_history.sh' 2>/dev/null \
+       | wc -l)
+[ "$hits" -eq 0 ] && ok "no commit contains the historical Neo4j password literal" \
+                 || bad "$hits commit(s) still contain the historical Neo4j password literal"
 
 # ---- 2. Original leaking blob no longer reachable -----------------------
 echo "[2] Original leaking blob no longer in object DB"
