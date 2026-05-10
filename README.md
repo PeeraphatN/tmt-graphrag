@@ -1,4 +1,4 @@
-# TMT GraphRAG
+# TMT Drug RAG
 
 GraphRAG proof-of-concept for question answering over **Thai Medicinal Terminology (TMT)** — the drug-data standard published by Thailand's Ministry of Public Health. Built as an internship deliverable and a working example of hybrid retrieval (vector + fulltext + graph traversal) for pharmaceutical Q&A in Thai.
 
@@ -31,7 +31,7 @@ Transform (AQT) → Search → Extract → Format
 | Graph store | Neo4j 5.15 with vector + fulltext indexes | single-query hybrid search |
 | LLM | Ollama-served `qwen2.5:7b-instruct` | local inference, 8 GB VRAM-friendly |
 | Embedding | `bge-m3` (1024-dim) | Thai-capable BGE model |
-| Reranker | cross-encoder (sentence-transformers), CPU by default | applied for `lookup` intent only |
+| Reranker | cross-encoder (sentence-transformers); `RERANKER_DEVICE=auto` default (CUDA if available, else CPU) | applied for `lookup` intent only; set `cpu` on 8 GB cards to keep VRAM for the LLM |
 | Intent classification | embedding-similarity to precomputed centroids | dataset in [`apps/api/src/api/intent_dataset.json`](apps/api/src/api/intent_dataset.json) |
 | NER | WangchanBERTa fine-tuned on TMT | weights not committed; see [`experiments/question_understanding/ner_finetuning`](experiments/question_understanding/ner_finetuning) |
 
@@ -53,6 +53,17 @@ docker compose up --build
 | Neo4j Browser | http://localhost:7474 |
 
 The compose file builds `apps/api` and `apps/web` from the repo root and volume-mounts `apps/api/{artifacts,cache,logs}` into the API container.
+
+### Smoke test
+
+Once the API is up, hit `/chat` directly to confirm the pipeline answers end-to-end:
+
+```powershell
+$body = @{ message = 'ยา tmtid 1054395 มีสารออกฤทธิ์คือ selexipag ใช่ไหม' } | ConvertTo-Json
+Invoke-RestMethod -Uri http://localhost:8000/chat -Method Post -ContentType 'application/json; charset=utf-8' -Body $body
+```
+
+Returns `{ "response": "..." }`. `GET /health` reports pipeline readiness; `GET /` returns service status.
 
 ---
 
@@ -120,7 +131,7 @@ Runs `detect-secrets`, `check-added-large-files` (50 MB cap), and conflict/white
 
 ## Configuration
 
-Required env vars (full list + defaults in [`apps/api/src/config.py`](apps/api/src/config.py); validated at startup):
+Selected env vars (full list and defaults live in [`apps/api/src/config.py`](apps/api/src/config.py); required vars are validated at startup):
 
 | Var | Required | Notes |
 |---|---|---|
@@ -129,10 +140,10 @@ Required env vars (full list + defaults in [`apps/api/src/config.py`](apps/api/s
 | `LLM_MODEL`, `EMBED_MODEL` | yes | model tags pulled in Ollama |
 | `VECTOR_INDEX_NAME`, `FULLTEXT_INDEX_NAME`, `EMBEDDING_DIM` | yes | Neo4j index names + embedding dim |
 | `INTENT_V2_ENABLED` | default `true` | embedding-centroid intent classifier |
-| `INTENT_V2_USE_NER` | default `false` in compose | enable when `apps/api/artifacts/ner/final_model` is populated |
+| `INTENT_V2_USE_NER` | code default `true`; compose overrides to `false` | NER weights aren't committed — leave off until `apps/api/artifacts/ner/final_model` is populated, otherwise the API fails to load |
 | `NLEM_QA_ENABLED` | default `false` | NLEM (national essential drug list) Q&A is gated off |
 | `CHAT_TIMEOUT_SECONDS` | default `120` | `/chat` returns HTTP 504 after this |
-| `RERANKER_DEVICE` | `auto` / `cpu` / `cuda` | use `cpu` to keep VRAM free for the LLM on 8 GB cards |
+| `RERANKER_DEVICE` | default `auto` (`auto` / `cpu` / `cuda`) | `auto` picks CUDA if available, else CPU; set `cpu` to keep VRAM free for the LLM on 8 GB cards |
 | `LOG_LEVEL` | default `INFO` | central `setup_logging()` in [`apps/api/src/logging_config.py`](apps/api/src/logging_config.py) |
 
 ---
@@ -152,7 +163,7 @@ Datasets (train/val/test, entities) are committed under each experiment's `datas
 ## Known limitations
 
 - **NER weights not committed.** Download from HuggingFace (link TBD) or re-train via [`experiments/question_understanding/ner_finetuning/run/finetune_ner.py`](experiments/question_understanding/ner_finetuning/run/finetune_ner.py); tokenizer + config artifacts are committed under `artifacts/final_model/`.
-- **Hardware target: 8 GB VRAM (RTX 4060).** Reranker is CPU by default to leave VRAM for the 7B LLM. Set `RERANKER_DEVICE=cuda` if you have headroom.
+- **Hardware target: 8 GB VRAM (RTX 4060).** `RERANKER_DEVICE` defaults to `auto` (CUDA if available, else CPU). On 8 GB cards, set `cpu` to leave VRAM for the 7B LLM; set `cuda` only if you have headroom.
 - **Thai-leaning.** English queries work for several intent classes but the centroid dataset is Thai-dominant.
 - **NLEM Q&A is gated off** by default — questions about Thailand's National List of Essential Medicines are short-circuited unless `NLEM_QA_ENABLED=true`.
 
