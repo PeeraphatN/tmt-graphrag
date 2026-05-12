@@ -18,3 +18,11 @@
 
 # Generated / vendored — collapse in diffs
 apps/web/package-lock.json -diff
+
+# Linguist — exclude non-source HTML from language stats
+# (otherwise GitHub reports this repo as "HTML" because a single
+# 4.87 MB plotly dashboard outweighs all the Python source)
+experiments/retrieval/retrieval_eval/results/**/*.html linguist-generated=true
+experiments/retrieval/retrieval_eval/results/*.html   linguist-generated=true
+experiments/**/docs/*.html                            linguist-documentation=true
+docs/**/*.html                                        linguist-documentation=true
