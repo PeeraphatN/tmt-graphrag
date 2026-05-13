@@ -9,6 +9,6 @@ cachetools==6.2.4
 sentence-transformers==5.1.2
 transformers==5.0.0rc3
 torch==2.9.1
-pythainlp>=5.0.0
+pythainlp>=5.3.4
 ollama==0.6.1
 requests==2.33.0
